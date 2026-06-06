@@ -10,3 +10,12 @@ export {
   CardContent,
   CardFooter,
 } from "./components/card";
+export {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuGroup,
+  DropdownMenuSeparator,
+} from "./components/dropdown-menu";

@@ -30,8 +30,33 @@
   --radius: 0.625rem;
 }
 
+/*
+ * Theme switching: <html> carries no class for "system", `.light`, or `.dark`.
+ * The dark token set is applied in two cases:
+ *   1. explicit `.dark`
+ *   2. "system" (no .light / .dark class) while the OS prefers dark
+ * Light is the :root default, so `.light` simply pins it on a dark OS.
+ */
+.dark {
+  --color-background: oklch(0.197 0.012 264);
+  --color-surface: oklch(0.238 0.013 264);
+  --color-surface-2: oklch(0.27 0.014 264);
+  --color-foreground: oklch(0.96 0.005 264);
+  --color-muted-foreground: oklch(0.68 0.013 264);
+  --color-border: oklch(0.32 0.014 264);
+  --color-primary: oklch(0.68 0.16 254);
+  --color-primary-foreground: oklch(0.16 0.02 264);
+  --color-accent: oklch(0.3 0.016 264);
+  --color-accent-foreground: oklch(0.95 0.005 264);
+  --color-input: oklch(0.34 0.014 264);
+  --color-ring: oklch(0.68 0.16 254);
+  --color-success: oklch(0.72 0.15 152);
+  --color-danger: oklch(0.68 0.19 24);
+  color-scheme: dark;
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not(.light):not(.dark) {
     --color-background: oklch(0.197 0.012 264);
     --color-surface: oklch(0.238 0.013 264);
     --color-surface-2: oklch(0.27 0.014 264);
@@ -46,6 +71,7 @@
     --color-ring: oklch(0.68 0.16 254);
     --color-success: oklch(0.72 0.15 152);
     --color-danger: oklch(0.68 0.19 24);
+    color-scheme: dark;
   }
 }
 
@@ -53,8 +79,9 @@
   * {
     border-color: var(--color-border);
   }
-  html {
-    color-scheme: light dark;
+  :root,
+  .light {
+    color-scheme: light;
   }
   body {
     background-color: var(--color-background);
@@ -62,4 +89,52 @@
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
+}
+
+/*
+ * Original KeysArk hero backdrop — pure CSS, no external/raster assets.
+ * Soft theme-aware aurora glows + a faint grid masked to fade out.
+ */
+.hero-aurora {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      55rem 28rem at 50% -12%,
+      color-mix(in oklch, var(--color-primary) 24%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(
+      36rem 22rem at 85% 6%,
+      color-mix(in oklch, var(--color-primary) 14%, transparent),
+      transparent 72%
+    ),
+    radial-gradient(
+      34rem 22rem at 12% 14%,
+      color-mix(in oklch, var(--color-success) 12%, transparent),
+      transparent 72%
+    );
+}
+
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(
+      to right,
+      color-mix(in oklch, var(--color-foreground) 7%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in oklch, var(--color-foreground) 7%, transparent) 1px,
+      transparent 1px
+    );
+  background-size: 3.5rem 3.5rem;
+  -webkit-mask-image: radial-gradient(72% 56% at 50% 0%, #000, transparent 76%);
+  mask-image: radial-gradient(72% 56% at 50% 0%, #000, transparent 76%);
 }
