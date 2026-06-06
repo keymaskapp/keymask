@@ -1,8 +1,13 @@
 import { getConnectedBaidu } from "@/lib/baidu";
 import { Landing } from "@/components/landing";
-import { VaultPanel, type VaultFile } from "@/components/vault-panel";
-
-const META_NAME = ".keysark.json";
+import { VaultPanel } from "@/components/vault-panel";
+import {
+  LEGACY_META_NAME,
+  LEGACY_VAULT_ID,
+  REGISTRY_NAME,
+  type Registry,
+  type VaultDescriptor,
+} from "@/lib/registry";
 
 export default async function Home({
   searchParams,
@@ -16,13 +21,12 @@ export default async function Home({
     return <Landing error={error} />;
   }
 
-  let vaultInitialized = false;
-  let metaFileId: string | null = null;
-  let files: VaultFile[] = [];
-  let loadError: string | null = null;
+  let vaults: VaultDescriptor[] = [];
   let user = { name: "", avatar: null as string | null };
 
-  // 用户信息(头像/名称)与文件列表并行拉取;两者各自失败互不影响。
+  // 用户信息(头像/名称)与沙盒根文件列表并行拉取。
+  // 服务端只读「注册表(明文元数据 + 密文校验块)」用于决定登录界面;
+  // 条目本身在客户端解锁后从各库 index.json 解密加载(见 VaultPanel / @/lib/vault)。
   const [infoRes, listRes] = await Promise.allSettled([
     conn.client.userInfo(),
     conn.client.list("", { order: "time", desc: true }),
@@ -34,24 +38,38 @@ export default async function Home({
   }
 
   if (listRes.status === "fulfilled") {
-    const list = listRes.value;
-    const meta = list.find((f) => f.isdir === 0 && f.server_filename === META_NAME);
-    vaultInitialized = !!meta;
-    metaFileId = meta ? String(meta.fs_id) : null;
-    files = list
-      .filter((f) => f.isdir === 0 && f.server_filename !== META_NAME)
-      .map((f) => ({ id: String(f.fs_id), name: f.server_filename, size: f.size }));
-  } else {
-    loadError = String(listRes.reason);
+    const files = listRes.value.filter((f) => f.isdir === 0);
+    const regFile = files.find((f) => f.server_filename === REGISTRY_NAME);
+    if (regFile) {
+      try {
+        const bytes = await conn.client.download(regFile.fs_id);
+        const reg = JSON.parse(Buffer.from(bytes).toString("utf8")) as Registry;
+        if (Array.isArray(reg.vaults)) vaults = reg.vaults;
+      } catch (err) {
+        console.error("registry read failed", err);
+      }
+    } else {
+      // 历史单库迁移:无注册表但有旧 .keysark.json → 合成一个根目录(dir="")保险库。
+      // 旧数据(根 index.json + items/)原样可读;用户新建第二个库时再持久化注册表。
+      const legacy = files.find((f) => f.server_filename === LEGACY_META_NAME);
+      if (legacy) {
+        try {
+          const bytes = await conn.client.download(legacy.fs_id);
+          vaults = [
+            {
+              id: LEGACY_VAULT_ID,
+              label: "",
+              dir: "",
+              verifier: Buffer.from(bytes).toString("base64"),
+              createdAt: 0,
+            },
+          ];
+        } catch (err) {
+          console.error("legacy meta read failed", err);
+        }
+      }
+    }
   }
 
-  return (
-    <VaultPanel
-      vaultInitialized={vaultInitialized}
-      metaFileId={metaFileId}
-      initialFiles={files}
-      loadError={loadError}
-      user={user}
-    />
-  );
+  return <VaultPanel vaults={vaults} user={user} />;
 }

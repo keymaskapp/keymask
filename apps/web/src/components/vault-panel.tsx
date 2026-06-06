@@ -1,9 +1,10 @@
 "use client";
 
-// 端到端加密保险库面板。助记词与派生密钥只在浏览器,绝不发服务端。
-// API 只搬运 base64 密文。UI 参照 1Password:解锁/创建为居中卡片,
-// 已解锁为「侧边栏 + 条目列表 + 详情编辑」三栏布局。多语言 + 主题切换。
-import { useMemo, useState } from "react";
+// 端到端加密保险库面板(支持多保险库)。助记词与派生密钥只在浏览器,绝不发服务端。
+// 登录流:0 个库 → 创建;1 个库 → 直接解锁;≥2 个库 → 先选库,再输入该库助记词。
+// 数据模型:keysark.json 注册表(明文元数据 + 密文校验块)+ 每个库各自的 index/items(见 @/lib/vault、@/lib/registry)。
+// UI 参照 1Password:选择/解锁/创建为居中卡片,已解锁为「条目列 + 详情」两栏工作台。
+import { useMemo, useRef, useState } from "react";
 import {
   Button,
   Card,
@@ -16,133 +17,137 @@ import {
 } from "@keysark/ui";
 import {
   checkVerifier,
-  decryptFromEnvelope,
   deriveKey,
-  encryptToEnvelope,
   generateMnemonic,
   makeVerifier,
   validateMnemonic,
 } from "@keysark/crypto";
+import { newId } from "@keysark/db/id";
 import { Logo, Wordmark } from "./brand";
 import { HeaderControls } from "./controls";
 import { UserMenu } from "./user-menu";
 import { useT } from "./providers";
+import { Vault, type EntryMeta } from "@/lib/vault";
+import {
+  b64decode,
+  b64encode,
+  saveRegistry,
+  vaultDir,
+  type Registry,
+  type VaultDescriptor,
+} from "@/lib/registry";
 
 interface VaultUser {
   name: string;
   avatar: string | null;
 }
 
-const META_NAME = ".keysark.json";
-
-export interface VaultFile {
-  id: string;
-  name: string;
-  size: number;
-}
-
-function b64encode(u: Uint8Array): string {
-  let s = "";
-  for (const b of u) s += String.fromCharCode(b);
-  return btoa(s);
-}
-function b64decode(s: string): Uint8Array {
-  const bin = atob(s);
-  const u = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
-  return u;
-}
-
-async function putFile(path: string, bytes: Uint8Array): Promise<void> {
-  const res = await fetch("/api/files", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ path, contentB64: b64encode(bytes) }),
-  });
-  const data = (await res.json()) as { ok?: boolean; message?: string };
-  if (!res.ok || !data.ok) throw new Error(data.message ?? `HTTP ${res.status}`);
-}
-async function getFileBytes(fileId: string): Promise<Uint8Array> {
-  const res = await fetch(`/api/files/content?fileId=${encodeURIComponent(fileId)}`);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const data = (await res.json()) as { contentB64: string };
-  return b64decode(data.contentB64);
-}
-
-type Phase = "unlock" | "create" | "unlocked";
+type Phase = "select" | "unlock" | "create" | "unlocked";
 
 export function VaultPanel({
-  vaultInitialized,
-  metaFileId,
-  initialFiles,
-  loadError,
+  vaults: initialVaults,
   user,
 }: {
-  vaultInitialized: boolean;
-  metaFileId: string | null;
-  initialFiles: VaultFile[];
-  loadError: string | null;
+  vaults: VaultDescriptor[];
   user: VaultUser;
 }) {
   const t = useT();
-  const [phase, setPhase] = useState<Phase>(vaultInitialized ? "unlock" : "create");
-  const [key, setKey] = useState<CryptoKey | null>(null);
-  const [status, setStatus] = useState<string | null>(
-    loadError ? t("st_load_fail", loadError) : null,
+  // 默认库:无名或 label 为 "default"(创建首个库时的占位)。一律不显示 "default" 字样。
+  const isDefaultVault = (v: VaultDescriptor): boolean => {
+    const l = v.label.trim().toLowerCase();
+    return l === "" || l === "default";
+  };
+  const vaultName = (v: VaultDescriptor): string =>
+    isDefaultVault(v) ? t("default_vault") : v.label.trim();
+
+  // 注册表(随新建保险库增长)
+  const [vaults, setVaults] = useState<VaultDescriptor[]>(initialVaults);
+  const [selectedVault, setSelectedVault] = useState<VaultDescriptor | null>(
+    initialVaults.length === 1 ? initialVaults[0]! : null,
   );
+  const [phase, setPhase] = useState<Phase>(
+    initialVaults.length === 0 ? "create" : initialVaults.length === 1 ? "unlock" : "select",
+  );
+
+  const vaultRef = useRef<Vault | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   // 解锁输入
   const [mnemonicInput, setMnemonicInput] = useState("");
 
   // 创建流程
+  const [newLabel, setNewLabel] = useState("");
   const [newMnemonic, setNewMnemonic] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const challengeIdx = useMemo(() => {
-    // 备份抽查 3 个词位(非机密,UI 用普通随机即可)
     const idx = new Set<number>();
     while (idx.size < 3) idx.add(Math.floor(Math.random() * 12));
     return [...idx].sort((a, b) => a - b);
   }, [newMnemonic]);
   const [challengeInput, setChallengeInput] = useState<Record<number, string>>({});
 
-  // 已解锁
-  const [files, setFiles] = useState<VaultFile[]>(initialFiles);
+  // 已解锁 / 工作台
+  const [entries, setEntries] = useState<EntryMeta[]>([]);
+  const [loadingEntries, setLoadingEntries] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [path, setPath] = useState("");
+  const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [pending, setPending] = useState(0);
+  // 详情区两种模式:打开已有条目为只读 preview;新建/点击编辑进入 edit。
+  const [mode, setMode] = useState<"preview" | "edit">("preview");
 
   const filtered = useMemo(
-    () => files.filter((f) => f.name.toLowerCase().includes(query.trim().toLowerCase())),
-    [files, query],
+    () =>
+      entries.filter((e) =>
+        (e.title || "").toLowerCase().includes(query.trim().toLowerCase()),
+      ),
+    [entries, query],
   );
 
-  async function refreshList() {
-    const res = await fetch("/api/files");
-    if (!res.ok) return setStatus(t("st_refresh_fail"));
-    const data = (await res.json()) as { files: VaultFile[] };
-    setFiles(data.files.filter((f) => f.name !== META_NAME));
+  async function enterVault(key: CryptoKey, descriptor: VaultDescriptor) {
+    const v = new Vault(key, { id: descriptor.id, dir: descriptor.dir });
+    vaultRef.current = v;
+    setSelectedVault(descriptor);
+    setPhase("unlocked");
+    setLoadingEntries(true);
+    setStatus(null);
+    try {
+      const list = await v.load();
+      setEntries(list);
+      setPending(v.pendingCount());
+    } catch (err) {
+      setStatus(t("st_load_fail", String(err)));
+    } finally {
+      setLoadingEntries(false);
+    }
   }
 
-  // ---- 解锁 ----
+  // ---- 选择保险库 ----
+  function pickVault(v: VaultDescriptor) {
+    setSelectedVault(v);
+    setMnemonicInput("");
+    setStatus(null);
+    setPhase("unlock");
+  }
+
+  // ---- 解锁(对选中的保险库校验助记词) ----
   async function unlock() {
     const m = mnemonicInput.trim().replace(/\s+/g, " ");
     if (!validateMnemonic(m)) return setStatus(t("st_invalid_mnemonic"));
-    if (!metaFileId) return setStatus(t("st_missing_meta"));
+    if (!selectedVault) return setStatus(t("st_missing_meta"));
     setBusy(true);
     setStatus(t("st_unlocking"));
     try {
       const k = await deriveKey(m);
-      const verifierBytes = await getFileBytes(metaFileId);
+      const verifierBytes = b64decode(selectedVault.verifier);
       if (!(await checkVerifier(k, verifierBytes))) {
         setStatus(t("st_mismatch"));
         return;
       }
-      setKey(k);
       setMnemonicInput("");
-      setPhase("unlocked");
-      setStatus(null);
+      await enterVault(k, selectedVault);
     } catch (err) {
       setStatus(t("st_unlock_fail", String(err)));
     } finally {
@@ -150,7 +155,7 @@ export function VaultPanel({
     }
   }
 
-  // ---- 创建 ----
+  // ---- 创建(新建保险库,追加进注册表) ----
   function genMnemonic() {
     setNewMnemonic(generateMnemonic());
     setConfirming(false);
@@ -172,11 +177,22 @@ export function VaultPanel({
     try {
       const k = await deriveKey(newMnemonic);
       const verifier = await makeVerifier(k);
-      await putFile(META_NAME, verifier);
-      setKey(k);
+      const id = newId();
+      // 第一个保险库无需取名,默认为 "default";后续保险库用用户输入的名字。
+      const label = vaults.length === 0 ? "default" : newLabel.trim();
+      const descriptor: VaultDescriptor = {
+        id,
+        label,
+        dir: vaultDir(id),
+        verifier: b64encode(verifier),
+        createdAt: Date.now(),
+      };
+      const nextRegistry: Registry = { v: 1, vaults: [...vaults, descriptor] };
+      await saveRegistry(nextRegistry);
+      setVaults(nextRegistry.vaults);
       setNewMnemonic(null);
-      setPhase("unlocked");
-      setStatus(null);
+      setNewLabel("");
+      await enterVault(k, descriptor);
     } catch (err) {
       setStatus(t("st_create_fail", String(err)));
     } finally {
@@ -184,16 +200,39 @@ export function VaultPanel({
     }
   }
 
-  // ---- 已解锁:读写 ----
-  async function openFile(file: VaultFile) {
-    if (!key) return;
+  // ---- 各登录界面之间切换 ----
+  function goCreate() {
+    setNewMnemonic(null);
+    setNewLabel("");
+    setConfirming(false);
+    setChallengeInput({});
+    setMnemonicInput("");
+    setStatus(null);
+    setPhase("create");
+  }
+  /** 返回「选择/解锁」:多库回到选择,单库回到解锁,无库回到创建。 */
+  function goPick() {
+    setStatus(null);
+    setMnemonicInput("");
+    if (vaults.length > 1) setPhase("select");
+    else if (vaults.length === 1) {
+      setSelectedVault(vaults[0]!);
+      setPhase("unlock");
+    } else setPhase("create");
+  }
+
+  // ---- 工作台:读写 ----
+  async function openEntry(meta: EntryMeta) {
+    const v = vaultRef.current;
+    if (!v) return;
     setBusy(true);
-    setStatus(t("st_decrypting", file.name));
+    setStatus(t("st_decrypting", meta.title || t("untitled")));
     try {
-      const bytes = await getFileBytes(file.id);
-      setSelectedId(file.id);
-      setPath(file.name);
-      setContent(await decryptFromEnvelope(key, bytes));
+      const doc = await v.open(meta.id);
+      setSelectedId(doc.id);
+      setTitle(doc.title);
+      setContent(doc.content);
+      setMode("preview");
       setStatus(null);
     } catch (err) {
       setStatus(t("st_open_fail", String(err)));
@@ -203,17 +242,17 @@ export function VaultPanel({
   }
 
   async function save() {
-    if (!key) return;
-    const p = path.trim();
-    if (!p) return setStatus(t("st_need_path"));
-    if (p === META_NAME) return setStatus(t("st_meta_reserved"));
+    const v = vaultRef.current;
+    if (!v) return;
     setBusy(true);
     setStatus(t("st_saving"));
     try {
-      const envelope = await encryptToEnvelope(key, content);
-      await putFile(p, envelope);
-      setStatus(t("st_saved", p));
-      await refreshList();
+      const result = await v.save({ id: selectedId, title: title.trim(), content });
+      setEntries(result.entries);
+      setSelectedId(result.id);
+      setPending(v.pendingCount());
+      setMode("preview"); // 保存后回到只读预览
+      setStatus(result.synced ? t("st_saved") : t("st_saved_local", result.syncError ?? ""));
     } catch (err) {
       setStatus(t("st_save_fail", String(err)));
     } finally {
@@ -221,19 +260,100 @@ export function VaultPanel({
     }
   }
 
+  async function syncNow() {
+    const v = vaultRef.current;
+    if (!v) return;
+    setBusy(true);
+    setStatus(t("st_syncing"));
+    try {
+      const { remaining } = await v.sync();
+      setPending(remaining);
+      setStatus(remaining === 0 ? t("st_sync_ok") : t("pending_count", remaining));
+    } catch (err) {
+      setPending(v.pendingCount());
+      setStatus(t("st_sync_fail", String(err)));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   function newItem() {
     setSelectedId(null);
-    setPath("");
+    setTitle("");
     setContent("");
+    setMode("edit"); // 新建直接进编辑
     setStatus(null);
   }
 
+  function editEntry() {
+    setMode("edit");
+    setStatus(null);
+  }
+
+  async function cancelEdit() {
+    setStatus(null);
+    // 编辑已有条目 → 放弃改动,重新读回原文进入预览;新建未保存 → 清空回到空预览。
+    const meta = selectedId ? entries.find((e) => e.id === selectedId) : null;
+    if (meta) {
+      await openEntry(meta);
+    } else {
+      setSelectedId(null);
+      setTitle("");
+      setContent("");
+      setMode("preview");
+    }
+  }
+
   function lock() {
-    // 清内存密钥后整页刷新:让服务端重新列出保险库状态(含新建后的 metaFileId)。
-    setKey(null);
+    // 清内存密钥后整页刷新:让服务端重新读取注册表(含新建后的保险库)。
+    vaultRef.current = null;
     setContent("");
-    setPath("");
+    setTitle("");
     window.location.reload();
+  }
+
+  // ============================ 选择保险库 ============================
+  if (phase === "select") {
+    return (
+      <CenteredShell user={user}>
+        <Card className="w-full">
+          <CardHeader>
+            <CardTitle>{t("select_title")}</CardTitle>
+            <CardDescription>{t("select_desc")}</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-2">
+            <ul className="flex flex-col gap-2">
+              {vaults.map((v) => (
+                <li key={v.id}>
+                  <button
+                    type="button"
+                    onClick={() => pickVault(v)}
+                    disabled={busy}
+                    className="flex w-full items-center gap-3 rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface-2)] px-3 py-3 text-left transition-colors hover:bg-[var(--color-accent)]"
+                  >
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[var(--color-accent)] text-[var(--color-accent-foreground)]">
+                      <Logo className="h-4 w-4" />
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-medium">{vaultName(v)}</span>
+                      <span className="block text-xs text-[var(--color-muted-foreground)]">
+                        {t("select_enter_phrase")}
+                      </span>
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <div className="border-t border-[var(--color-border)] pt-3 text-center">
+              <Button variant="link" size="sm" onClick={goCreate} disabled={busy}>
+                {t("new_vault")}
+              </Button>
+            </div>
+            <StatusLine status={status} />
+          </CardContent>
+        </Card>
+      </CenteredShell>
+    );
   }
 
   // ============================ 创建保险库 ============================
@@ -250,6 +370,20 @@ export function VaultPanel({
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
+            {/* 第一个保险库无需取名(默认 default);新增保险库时才让用户命名以便区分 */}
+            {vaults.length > 0 ? (
+              <label className="flex flex-col gap-1.5">
+                <span className="text-xs font-medium text-[var(--color-muted-foreground)]">
+                  {t("create_label")}
+                </span>
+                <Input
+                  value={newLabel}
+                  onChange={(e) => setNewLabel(e.target.value)}
+                  placeholder={t("create_label_ph")}
+                  disabled={busy || !!newMnemonic}
+                />
+              </label>
+            ) : null}
             {!newMnemonic ? (
               <>
                 <div className="rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface-2)] p-4 text-sm text-[var(--color-muted-foreground)]">
@@ -310,6 +444,13 @@ export function VaultPanel({
                 </div>
               </>
             )}
+            {vaults.length > 0 ? (
+              <div className="border-t border-[var(--color-border)] pt-3 text-center">
+                <Button variant="link" size="sm" onClick={goPick} disabled={busy}>
+                  {t("back_to_unlock")}
+                </Button>
+              </div>
+            ) : null}
             <StatusLine status={status} />
           </CardContent>
         </Card>
@@ -324,7 +465,9 @@ export function VaultPanel({
         <Card className="w-full">
           <CardHeader>
             <CardTitle>{t("unlock_title")}</CardTitle>
-            <CardDescription>{t("unlock_desc")}</CardDescription>
+            <CardDescription>
+              {selectedVault ? t("unlock_desc_named", vaultName(selectedVault)) : t("unlock_desc")}
+            </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
             <Textarea
@@ -340,6 +483,16 @@ export function VaultPanel({
             <Button onClick={unlock} disabled={busy} size="lg">
               {t("btn_unlock")}
             </Button>
+            <div className="flex flex-col gap-1 border-t border-[var(--color-border)] pt-3 text-center">
+              {vaults.length > 1 ? (
+                <Button variant="link" size="sm" onClick={goPick} disabled={busy}>
+                  {t("switch_vault")}
+                </Button>
+              ) : null}
+              <Button variant="link" size="sm" onClick={goCreate} disabled={busy}>
+                {t("new_vault")}
+              </Button>
+            </div>
             <StatusLine status={status} />
           </CardContent>
         </Card>
@@ -347,71 +500,64 @@ export function VaultPanel({
     );
   }
 
-  // ============================ 已解锁:三栏 ============================
-  const selected = files.find((f) => f.id === selectedId) ?? null;
+  // ============================ 工作台:两栏(条目列 + 详情) ============================
+  const selected = entries.find((e) => e.id === selectedId) ?? null;
+  const currentName = selectedVault ? vaultName(selectedVault) : t("default_vault");
+  const currentIsDefault = selectedVault ? isDefaultVault(selectedVault) : true;
 
   return (
-    <div className="grid h-screen grid-cols-[15rem_20rem_1fr] overflow-hidden">
-      {/* 侧边栏 */}
-      <aside className="flex flex-col border-r border-[var(--color-border)] bg-[var(--color-surface-2)]">
-        <div className="flex h-14 items-center border-b border-[var(--color-border)] px-4">
-          <Wordmark className="text-base" />
-        </div>
-        <nav className="flex-1 overflow-y-auto p-3">
-          <p className="px-2 pb-1 text-[0.7rem] font-semibold uppercase tracking-wider text-[var(--color-muted-foreground)]">
-            {t("sidebar_vaults")}
-          </p>
-          <div className="flex items-center justify-between rounded-[var(--radius)] bg-[var(--color-accent)] px-2.5 py-2 text-sm font-medium text-[var(--color-accent-foreground)]">
-            <span className="flex items-center gap-2">
-              <Logo className="h-4 w-4" />
-              {t("all_items")}
-            </span>
-            <span className="tabular-nums text-xs text-[var(--color-muted-foreground)]">
-              {files.length}
-            </span>
-          </div>
-        </nav>
-        <div className="flex flex-col gap-3 border-t border-[var(--color-border)] p-3">
-          <HeaderControls />
-          <div className="flex items-center gap-2 px-1 text-xs text-[var(--color-muted-foreground)]">
-            <span className="h-2 w-2 rounded-full bg-[var(--color-success)]" />
-            {t("status_unlocked")}
-          </div>
-          <Button variant="outline" size="sm" className="w-full" onClick={lock} disabled={busy}>
-            {t("btn_lock")}
-          </Button>
-        </div>
-      </aside>
-
-      {/* 条目列表 */}
+    <div className="grid h-screen grid-cols-[20rem_1fr] overflow-hidden">
+      {/* 条目列(含品牌 / 当前保险库 / 锁定) */}
       <section className="flex flex-col border-r border-[var(--color-border)] bg-[var(--color-surface)]">
         <div className="flex h-14 items-center justify-between gap-2 border-b border-[var(--color-border)] px-4">
-          <span className="text-sm font-semibold">{t("all_items")}</span>
-          <Button variant="default" size="sm" onClick={newItem} disabled={busy}>
-            {t("btn_new")}
-          </Button>
+          <Wordmark className="text-base" />
+          {pending > 0 ? (
+            <Button variant="secondary" size="sm" onClick={syncNow} disabled={busy}>
+              {t("btn_sync")} · {t("pending_count", pending)}
+            </Button>
+          ) : (
+            <span className="flex items-center gap-1.5 text-xs text-[var(--color-muted-foreground)]">
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-success)]" />
+              {t("synced")}
+            </span>
+          )}
         </div>
-        <div className="border-b border-[var(--color-border)] p-3">
+        {/* 默认库不显示名称(顶部已有 KeysArk 字标);具名库才显示名称 */}
+        {!currentIsDefault ? (
+          <div className="flex items-center gap-2 border-b border-[var(--color-border)] px-4 py-3 text-sm font-semibold">
+            <Logo className="h-4 w-4 shrink-0" />
+            <span className="truncate">{currentName}</span>
+          </div>
+        ) : null}
+        <div className="flex items-center gap-2 border-b border-[var(--color-border)] p-3">
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder={t("search_placeholder")}
-            className="h-9"
+            className="h-9 flex-1"
           />
+          <Button variant="default" size="sm" onClick={newItem} disabled={busy}>
+            {t("btn_new")}
+          </Button>
         </div>
         <ul className="flex-1 overflow-y-auto p-2">
-          {filtered.length === 0 ? (
+          {loadingEntries ? (
             <li className="px-3 py-8 text-center text-sm text-[var(--color-muted-foreground)]">
-              {files.length === 0 ? t("empty_vault") : t("empty_search")}
+              {t("loading_entries")}
+            </li>
+          ) : filtered.length === 0 ? (
+            <li className="px-3 py-8 text-center text-sm text-[var(--color-muted-foreground)]">
+              {entries.length === 0 ? t("empty_vault") : t("empty_search")}
             </li>
           ) : (
-            filtered.map((f) => {
-              const active = f.id === selectedId;
+            filtered.map((e) => {
+              const active = e.id === selectedId;
+              const label = e.title || t("untitled");
               return (
-                <li key={f.id}>
+                <li key={e.id}>
                   <button
                     type="button"
-                    onClick={() => openFile(f)}
+                    onClick={() => openEntry(e)}
                     disabled={busy}
                     className={`flex w-full items-center gap-3 rounded-[var(--radius)] px-3 py-2.5 text-left transition-colors ${
                       active
@@ -426,14 +572,14 @@ export function VaultPanel({
                           : "bg-[var(--color-accent)] text-[var(--color-accent-foreground)]"
                       }`}
                     >
-                      {f.name.slice(0, 1).toUpperCase()}
+                      {label.slice(0, 1).toUpperCase()}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium">{f.name}</span>
+                      <span className="block truncate text-sm font-medium">{label}</span>
                       <span
                         className={`block text-xs ${active ? "opacity-80" : "text-[var(--color-muted-foreground)]"}`}
                       >
-                        {t("bytes_cipher", f.size)}
+                        {t("bytes_cipher", e.size)}
                       </span>
                     </span>
                   </button>
@@ -442,59 +588,96 @@ export function VaultPanel({
             })
           )}
         </ul>
+        {/* 列脚:解锁状态 + 条目数 */}
+        <div className="flex items-center gap-1.5 border-t border-[var(--color-border)] px-4 py-2.5 text-xs text-[var(--color-muted-foreground)]">
+          <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-success)]" />
+          {t("status_unlocked")} · {t("items_count", entries.length)}
+        </div>
       </section>
 
       {/* 详情 / 编辑 */}
       <section className="flex flex-col bg-[var(--color-background)]">
+        {/* 右上角:语言/主题切换在头像左侧 */}
         <div className="flex h-14 items-center justify-between gap-3 border-b border-[var(--color-border)] px-6">
           <span className="truncate text-sm font-semibold">
-            {selected ? selected.name : t("detail_new")}
+            {selected
+              ? selected.title || t("untitled")
+              : mode === "edit"
+                ? t("detail_new")
+                : ""}
           </span>
           <div className="flex items-center gap-3">
-            <StatusLine status={status} inline />
-            <UserMenu name={user.name} avatar={user.avatar} />
+            <HeaderControls />
+            <UserMenu name={user.name} avatar={user.avatar} onLock={lock} />
           </div>
         </div>
-        <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-6">
-          <label className="flex flex-col gap-1.5">
-            <span className="text-xs font-medium text-[var(--color-muted-foreground)]">
-              {t("field_path")}
-            </span>
-            <Input
-              value={path}
-              onChange={(e) => setPath(e.target.value)}
-              placeholder={t("field_path_ph")}
-            />
-          </label>
-          <label className="flex min-h-0 flex-1 flex-col gap-1.5">
-            <span className="text-xs font-medium text-[var(--color-muted-foreground)]">
-              {t("field_content")}
-            </span>
-            <Textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder={t("content_ph")}
-              className="min-h-[18rem] flex-1 resize-none font-mono leading-relaxed"
-            />
-          </label>
-          <div className="flex items-center gap-2">
-            <Button onClick={save} disabled={busy}>
-              {t("btn_save")}
-            </Button>
-            <Button variant="outline" onClick={newItem} disabled={busy}>
-              {t("btn_clear")}
-            </Button>
-            <span className="ml-auto text-xs text-[var(--color-muted-foreground)]">
-              {t("stored_at")}
-            </span>
+        {mode === "edit" ? (
+          // ---- 编辑模式:可编辑标题 + 内容 ----
+          <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-6">
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium text-[var(--color-muted-foreground)]">
+                {t("field_title")}
+              </span>
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder={t("field_title_ph")}
+              />
+            </label>
+            <label className="flex min-h-0 flex-1 flex-col gap-1.5">
+              <span className="text-xs font-medium text-[var(--color-muted-foreground)]">
+                {t("field_content")}
+              </span>
+              <Textarea
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder={t("content_ph")}
+                className="min-h-[18rem] flex-1 resize-none font-mono leading-relaxed"
+              />
+            </label>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button onClick={save} disabled={busy}>
+                {t("btn_save")}
+              </Button>
+              <Button variant="outline" onClick={cancelEdit} disabled={busy}>
+                {t("btn_cancel")}
+              </Button>
+              <div className="ml-auto flex items-center gap-3">
+                <StatusLine status={status} inline />
+              </div>
+            </div>
           </div>
-        </div>
+        ) : selectedId ? (
+          // ---- 预览模式:只读 ----
+          <div className="flex flex-1 flex-col gap-4 overflow-y-auto p-6">
+            <div className="flex items-center gap-2">
+              <Button size="sm" onClick={editEntry} disabled={busy}>
+                {t("btn_edit")}
+              </Button>
+              <div className="ml-auto">
+                <StatusLine status={status} inline />
+              </div>
+            </div>
+            <article className="flex-1 whitespace-pre-wrap break-words rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 font-mono text-sm leading-relaxed">
+              {content ? (
+                content
+              ) : (
+                <span className="text-[var(--color-muted-foreground)]">{t("content_empty")}</span>
+              )}
+            </article>
+          </div>
+        ) : (
+          // ---- 无选中:空态 ----
+          <div className="flex flex-1 items-center justify-center p-6 text-center text-sm text-[var(--color-muted-foreground)]">
+            {t("preview_empty")}
+          </div>
+        )}
       </section>
     </div>
   );
 }
 
-// 居中外壳:解锁/创建页用,顶栏带品牌 + 语言/主题切换 + 用户菜单。
+// 居中外壳:选择/解锁/创建页用,顶栏带品牌 + 语言/主题切换 + 用户菜单。
 function CenteredShell({ children, user }: { children: React.ReactNode; user: VaultUser }) {
   return (
     <main className="relative flex min-h-screen flex-col bg-[var(--color-background)]">

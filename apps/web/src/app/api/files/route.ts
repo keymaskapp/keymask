@@ -3,13 +3,14 @@ import { getConnectedBaidu } from "@/lib/baidu";
 
 export const runtime = "nodejs";
 
-// 列出沙盒文件。只暴露 id/name/size —— 内容不在这里。
-export async function GET() {
+// 列出沙盒文件。只暴露 id/name/size —— 内容不在这里。?dir= 指定子目录(默认沙盒根)。
+export async function GET(request: Request) {
   const conn = await getConnectedBaidu();
   if (!conn) return NextResponse.json({ error: "not_connected" }, { status: 401 });
 
+  const dir = new URL(request.url).searchParams.get("dir") ?? "";
   try {
-    const files = await conn.client.list("", { order: "time", desc: true });
+    const files = await conn.client.list(dir, { order: "time", desc: true });
     return NextResponse.json({
       files: files
         .filter((f) => f.isdir === 0)
