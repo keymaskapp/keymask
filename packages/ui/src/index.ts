@@ -19,3 +19,4 @@ export {
   DropdownMenuGroup,
   DropdownMenuSeparator,
 } from "./components/dropdown-menu";
+export { Tooltip } from "./components/tooltip";

@@ -12,8 +12,14 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
   Input,
   Textarea,
+  Tooltip,
 } from "@keysark/ui";
 import {
   checkVerifier,
@@ -24,21 +30,25 @@ import {
 } from "@keysark/crypto";
 import { newId } from "@keysark/db/id";
 import {
+  ChevronDown,
   ChevronRight,
   ExternalLink,
+  FileText,
   Folder,
-  Hash,
+  FolderPlus,
+  GripVertical,
   Inbox,
+  MoreHorizontal,
   Pencil,
   Plus,
   Trash2,
-  X,
 } from "lucide-react";
 import { Logo, Wordmark } from "./brand";
 import { HeaderControls } from "./controls";
 import { UserMenu } from "./user-menu";
 import { useT } from "./providers";
 import { Vault, itemRelPath, type EntryMeta, type FolderMeta } from "@/lib/vault";
+import { saveKey, loadKey, deleteKey } from "@/lib/key-store";
 import type { StorageLocation } from "@/lib/storage";
 import {
   b64decode,
@@ -87,6 +97,16 @@ export function VaultPanel({
 
   // 解锁输入
   const [mnemonicInput, setMnemonicInput] = useState("");
+  // 本设备记住:解锁/创建成功后,是否把 non-extractable 主密钥持久化到 IndexedDB(方案①)。
+  const [rememberDevice, setRememberDevice] = useState(true);
+  // 当前选中保险库在本设备是否有可用的记住密钥(解锁界面:决定是否显示「用本设备解锁」)。
+  const [remembered, setRemembered] = useState(false);
+  // 已进入的保险库在本设备是否记住了密钥(工作台菜单:决定是否显示「忘记本设备」)。
+  const [enteredRemembered, setEnteredRemembered] = useState(false);
+  // 手动「锁定」后置真,抑制 effect 立刻自动重入(整页刷新会重置 → 下次加载仍自动解锁)。
+  const autoSuppress = useRef(false);
+  // 已尝试过自动解锁的保险库 id(防 StrictMode 双调用重复 enterVault)。
+  const autoTried = useRef<Set<string>>(new Set());
 
   // 创建流程
   const [newLabel, setNewLabel] = useState("");
@@ -104,6 +124,8 @@ export function VaultPanel({
   const [folders, setFolders] = useState<FolderMeta[]>([]);
   const [loadingEntries, setLoadingEntries] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // 新建条目时立刻插入树里的占位条目 id(未保存草稿);取消/切走则移除。
+  const [draftId, setDraftId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -112,32 +134,26 @@ export function VaultPanel({
   const [mode, setMode] = useState<"preview" | "edit">("preview");
   // 当前条目在网盘里的位置(预览态下方展示)
   const [location, setLocation] = useState<StorageLocation | null>(null);
-  // 编辑态的所属文件夹 / 标签
+  // 编辑态的所属文件夹
   const [editFolderId, setEditFolderId] = useState<string | null>(null);
-  const [editTags, setEditTags] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState("");
 
-  // 侧栏导航:全部 / 某文件夹 / 某标签
-  type Nav = { kind: "all" } | { kind: "folder"; id: string } | { kind: "tag"; name: string };
+  // 侧栏导航:全部 / 某文件夹
+  type Nav = { kind: "all" } | { kind: "folder"; id: string };
   const [nav, setNav] = useState<Nav>({ kind: "all" });
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
 
-  const allTags = useMemo(
-    () => [...new Set(entries.flatMap((e) => e.tags))].sort((a, b) => a.localeCompare(b)),
-    [entries],
-  );
+  // 拖拽:被拖动的条目 id;当前悬停的放置目标("root" 或文件夹 id)。
+  const [dragId, setDragId] = useState<string | null>(null);
+  const [dropTarget, setDropTarget] = useState<string | "root" | null>(null);
 
+  // 搜索结果(扁平):仅在搜索框非空时使用,跨所有文件夹按标题匹配。
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return entries.filter((e) => {
-      if (nav.kind === "folder" && e.folderId !== nav.id) return false;
-      if (nav.kind === "tag" && !e.tags.includes(nav.name)) return false;
-      if (q && !(e.title || "").toLowerCase().includes(q)) return false;
-      return true;
-    });
-  }, [entries, query, nav]);
+    if (!q) return [];
+    return entries.filter((e) => (e.title || "").toLowerCase().includes(q));
+  }, [entries, query]);
 
   // 预览某条目时,查询它在网盘里的位置 / 访问链接(只读元数据,不涉及内容)。
   useEffect(() => {
@@ -161,11 +177,49 @@ export function VaultPanel({
     };
   }, [mode, selectedId, selectedVault]);
 
+  // 进入解锁界面时:探测本设备是否记住了该库密钥。记住且校验通过 →
+  // 新鲜加载(未被手动锁定抑制)直接自动解锁;否则只点亮「用本设备解锁」按钮。
+  useEffect(() => {
+    if (phase !== "unlock" || !selectedVault) {
+      setRemembered(false);
+      return;
+    }
+    const v = selectedVault;
+    let alive = true;
+    setRemembered(false);
+    (async () => {
+      const k = await loadKey(v.id);
+      if (!alive || !k) return;
+      const ok = await checkVerifier(k, b64decode(v.verifier));
+      if (!alive) return;
+      if (!ok) {
+        // 记住的密钥与当前校验块不符(库被重建等)→ 清掉失效密钥。
+        await deleteKey(v.id);
+        return;
+      }
+      setRemembered(true);
+      if (!autoSuppress.current && !autoTried.current.has(v.id)) {
+        autoTried.current.add(v.id);
+        await enterVault(k, v);
+      }
+    })().catch(() => {
+      /* 自动解锁失败不打扰用户,回退到手动输入 */
+    });
+    return () => {
+      alive = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, selectedVault]);
+
   async function enterVault(key: CryptoKey, descriptor: VaultDescriptor) {
     const v = new Vault(key, { id: descriptor.id, dir: descriptor.dir });
     vaultRef.current = v;
     setSelectedVault(descriptor);
     setPhase("unlocked");
+    // 记录该库在本设备是否记住了密钥(工作台据此展示「忘记本设备」)。
+    loadKey(descriptor.id)
+      .then((k) => setEnteredRemembered(!!k))
+      .catch(() => setEnteredRemembered(false));
     setLoadingEntries(true);
     setStatus(null);
     try {
@@ -203,7 +257,41 @@ export function VaultPanel({
         return;
       }
       setMnemonicInput("");
+      if (rememberDevice) {
+        try {
+          await saveKey(selectedVault.id, k);
+        } catch {
+          /* 持久化失败不阻断解锁;本次仍正常进入 */
+        }
+      }
       await enterVault(k, selectedVault);
+    } catch (err) {
+      setStatus(t("st_unlock_fail", String(err)));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // ---- 一键解锁(用本设备记住的密钥,免输助记词) ----
+  async function unlockRemembered() {
+    const v = selectedVault;
+    if (!v) return;
+    setBusy(true);
+    setStatus(t("st_unlocking"));
+    try {
+      const k = await loadKey(v.id);
+      if (!k) {
+        setRemembered(false);
+        setStatus(null);
+        return;
+      }
+      if (!(await checkVerifier(k, b64decode(v.verifier)))) {
+        await deleteKey(v.id);
+        setRemembered(false);
+        setStatus(t("st_mismatch"));
+        return;
+      }
+      await enterVault(k, v);
     } catch (err) {
       setStatus(t("st_unlock_fail", String(err)));
     } finally {
@@ -248,6 +336,13 @@ export function VaultPanel({
       setVaults(nextRegistry.vaults);
       setNewMnemonic(null);
       setNewLabel("");
+      if (rememberDevice) {
+        try {
+          await saveKey(id, k);
+        } catch {
+          /* 持久化失败不阻断创建 */
+        }
+      }
       await enterVault(k, descriptor);
     } catch (err) {
       setStatus(t("st_create_fail", String(err)));
@@ -278,7 +373,16 @@ export function VaultPanel({
   }
 
   // ---- 工作台:读写 ----
+  // 丢弃未保存的新建草稿(从树里移除占位条目)。
+  function discardDraft() {
+    if (!draftId) return;
+    setEntries((prev) => prev.filter((e) => e.id !== draftId));
+    setDraftId(null);
+  }
+
   async function openEntry(meta: EntryMeta) {
+    if (meta.id === draftId) return; // 点击正在编辑的草稿本身:保持编辑态
+    discardDraft();
     const v = vaultRef.current;
     if (!v) return;
     setBusy(true);
@@ -288,10 +392,8 @@ export function VaultPanel({
       setSelectedId(doc.id);
       setTitle(doc.title);
       setContent(doc.content);
-      // 文件夹/标签以 index 元数据为准(文件夹增删后 doc 内可能已过期)
+      // 文件夹以 index 元数据为准(文件夹增删后 doc 内可能已过期)
       setEditFolderId(meta.folderId);
-      setEditTags(meta.tags);
-      setTagInput("");
       setMode("preview");
       setStatus(null);
     } catch (err) {
@@ -312,10 +414,10 @@ export function VaultPanel({
         title: title.trim(),
         content,
         folderId: editFolderId,
-        tags: editTags,
       });
       setEntries(result.entries);
       setSelectedId(result.id);
+      setDraftId(null); // 草稿已落库,不再是草稿
       setPending(v.pendingCount());
       setMode("preview"); // 保存后回到只读预览
       setStatus(result.synced ? t("st_saved") : t("st_saved_local", result.syncError ?? ""));
@@ -343,27 +445,43 @@ export function VaultPanel({
     }
   }
 
-  function newItem() {
-    setSelectedId(null);
+  // 新建条目;不传 folderId 时默认归到当前选中的文件夹(或根)。
+  // 立刻在树里插入一个未命名占位条目(草稿),保存后转为正式条目,取消则移除。
+  function newItem(folderId: string | null = nav.kind === "folder" ? nav.id : null) {
+    discardDraft();
+    const id = newId();
+    const now = Date.now();
+    const draft: EntryMeta = { id, title: "", folderId, createdAt: now, updatedAt: now, size: 0 };
+    setEntries((prev) => [...prev, draft]);
+    setDraftId(id);
+    setSelectedId(id);
     setTitle("");
     setContent("");
-    // 当前停在某文件夹下就默认归到该文件夹
-    setEditFolderId(nav.kind === "folder" ? nav.id : null);
-    setEditTags([]);
-    setTagInput("");
+    setEditFolderId(folderId);
+    if (folderId) setExpanded((prev) => new Set(prev).add(folderId)); // 在某文件夹下新建则展开它
     setMode("edit"); // 新建直接进编辑
     setStatus(null);
   }
 
-  // 标签编辑
-  function addTag(raw: string) {
-    const tag = raw.trim();
-    if (!tag) return;
-    setEditTags((prev) => (prev.includes(tag) ? prev : [...prev, tag]));
-    setTagInput("");
-  }
-  function removeTag(tag: string) {
-    setEditTags((prev) => prev.filter((x) => x !== tag));
+  // 拖拽放置:把条目移动到某文件夹(null=根)。只改 index 元数据。
+  async function moveItemToFolder(itemId: string, folderId: string | null) {
+    const v = vaultRef.current;
+    if (!v) return;
+    if (itemId === draftId) return; // 未保存草稿不参与移动(尚未入库)
+    const e = entries.find((x) => x.id === itemId);
+    if (!e || e.folderId === folderId) return;
+    setBusy(true);
+    try {
+      const res = await v.moveEntry(itemId, folderId);
+      setEntries(res.entries);
+      setPending(v.pendingCount());
+      if (folderId) setExpanded((prev) => new Set(prev).add(folderId)); // 展开目标,移动后立即可见
+      setStatus(res.synced ? t("st_saved") : t("st_saved_local", res.syncError ?? ""));
+    } catch (err) {
+      setStatus(t("st_save_fail", String(err)));
+    } finally {
+      setBusy(false);
+    }
   }
 
   function editEntry() {
@@ -373,8 +491,16 @@ export function VaultPanel({
 
   async function cancelEdit() {
     setStatus(null);
-    setTagInput("");
-    // 编辑已有条目 → 放弃改动,重新读回原文进入预览;新建未保存 → 清空回到空预览。
+    // 新建未保存 → 移除树里的占位草稿,回到空预览。
+    if (draftId) {
+      discardDraft();
+      setSelectedId(null);
+      setTitle("");
+      setContent("");
+      setMode("preview");
+      return;
+    }
+    // 编辑已有条目 → 放弃改动,重新读回原文进入预览。
     const meta = selectedId ? entries.find((e) => e.id === selectedId) : null;
     if (meta) {
       await openEntry(meta);
@@ -382,7 +508,6 @@ export function VaultPanel({
       setSelectedId(null);
       setTitle("");
       setContent("");
-      setEditTags([]);
       setMode("preview");
     }
   }
@@ -451,12 +576,34 @@ export function VaultPanel({
     await runFolderOp(() => vaultRef.current!.deleteFolder(f.id));
   }
 
+  // 锁定:清内存密钥 + 清工作台状态,回到选择/解锁界面。保留本设备记住的密钥,
+  // 但抑制自动重入(本次需手动「用本设备解锁」)。整页刷新会重置 autoSuppress → 下次加载仍自动解锁。
   function lock() {
-    // 清内存密钥后整页刷新:让服务端重新读取注册表(含新建后的保险库)。
     vaultRef.current = null;
     setContent("");
     setTitle("");
-    window.location.reload();
+    setEntries([]);
+    setFolders([]);
+    setSelectedId(null);
+    setDraftId(null);
+    setEnteredRemembered(false);
+    autoSuppress.current = true;
+    goPick();
+  }
+
+  // 忘记本设备:删除当前库在本机记住的密钥,然后锁定(下次必须重输助记词)。
+  async function forgetDevice() {
+    const v = selectedVault;
+    if (v) {
+      try {
+        await deleteKey(v.id);
+      } catch {
+        /* 删除失败不阻断锁定 */
+      }
+      autoTried.current.delete(v.id);
+    }
+    setRemembered(false);
+    lock();
   }
 
   // ============================ 选择保险库 ============================
@@ -617,6 +764,17 @@ export function VaultPanel({
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
+            {remembered ? (
+              <>
+                <Button onClick={unlockRemembered} disabled={busy} size="lg">
+                  {t("btn_unlock_remembered")}
+                </Button>
+                <Button variant="link" size="sm" onClick={forgetDevice} disabled={busy}>
+                  {t("btn_forget_device")}
+                </Button>
+                <div className="border-t border-[var(--color-border)]" />
+              </>
+            ) : null}
             <Textarea
               value={mnemonicInput}
               onChange={(e) => setMnemonicInput(e.target.value)}
@@ -627,6 +785,15 @@ export function VaultPanel({
                 if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) unlock();
               }}
             />
+            <label className="flex items-center gap-2 text-sm text-[var(--color-muted-foreground)]">
+              <input
+                type="checkbox"
+                checked={rememberDevice}
+                onChange={(e) => setRememberDevice(e.target.checked)}
+                className="h-4 w-4 accent-[var(--color-primary)]"
+              />
+              {t("remember_device")}
+            </label>
             <Button onClick={unlock} disabled={busy} size="lg">
               {t("btn_unlock")}
             </Button>
@@ -647,38 +814,99 @@ export function VaultPanel({
     );
   }
 
-  // ============================ 工作台:两栏(条目列 + 详情) ============================
+  // ============================ 工作台:两栏(目录树 + 详情) ============================
   const selected = entries.find((e) => e.id === selectedId) ?? null;
-  const currentName = selectedVault ? vaultName(selectedVault) : t("default_vault");
+  const searching = query.trim().length > 0;
 
-  // 文件夹树:递归展开为带缩进的扁平行(仅展开节点的子项)。
+  // 文件夹与条目合并为一棵目录树。
   const childFolders = (parentId: string | null) =>
     folders.filter((f) => f.parentId === parentId).sort((a, b) => a.name.localeCompare(b.name));
+  const entriesIn = (parentId: string | null) =>
+    entries
+      .filter((e) => e.folderId === parentId)
+      .sort((a, b) => (a.title || "").localeCompare(b.title || ""));
 
-  // 编辑态文件夹下拉:整棵树扁平化,用前缀缩进表示层级。
-  function folderOptions(): { id: string; label: string }[] {
-    const out: { id: string; label: string }[] = [];
-    const walk = (parentId: string | null, depth: number) => {
-      for (const f of childFolders(parentId)) {
-        out.push({ id: f.id, label: `${"  ".repeat(depth)}${f.name || t("new_folder")}` });
-        walk(f.id, depth + 1);
-      }
-    };
-    walk(null, 0);
-    return out;
+  // 单个条目(树叶):点击在右侧详情打开;左侧句柄可拖动到文件夹。
+  function itemRow(e: EntryMeta, depth: number): React.ReactNode {
+    const active = e.id === selectedId;
+    const label = e.title || t("untitled");
+    return (
+      <div
+        key={`e:${e.id}`}
+        className={`group/item flex items-center rounded-[var(--radius)] pr-2 ${
+          dragId === e.id ? "opacity-50" : ""
+        } ${
+          active
+            ? "bg-[var(--color-primary)] text-[var(--color-primary-foreground)]"
+            : "hover:bg-[var(--color-accent)]"
+        }`}
+        style={{ paddingLeft: depth * 14 }}
+      >
+        <Tooltip label={t("drag_to_move")}>
+          <span
+            draggable
+            onDragStart={(ev) => {
+              ev.dataTransfer.effectAllowed = "move";
+              ev.dataTransfer.setData("text/plain", e.id);
+              setDragId(e.id);
+            }}
+            onDragEnd={() => {
+              setDragId(null);
+              setDropTarget(null);
+            }}
+            className={`flex h-7 w-5 shrink-0 cursor-grab items-center justify-center opacity-0 transition-opacity group-hover/item:opacity-100 active:cursor-grabbing ${
+              active ? "text-[var(--color-primary-foreground)]" : "text-[var(--color-muted-foreground)]"
+            }`}
+          >
+            <GripVertical className="h-3.5 w-3.5" />
+          </span>
+        </Tooltip>
+        <button
+          type="button"
+          onClick={() => openEntry(e)}
+          disabled={busy}
+          className="flex min-w-0 flex-1 items-center gap-1.5 py-1.5 text-left text-sm"
+        >
+          <FileText
+            className={`h-3.5 w-3.5 shrink-0 ${active ? "" : "text-[var(--color-muted-foreground)]"}`}
+          />
+          <span className="truncate">{label}</span>
+        </button>
+      </div>
+    );
   }
-  function folderRows(parentId: string | null, depth: number): React.ReactNode[] {
-    return childFolders(parentId).flatMap((f) => {
-      const hasKids = folders.some((c) => c.parentId === f.id);
+
+  // 目录树递归:某父节点下「子文件夹(含其展开内容)+ 直属条目」。
+  function treeRows(parentId: string | null, depth: number): React.ReactNode[] {
+    const rows: React.ReactNode[] = [];
+    for (const f of childFolders(parentId)) {
+      const hasKids =
+        folders.some((c) => c.parentId === f.id) || entries.some((e) => e.folderId === f.id);
       const open = expanded.has(f.id);
       const active = nav.kind === "folder" && nav.id === f.id;
-      const row = (
+      rows.push(
         <div
-          key={f.id}
+          key={`f:${f.id}`}
+          onDragOver={(ev) => {
+            if (!dragId) return;
+            ev.preventDefault();
+            ev.dataTransfer.dropEffect = "move";
+            setDropTarget(f.id);
+          }}
+          onDragLeave={() => setDropTarget((p) => (p === f.id ? null : p))}
+          onDrop={(ev) => {
+            ev.preventDefault();
+            const id = dragId ?? ev.dataTransfer.getData("text/plain");
+            setDropTarget(null);
+            setDragId(null);
+            if (id) moveItemToFolder(id, f.id);
+          }}
           className={`group flex items-center rounded-[var(--radius)] pr-1 ${
-            active
-              ? "bg-[var(--color-accent)] text-[var(--color-accent-foreground)]"
-              : "hover:bg-[var(--color-accent)]"
+            dropTarget === f.id
+              ? "ring-1 ring-[var(--color-primary)] ring-inset bg-[var(--color-accent)]"
+              : active
+                ? "bg-[var(--color-accent)] text-[var(--color-accent-foreground)]"
+                : "hover:bg-[var(--color-accent)]"
           }`}
           style={{ paddingLeft: depth * 14 }}
         >
@@ -708,62 +936,134 @@ export function VaultPanel({
           ) : (
             <button
               type="button"
-              onClick={() => setNav({ kind: "folder", id: f.id })}
+              onClick={() => {
+                setNav({ kind: "folder", id: f.id });
+                if (hasKids && !open) toggleExpand(f.id);
+              }}
               className="ml-1.5 min-w-0 flex-1 truncate py-1.5 text-left text-sm"
             >
               {f.name || t("new_folder")}
             </button>
           )}
-          <span className="flex shrink-0 items-center opacity-0 transition-opacity group-hover:opacity-100">
-            <button
-              type="button"
-              title={t("add_subfolder")}
-              onClick={() => addFolderUnder(f.id)}
-              disabled={busy}
-              className="flex h-6 w-6 items-center justify-center rounded hover:bg-[var(--color-surface)]"
-            >
-              <Plus className="h-3.5 w-3.5" />
-            </button>
-            <button
-              type="button"
-              title={t("rename")}
-              onClick={() => startRename(f)}
-              disabled={busy}
-              className="flex h-6 w-6 items-center justify-center rounded hover:bg-[var(--color-surface)]"
-            >
-              <Pencil className="h-3.5 w-3.5" />
-            </button>
-            <button
-              type="button"
-              title={t("delete")}
-              onClick={() => removeFolder(f)}
-              disabled={busy}
-              className="flex h-6 w-6 items-center justify-center rounded text-[var(--color-danger)] hover:bg-[var(--color-surface)]"
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-            </button>
+          <span className="flex shrink-0 items-center opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100 has-[[data-state=open]]:opacity-100">
+            <Tooltip label={t("new_item")}>
+              <button
+                type="button"
+                onClick={() => newItem(f.id)}
+                disabled={busy}
+                className="flex h-6 w-6 items-center justify-center rounded hover:bg-[var(--color-surface)]"
+              >
+                <Plus className="h-3.5 w-3.5" />
+              </button>
+            </Tooltip>
+            <DropdownMenu>
+              <Tooltip label={t("more_actions")}>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    className="flex h-6 w-6 items-center justify-center rounded hover:bg-[var(--color-surface)]"
+                  >
+                    <MoreHorizontal className="h-3.5 w-3.5" />
+                  </button>
+                </DropdownMenuTrigger>
+              </Tooltip>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={() => addFolderUnder(f.id)}>
+                  <FolderPlus className="h-4 w-4" />
+                  {t("add_subfolder")}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => startRename(f)}>
+                  <Pencil className="h-4 w-4" />
+                  {t("rename")}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem destructive onSelect={() => removeFolder(f)}>
+                  <Trash2 className="h-4 w-4" />
+                  {t("delete")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </span>
-        </div>
+        </div>,
       );
-      return open ? [row, ...folderRows(f.id, depth + 1)] : [row];
-    });
+      if (open) rows.push(...treeRows(f.id, depth + 1));
+    }
+    for (const e of entriesIn(parentId)) rows.push(itemRow(e, depth));
+    return rows;
   }
 
   return (
-    <div className="grid h-screen grid-cols-[15rem_18rem_1fr] overflow-hidden">
-      {/* 导航:全部 / 文件夹树 / 标签 */}
+    <div className="grid h-screen grid-cols-[20rem_1fr] overflow-hidden">
+      {/* 导航:文件夹 + 条目 合并的目录树 */}
       <aside className="flex flex-col border-r border-[var(--color-border)] bg-[var(--color-surface-2)]">
-        <div className="flex h-14 items-center border-b border-[var(--color-border)] px-4">
+        <div className="flex h-14 items-center justify-between gap-2 border-b border-[var(--color-border)] px-4">
           <Wordmark className="text-base" />
+          {/* 分体按钮:主体直接新建条目,右侧三角下拉提供「新建文件夹」 */}
+          <div className="flex items-center">
+            <Button
+              variant="default"
+              size="sm"
+              onClick={() => newItem()}
+              disabled={busy}
+              className="rounded-r-none"
+            >
+              {t("new_item")}
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="default"
+                  size="sm"
+                  disabled={busy}
+                  aria-label={t("more_actions")}
+                  className="rounded-l-none border-l border-[var(--color-primary-foreground)]/25 px-1.5"
+                >
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={() => addFolderUnder(nav.kind === "folder" ? nav.id : null)}>
+                  <FolderPlus className="h-4 w-4" />
+                  {t("new_folder")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+        <div className="border-b border-[var(--color-border)] p-2">
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t("search_placeholder")}
+            className="h-9"
+          />
         </div>
         <div className="flex-1 overflow-y-auto p-2">
+          {/* 全部条目(根),也是「移到根目录」的放置目标 */}
           <button
             type="button"
             onClick={() => setNav({ kind: "all" })}
+            onDragOver={(ev) => {
+              if (!dragId) return;
+              ev.preventDefault();
+              ev.dataTransfer.dropEffect = "move";
+              setDropTarget("root");
+            }}
+            onDragLeave={() => setDropTarget((p) => (p === "root" ? null : p))}
+            onDrop={(ev) => {
+              ev.preventDefault();
+              const id = dragId ?? ev.dataTransfer.getData("text/plain");
+              setDropTarget(null);
+              setDragId(null);
+              if (id) moveItemToFolder(id, null);
+            }}
             className={`flex w-full items-center gap-2 rounded-[var(--radius)] px-2.5 py-2 text-left text-sm font-medium ${
-              nav.kind === "all"
-                ? "bg-[var(--color-accent)] text-[var(--color-accent-foreground)]"
-                : "hover:bg-[var(--color-accent)]"
+              dropTarget === "root"
+                ? "ring-1 ring-[var(--color-primary)] ring-inset bg-[var(--color-accent)]"
+                : nav.kind === "all"
+                  ? "bg-[var(--color-accent)] text-[var(--color-accent-foreground)]"
+                  : "hover:bg-[var(--color-accent)]"
             }`}
           >
             <Inbox className="h-4 w-4 shrink-0 text-[var(--color-muted-foreground)]" />
@@ -773,128 +1073,29 @@ export function VaultPanel({
             </span>
           </button>
 
-          {/* 文件夹 */}
-          <div className="mt-3 flex items-center justify-between px-2 pb-1">
-            <span className="text-[0.7rem] font-semibold uppercase tracking-wider text-[var(--color-muted-foreground)]">
-              {t("folders_label")}
-            </span>
-            <button
-              type="button"
-              title={t("new_folder")}
-              onClick={() => addFolderUnder(null)}
-              disabled={busy}
-              className="flex h-5 w-5 items-center justify-center rounded text-[var(--color-muted-foreground)] hover:bg-[var(--color-accent)]"
-            >
-              <Plus className="h-3.5 w-3.5" />
-            </button>
+          <div className="mt-1 flex flex-col">
+            {loadingEntries ? (
+              <p className="px-3 py-8 text-center text-sm text-[var(--color-muted-foreground)]">
+                {t("loading_entries")}
+              </p>
+            ) : searching ? (
+              filtered.length === 0 ? (
+                <p className="px-3 py-8 text-center text-sm text-[var(--color-muted-foreground)]">
+                  {t("empty_search")}
+                </p>
+              ) : (
+                filtered.map((e) => itemRow(e, 0))
+              )
+            ) : entries.length === 0 && folders.length === 0 ? (
+              <p className="px-3 py-8 text-center text-sm text-[var(--color-muted-foreground)]">
+                {t("empty_vault")}
+              </p>
+            ) : (
+              treeRows(null, 0)
+            )}
           </div>
-          {folders.length === 0 ? (
-            <p className="px-2.5 py-1 text-xs text-[var(--color-muted-foreground)]">—</p>
-          ) : (
-            <div className="flex flex-col">{folderRows(null, 0)}</div>
-          )}
-
-          {/* 标签 */}
-          {allTags.length > 0 ? (
-            <>
-              <div className="mt-3 px-2 pb-1 text-[0.7rem] font-semibold uppercase tracking-wider text-[var(--color-muted-foreground)]">
-                {t("tags_label")}
-              </div>
-              <div className="flex flex-col">
-                {allTags.map((tag) => {
-                  const active = nav.kind === "tag" && nav.name === tag;
-                  return (
-                    <button
-                      key={tag}
-                      type="button"
-                      onClick={() => setNav({ kind: "tag", name: tag })}
-                      className={`flex items-center gap-2 rounded-[var(--radius)] px-2.5 py-1.5 text-left text-sm ${
-                        active
-                          ? "bg-[var(--color-accent)] text-[var(--color-accent-foreground)]"
-                          : "hover:bg-[var(--color-accent)]"
-                      }`}
-                    >
-                      <Hash className="h-3.5 w-3.5 shrink-0 text-[var(--color-muted-foreground)]" />
-                      <span className="truncate">{tag}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </>
-          ) : null}
-        </div>
-        <div className="flex items-center gap-2 border-t border-[var(--color-border)] px-4 py-2.5">
-          <Logo className="h-4 w-4 shrink-0" />
-          <span className="truncate text-sm font-semibold">{currentName}</span>
-          <span className="ml-auto flex shrink-0 items-center gap-1.5 text-xs text-[var(--color-muted-foreground)]">
-            <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-success)]" />
-            {t("status_unlocked")} · {t("items_count", entries.length)}
-          </span>
         </div>
       </aside>
-
-      {/* 条目列 */}
-      <section className="flex flex-col border-r border-[var(--color-border)] bg-[var(--color-surface)]">
-        <div className="flex items-center gap-2 border-b border-[var(--color-border)] p-3">
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t("search_placeholder")}
-            className="h-9 flex-1"
-          />
-          <Button variant="default" size="sm" onClick={newItem} disabled={busy}>
-            {t("btn_new")}
-          </Button>
-        </div>
-        <ul className="flex-1 overflow-y-auto p-2">
-          {loadingEntries ? (
-            <li className="px-3 py-8 text-center text-sm text-[var(--color-muted-foreground)]">
-              {t("loading_entries")}
-            </li>
-          ) : filtered.length === 0 ? (
-            <li className="px-3 py-8 text-center text-sm text-[var(--color-muted-foreground)]">
-              {entries.length === 0 ? t("empty_vault") : t("empty_search")}
-            </li>
-          ) : (
-            filtered.map((e) => {
-              const active = e.id === selectedId;
-              const label = e.title || t("untitled");
-              return (
-                <li key={e.id}>
-                  <button
-                    type="button"
-                    onClick={() => openEntry(e)}
-                    disabled={busy}
-                    className={`flex w-full items-center gap-3 rounded-[var(--radius)] px-3 py-2.5 text-left transition-colors ${
-                      active
-                        ? "bg-[var(--color-primary)] text-[var(--color-primary-foreground)]"
-                        : "hover:bg-[var(--color-accent)]"
-                    }`}
-                  >
-                    <span
-                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-xs font-semibold ${
-                        active
-                          ? "bg-[var(--color-primary-foreground)]/20"
-                          : "bg-[var(--color-accent)] text-[var(--color-accent-foreground)]"
-                      }`}
-                    >
-                      {label.slice(0, 1).toUpperCase()}
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-medium">{label}</span>
-                      <span
-                        className={`block truncate text-xs ${active ? "opacity-80" : "text-[var(--color-muted-foreground)]"}`}
-                      >
-                        {e.tags.length > 0 ? e.tags.map((x) => `#${x}`).join(" ") : t("bytes_cipher", e.size)}
-                      </span>
-                    </span>
-                  </button>
-                </li>
-              );
-            })
-          )}
-        </ul>
-      </section>
 
       {/* 详情 / 编辑 */}
       <section className="flex flex-col bg-[var(--color-background)]">
@@ -915,7 +1116,12 @@ export function VaultPanel({
           </div>
           <div className="flex items-center gap-3">
             <HeaderControls />
-            <UserMenu name={user.name} avatar={user.avatar} onLock={lock} />
+            <UserMenu
+              name={user.name}
+              avatar={user.avatar}
+              onLock={lock}
+              onForget={enteredRemembered ? forgetDevice : undefined}
+            />
           </div>
         </div>
         {mode === "edit" ? (
@@ -935,57 +1141,6 @@ export function VaultPanel({
                 {t("btn_cancel")}
               </Button>
             </div>
-            {/* 文件夹 + 标签 */}
-            <div className="flex flex-wrap items-center gap-3">
-              <label className="flex items-center gap-2 text-xs text-[var(--color-muted-foreground)]">
-                <Folder className="h-3.5 w-3.5" />
-                <select
-                  value={editFolderId ?? ""}
-                  onChange={(e) => setEditFolderId(e.target.value || null)}
-                  className="h-8 rounded-[var(--radius)] border border-[var(--color-input)] bg-[var(--color-surface)] px-2 text-sm text-[var(--color-foreground)]"
-                >
-                  <option value="">{t("root_folder")}</option>
-                  {folderOptions().map((o) => (
-                    <option key={o.id} value={o.id}>
-                      {o.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <div className="flex min-w-[12rem] flex-1 flex-wrap items-center gap-1.5 rounded-[var(--radius)] border border-[var(--color-input)] bg-[var(--color-surface)] px-2 py-1.5">
-                <Hash className="h-3.5 w-3.5 shrink-0 text-[var(--color-muted-foreground)]" />
-                {editTags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="inline-flex items-center gap-1 rounded-full bg-[var(--color-accent)] px-2 py-0.5 text-xs text-[var(--color-accent-foreground)]"
-                  >
-                    {tag}
-                    <button
-                      type="button"
-                      onClick={() => removeTag(tag)}
-                      className="text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)]"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </span>
-                ))}
-                <input
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === ",") {
-                      e.preventDefault();
-                      addTag(tagInput);
-                    } else if (e.key === "Backspace" && !tagInput && editTags.length) {
-                      removeTag(editTags[editTags.length - 1]!);
-                    }
-                  }}
-                  onBlur={() => addTag(tagInput)}
-                  placeholder={t("tags_ph")}
-                  className="h-6 min-w-[6rem] flex-1 bg-transparent text-sm outline-none placeholder:text-[var(--color-muted-foreground)]"
-                />
-              </div>
-            </div>
             <Textarea
               value={content}
               onChange={(e) => setContent(e.target.value)}
@@ -1004,21 +1159,6 @@ export function VaultPanel({
                 {t("btn_edit")}
               </Button>
             </div>
-            {selected && selected.tags.length > 0 ? (
-              <div className="flex flex-wrap items-center gap-1.5">
-                {selected.tags.map((tag) => (
-                  <button
-                    key={tag}
-                    type="button"
-                    onClick={() => setNav({ kind: "tag", name: tag })}
-                    className="inline-flex items-center gap-1 rounded-full bg-[var(--color-accent)] px-2.5 py-0.5 text-xs text-[var(--color-accent-foreground)] hover:brightness-95"
-                  >
-                    <Hash className="h-3 w-3" />
-                    {tag}
-                  </button>
-                ))}
-              </div>
-            ) : null}
             <article className="flex-1 whitespace-pre-wrap break-words rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] p-4 font-mono text-sm leading-relaxed">
               {content ? (
                 content

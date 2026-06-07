@@ -36,7 +36,6 @@ export interface EntryMeta {
   id: string;
   title: string;
   folderId: string | null; // null = 根目录
-  tags: string[];
   createdAt: number;
   updatedAt: number;
   size: number;
@@ -51,7 +50,6 @@ export interface EntryDoc {
   title: string;
   content: string;
   folderId: string | null;
-  tags: string[];
   createdAt: number;
   updatedAt: number;
 }
@@ -60,7 +58,7 @@ function emptyIndex(): IndexDoc {
   return { v: 2, entries: [], folders: [] };
 }
 
-/** 归一化(兼容旧 v1:补 folders/folderId/tags 默认值)。 */
+/** 归一化(兼容旧 v1:补 folders/folderId 默认值;旧数据里的 tags 直接丢弃)。 */
 function normalizeIndex(raw: unknown): IndexDoc {
   const r = (raw ?? {}) as Partial<IndexDoc>;
   const folders: FolderMeta[] = Array.isArray(r.folders)
@@ -71,7 +69,6 @@ function normalizeIndex(raw: unknown): IndexDoc {
         id: e.id,
         title: e.title ?? "",
         folderId: e.folderId ?? null,
-        tags: Array.isArray(e.tags) ? e.tags : [],
         createdAt: e.createdAt ?? 0,
         updatedAt: e.updatedAt ?? 0,
         size: e.size ?? 0,
@@ -291,7 +288,6 @@ export class Vault {
     title: string;
     content: string;
     folderId?: string | null;
-    tags?: string[];
   }): Promise<{
     id: string;
     entries: EntryMeta[];
@@ -303,13 +299,11 @@ export class Vault {
     const existing = this.index.entries.find((e) => e.id === id);
     const createdAt = existing?.createdAt ?? now;
     const folderId = input.folderId ?? null;
-    const tags = (input.tags ?? []).map((s) => s.trim()).filter(Boolean);
     const doc: EntryDoc = {
       id,
       title: input.title,
       content: input.content,
       folderId,
-      tags,
       createdAt,
       updatedAt: now,
     };
@@ -319,7 +313,6 @@ export class Vault {
       id,
       title: input.title,
       folderId,
-      tags,
       createdAt,
       updatedAt: now,
       size: entryEnvelope.byteLength,
@@ -370,6 +363,17 @@ export class Vault {
     this.index.folders.push({ id, name: name.trim(), parentId, createdAt: Date.now() });
     const res = await this.persistIndex();
     return { id, folders: this.folders, ...res };
+  }
+
+  /** 把条目移动到某文件夹(null=根)。只改 index 元数据(folderId 以 index 为准),本地优先 + 同步。 */
+  async moveEntry(
+    id: string,
+    folderId: string | null,
+  ): Promise<{ entries: EntryMeta[]; synced: boolean; syncError?: string }> {
+    const e = this.index.entries.find((x) => x.id === id);
+    if (e) e.folderId = folderId;
+    const res = await this.persistIndex();
+    return { entries: this.entries, ...res };
   }
 
   async renameFolder(

@@ -3,7 +3,7 @@
 // 登录后右上角的用户菜单:头像 + 名称,下拉里可退出登录。
 // 退出走已有的 POST /api/auth/logout(清会话 cookie 后重定向回首页)。
 import { useRef, useState } from "react";
-import { ChevronDown, Lock, LogOut, User } from "lucide-react";
+import { ChevronDown, Lock, LogOut, ShieldOff, User } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -50,11 +50,14 @@ export function UserMenu({
   name,
   avatar,
   onLock,
+  onForget,
 }: {
   name: string;
   avatar: string | null;
   /** 已解锁工作台时传入:在菜单里提供「锁定保险库」。 */
   onLock?: () => void;
+  /** 当前库在本设备记住了密钥时传入:在菜单里提供「忘记本设备」。 */
+  onForget?: () => void;
 }) {
   const t = useT();
   const formRef = useRef<HTMLFormElement>(null);
@@ -87,6 +90,12 @@ export function UserMenu({
           <DropdownMenuItem onSelect={() => onLock()}>
             <Lock className="h-4 w-4" />
             {t("btn_lock")}
+          </DropdownMenuItem>
+        ) : null}
+        {onForget ? (
+          <DropdownMenuItem onSelect={() => onForget()}>
+            <ShieldOff className="h-4 w-4" />
+            {t("btn_forget_device")}
           </DropdownMenuItem>
         ) : null}
         <form ref={formRef} action="/api/auth/logout" method="post">
