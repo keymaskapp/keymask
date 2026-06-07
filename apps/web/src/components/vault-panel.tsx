@@ -30,14 +30,18 @@ import {
 } from "@keysark/crypto";
 import { newId } from "@keysark/db/id";
 import {
+  ArrowDownUp,
+  Check,
   ChevronDown,
   ChevronRight,
   ExternalLink,
   FileText,
   Folder,
   FolderPlus,
+  FolderTree,
   GripVertical,
   Inbox,
+  LayoutList,
   MoreHorizontal,
   Pencil,
   Plus,
@@ -46,8 +50,9 @@ import {
 import { Logo, Wordmark } from "./brand";
 import { HeaderControls } from "./controls";
 import { UserMenu } from "./user-menu";
-import { useT } from "./providers";
+import { useLocale, useT } from "./providers";
 import { Vault, itemRelPath, type EntryMeta, type FolderMeta } from "@/lib/vault";
+import type { MsgKey } from "@/lib/i18n";
 import { saveKey, loadKey, deleteKey } from "@/lib/key-store";
 import { testId } from "@/lib/test-id";
 import type { StorageProvider } from "@/lib/storage";
@@ -67,6 +72,45 @@ interface VaultUser {
 
 type Phase = "select" | "unlock" | "create" | "unlocked";
 
+// 条目列表的显示方式与排序(持久化到 localStorage,跨刷新保留)。
+type ViewMode = "flat" | "folder";
+type SortKey = "updated" | "created" | "title";
+type SortDir = "asc" | "desc";
+interface SortSpec {
+  key: SortKey;
+  dir: SortDir;
+}
+const DEFAULT_SORT: SortSpec = { key: "updated", dir: "desc" };
+const VIEW_KEY = "keysark.vault.viewMode";
+const SORT_KEY = "keysark.vault.sort";
+// 排序下拉的固定选项(key+dir 组合),i18n 词条一一对应。
+const SORT_OPTIONS: { key: SortKey; dir: SortDir; label: MsgKey }[] = [
+  { key: "updated", dir: "desc", label: "sort_updated_desc" },
+  { key: "updated", dir: "asc", label: "sort_updated_asc" },
+  { key: "created", dir: "desc", label: "sort_created_desc" },
+  { key: "created", dir: "asc", label: "sort_created_asc" },
+  { key: "title", dir: "asc", label: "sort_title_asc" },
+  { key: "title", dir: "desc", label: "sort_title_desc" },
+];
+
+function loadView(): ViewMode {
+  if (typeof window === "undefined") return "flat";
+  return window.localStorage.getItem(VIEW_KEY) === "folder" ? "folder" : "flat";
+}
+function loadSort(): SortSpec {
+  if (typeof window === "undefined") return DEFAULT_SORT;
+  try {
+    const raw = window.localStorage.getItem(SORT_KEY);
+    if (!raw) return DEFAULT_SORT;
+    const s = JSON.parse(raw) as Partial<SortSpec>;
+    const okKey = s.key === "updated" || s.key === "created" || s.key === "title";
+    const okDir = s.dir === "asc" || s.dir === "desc";
+    return okKey && okDir ? { key: s.key!, dir: s.dir! } : DEFAULT_SORT;
+  } catch {
+    return DEFAULT_SORT;
+  }
+}
+
 export function VaultPanel({
   vaults: initialVaults,
   user,
@@ -79,6 +123,7 @@ export function VaultPanel({
   storageRoot: string;
 }) {
   const t = useT();
+  const { locale } = useLocale();
   // 默认库:无名或 label 为 "default"(创建首个库时的占位)。一律不显示 "default" 字样。
   const isDefaultVault = (v: VaultDescriptor): boolean => {
     const l = v.label.trim().toLowerCase();
@@ -139,6 +184,37 @@ export function VaultPanel({
   const [mode, setMode] = useState<"preview" | "edit">("preview");
   // 编辑态的所属文件夹
   const [editFolderId, setEditFolderId] = useState<string | null>(null);
+
+  // 条目列表显示方式(铺平 / 目录)与排序;均持久化,跨刷新保留。
+  const [viewMode, setViewMode] = useState<ViewMode>(loadView);
+  const [sort, setSort] = useState<SortSpec>(loadSort);
+  function changeView(m: ViewMode) {
+    setViewMode(m);
+    // 铺平模式无目录导航,回到「全部」,新建条目落根目录而非残留的文件夹选择。
+    if (m === "flat") setNav({ kind: "all" });
+    try {
+      window.localStorage.setItem(VIEW_KEY, m);
+    } catch {
+      /* 隐私模式忽略 */
+    }
+  }
+  function changeSort(s: SortSpec) {
+    setSort(s);
+    try {
+      window.localStorage.setItem(SORT_KEY, JSON.stringify(s));
+    } catch {
+      /* 隐私模式忽略 */
+    }
+  }
+  // 月份分组表头格式化(铺平+按时间排序时使用):zh→「2026年6月」,en→「June 2026」。
+  const monthFmt = useMemo(
+    () =>
+      new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-US", {
+        year: "numeric",
+        month: "long",
+      }),
+    [locale],
+  );
 
   // 侧栏导航:全部 / 某文件夹
   type Nav = { kind: "all" } | { kind: "folder"; id: string };
@@ -816,13 +892,40 @@ export function VaultPanel({
   const selected = entries.find((e) => e.id === selectedId) ?? null;
   const searching = query.trim().length > 0;
 
+  // 当前排序的条目比较器(铺平列表与目录内条目共用)。
+  function cmpEntries(a: EntryMeta, b: EntryMeta): number {
+    let d: number;
+    if (sort.key === "title") d = (a.title || "").localeCompare(b.title || "");
+    else if (sort.key === "created") d = a.createdAt - b.createdAt;
+    else d = a.updatedAt - b.updatedAt;
+    // 同值时用标题兜底,保证顺序稳定。
+    if (d === 0) d = (a.title || "").localeCompare(b.title || "");
+    return sort.dir === "asc" ? d : -d;
+  }
+
   // 文件夹与条目合并为一棵目录树。
   const childFolders = (parentId: string | null) =>
     folders.filter((f) => f.parentId === parentId).sort((a, b) => a.name.localeCompare(b.name));
   const entriesIn = (parentId: string | null) =>
-    entries
-      .filter((e) => e.folderId === parentId)
-      .sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+    entries.filter((e) => e.folderId === parentId).sort(cmpEntries);
+
+  // 铺平模式:忽略文件夹层级,所有条目按当前排序展开。
+  // 按时间排序时(updated/created)再切成「按月」时间区域;按标题排序时为纯扁平列表。
+  // 注:此处在解锁分支(早期 return 之后),不能用 hooks,直接计算即可。
+  const flatSorted = [...entries].sort(cmpEntries);
+  const flatGroups = (() => {
+    if (sort.key === "title") return null; // 标题排序不分月
+    const timeOf = (e: EntryMeta) => (sort.key === "created" ? e.createdAt : e.updatedAt);
+    const groups: { key: string; label: string; items: EntryMeta[] }[] = [];
+    for (const e of flatSorted) {
+      const d = new Date(timeOf(e));
+      const key = `${d.getFullYear()}-${d.getMonth()}`;
+      const last = groups[groups.length - 1];
+      if (last && last.key === key) last.items.push(e);
+      else groups.push({ key, label: monthFmt.format(d), items: [e] });
+    }
+    return groups;
+  })();
 
   // 条目的文件夹路径面包屑(根 → "全部条目")。
   function folderPathOf(folderId: string | null): string {
@@ -854,25 +957,30 @@ export function VaultPanel({
         }`}
         style={{ paddingLeft: depth * 14 }}
       >
-        <Tooltip label={t("drag_to_move")}>
-          <span
-            draggable
-            onDragStart={(ev) => {
-              ev.dataTransfer.effectAllowed = "move";
-              ev.dataTransfer.setData("text/plain", e.id);
-              setDragId(e.id);
-            }}
-            onDragEnd={() => {
-              setDragId(null);
-              setDropTarget(null);
-            }}
-            className={`flex h-7 w-5 shrink-0 cursor-grab items-center justify-center opacity-0 transition-opacity group-hover/item:opacity-100 active:cursor-grabbing ${
-              active ? "text-[var(--color-primary-foreground)]" : "text-[var(--color-muted-foreground)]"
-            }`}
-          >
-            <GripVertical className="h-3.5 w-3.5" />
-          </span>
-        </Tooltip>
+        {/* 拖动到文件夹:仅目录模式有放置目标,铺平模式不显示句柄 */}
+        {viewMode === "folder" ? (
+          <Tooltip label={t("drag_to_move")}>
+            <span
+              draggable
+              onDragStart={(ev) => {
+                ev.dataTransfer.effectAllowed = "move";
+                ev.dataTransfer.setData("text/plain", e.id);
+                setDragId(e.id);
+              }}
+              onDragEnd={() => {
+                setDragId(null);
+                setDropTarget(null);
+              }}
+              className={`flex h-7 w-5 shrink-0 cursor-grab items-center justify-center opacity-0 transition-opacity group-hover/item:opacity-100 active:cursor-grabbing ${
+                active ? "text-[var(--color-primary-foreground)]" : "text-[var(--color-muted-foreground)]"
+              }`}
+            >
+              <GripVertical className="h-3.5 w-3.5" />
+            </span>
+          </Tooltip>
+        ) : (
+          <span className="w-2 shrink-0" />
+        )}
         <button
           type="button"
           onClick={() => openEntry(e)}
@@ -1047,7 +1155,13 @@ export function VaultPanel({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
-                <DropdownMenuItem onSelect={() => addFolderUnder(nav.kind === "folder" ? nav.id : null)}>
+                <DropdownMenuItem
+                  onSelect={() => {
+                    // 文件夹只在目录模式可见,新建时顺带切过去
+                    changeView("folder");
+                    addFolderUnder(viewMode === "folder" && nav.kind === "folder" ? nav.id : null);
+                  }}
+                >
                   <FolderPlus className="h-4 w-4" />
                   {t("new_folder")}
                 </DropdownMenuItem>
@@ -1063,61 +1177,166 @@ export function VaultPanel({
             className="h-9"
           />
         </div>
-        <div {...testId("vault-tree")} className="flex-1 overflow-y-auto p-2">
-          {/* 全部条目(根),也是「移到根目录」的放置目标 */}
-          <button
-            type="button"
-            onClick={() => setNav({ kind: "all" })}
-            onDragOver={(ev) => {
-              if (!dragId) return;
-              ev.preventDefault();
-              ev.dataTransfer.dropEffect = "move";
-              setDropTarget("root");
-            }}
-            onDragLeave={() => setDropTarget((p) => (p === "root" ? null : p))}
-            onDrop={(ev) => {
-              ev.preventDefault();
-              const id = dragId ?? ev.dataTransfer.getData("text/plain");
-              setDropTarget(null);
-              setDragId(null);
-              if (id) moveItemToFolder(id, null);
-            }}
-            className={`flex w-full items-center gap-2 rounded-[var(--radius)] px-2.5 py-2 text-left text-sm font-medium ${
-              dropTarget === "root"
-                ? "ring-1 ring-[var(--color-primary)] ring-inset bg-[var(--color-accent)]"
-                : nav.kind === "all"
-                  ? "bg-[var(--color-accent)] text-[var(--color-accent-foreground)]"
-                  : "hover:bg-[var(--color-accent)]"
-            }`}
+        {/* 显示方式(铺平 / 目录)+ 排序;搜索时隐藏(搜索结果跨模式扁平展示) */}
+        {!searching ? (
+          <div
+            {...testId("vault-view-controls")}
+            className="flex items-center justify-between gap-2 border-b border-[var(--color-border)] px-2 py-2"
           >
-            <Inbox className="h-4 w-4 shrink-0 text-[var(--color-muted-foreground)]" />
-            <span className="flex-1 truncate">{t("all_items")}</span>
-            <span className="text-xs tabular-nums text-[var(--color-muted-foreground)]">
-              {entries.length}
-            </span>
-          </button>
-
-          <div {...testId("vault-tree-list")} className="mt-1 flex flex-col">
-            {loadingEntries ? (
-              <p className="px-3 py-8 text-center text-sm text-[var(--color-muted-foreground)]">
-                {t("loading_entries")}
-              </p>
-            ) : searching ? (
-              filtered.length === 0 ? (
+            <div className="inline-flex rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] p-0.5">
+              <Tooltip label={t("view_flat_hint")}>
+                <button
+                  type="button"
+                  onClick={() => changeView("flat")}
+                  aria-label={t("view_flat")}
+                  className={`flex h-7 w-8 items-center justify-center rounded-[calc(var(--radius)-2px)] transition-colors ${
+                    viewMode === "flat"
+                      ? "bg-[var(--color-primary)] text-[var(--color-primary-foreground)]"
+                      : "text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)]"
+                  }`}
+                >
+                  <LayoutList className="h-4 w-4" />
+                </button>
+              </Tooltip>
+              <Tooltip label={t("view_folder_hint")}>
+                <button
+                  type="button"
+                  onClick={() => changeView("folder")}
+                  aria-label={t("view_folder")}
+                  className={`flex h-7 w-8 items-center justify-center rounded-[calc(var(--radius)-2px)] transition-colors ${
+                    viewMode === "folder"
+                      ? "bg-[var(--color-primary)] text-[var(--color-primary-foreground)]"
+                      : "text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)]"
+                  }`}
+                >
+                  <FolderTree className="h-4 w-4" />
+                </button>
+              </Tooltip>
+            </div>
+            <DropdownMenu>
+              <Tooltip label={t("sort_label")}>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label={t("sort_label")}
+                    className="flex h-7 items-center gap-1.5 rounded-[var(--radius)] border border-[var(--color-border)] bg-[var(--color-surface)] px-2 text-xs text-[var(--color-muted-foreground)] hover:text-[var(--color-foreground)]"
+                  >
+                    <ArrowDownUp className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">
+                      {t(
+                        SORT_OPTIONS.find((o) => o.key === sort.key && o.dir === sort.dir)?.label ??
+                          "sort_label",
+                      )}
+                    </span>
+                  </button>
+                </DropdownMenuTrigger>
+              </Tooltip>
+              <DropdownMenuContent align="end">
+                {SORT_OPTIONS.map((o) => {
+                  const on = sort.key === o.key && sort.dir === o.dir;
+                  return (
+                    <DropdownMenuItem
+                      key={`${o.key}:${o.dir}`}
+                      onSelect={() => changeSort({ key: o.key, dir: o.dir })}
+                    >
+                      {on ? (
+                        <Check className="h-4 w-4" />
+                      ) : (
+                        <span className="h-4 w-4" />
+                      )}
+                      {t(o.label)}
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        ) : null}
+        <div {...testId("vault-tree")} className="flex-1 overflow-y-auto p-2">
+          {loadingEntries ? (
+            <p className="px-3 py-8 text-center text-sm text-[var(--color-muted-foreground)]">
+              {t("loading_entries")}
+            </p>
+          ) : searching ? (
+            // 搜索:跨模式扁平结果
+            <div {...testId("vault-tree-list")} className="flex flex-col">
+              {filtered.length === 0 ? (
                 <p className="px-3 py-8 text-center text-sm text-[var(--color-muted-foreground)]">
                   {t("empty_search")}
                 </p>
               ) : (
                 filtered.map((e) => itemRow(e, 0))
-              )
-            ) : entries.length === 0 && folders.length === 0 ? (
+              )}
+            </div>
+          ) : viewMode === "flat" ? (
+            // ---- 铺平:忽略目录,按月时间区域 / 或纯排序列表 ----
+            entries.length === 0 ? (
               <p className="px-3 py-8 text-center text-sm text-[var(--color-muted-foreground)]">
                 {t("empty_vault")}
               </p>
             ) : (
-              treeRows(null, 0)
-            )}
-          </div>
+              <div {...testId("vault-flat-list")} className="flex flex-col">
+                <div className="flex items-center gap-2 px-2.5 pb-1.5 pt-0.5 text-xs font-medium text-[var(--color-muted-foreground)]">
+                  <Inbox className="h-3.5 w-3.5 shrink-0" />
+                  <span className="truncate">{t("flat_count", entries.length)}</span>
+                </div>
+                {flatGroups
+                  ? flatGroups.map((g) => (
+                      <section key={g.key} {...testId("vault-flat-group")} className="mb-1">
+                        <h3 className="sticky top-0 z-[1] bg-[var(--color-surface-2)] px-2.5 py-1 text-[0.7rem] font-semibold uppercase tracking-wide text-[var(--color-muted-foreground)]">
+                          {g.label}
+                        </h3>
+                        {g.items.map((e) => itemRow(e, 0))}
+                      </section>
+                    ))
+                  : flatSorted.map((e) => itemRow(e, 0))}
+              </div>
+            )
+          ) : (
+            // ---- 目录:文件夹树 + 根目录放置目标 ----
+            <>
+              <button
+                type="button"
+                onClick={() => setNav({ kind: "all" })}
+                onDragOver={(ev) => {
+                  if (!dragId) return;
+                  ev.preventDefault();
+                  ev.dataTransfer.dropEffect = "move";
+                  setDropTarget("root");
+                }}
+                onDragLeave={() => setDropTarget((p) => (p === "root" ? null : p))}
+                onDrop={(ev) => {
+                  ev.preventDefault();
+                  const id = dragId ?? ev.dataTransfer.getData("text/plain");
+                  setDropTarget(null);
+                  setDragId(null);
+                  if (id) moveItemToFolder(id, null);
+                }}
+                className={`flex w-full items-center gap-2 rounded-[var(--radius)] px-2.5 py-2 text-left text-sm font-medium ${
+                  dropTarget === "root"
+                    ? "ring-1 ring-[var(--color-primary)] ring-inset bg-[var(--color-accent)]"
+                    : nav.kind === "all"
+                      ? "bg-[var(--color-accent)] text-[var(--color-accent-foreground)]"
+                      : "hover:bg-[var(--color-accent)]"
+                }`}
+              >
+                <Inbox className="h-4 w-4 shrink-0 text-[var(--color-muted-foreground)]" />
+                <span className="flex-1 truncate">{t("all_items")}</span>
+                <span className="text-xs tabular-nums text-[var(--color-muted-foreground)]">
+                  {entries.length}
+                </span>
+              </button>
+              <div {...testId("vault-tree-list")} className="mt-1 flex flex-col">
+                {entries.length === 0 && folders.length === 0 ? (
+                  <p className="px-3 py-8 text-center text-sm text-[var(--color-muted-foreground)]">
+                    {t("empty_vault")}
+                  </p>
+                ) : (
+                  treeRows(null, 0)
+                )}
+              </div>
+            </>
+          )}
         </div>
       </aside>
 
