@@ -8,6 +8,9 @@ build
 coverage
 *.tsbuildinfo
 
+# next.js generated type shim (regenerated per build/dev)
+next-env.d.ts
+
 # rust / tauri build output
 target/
 
