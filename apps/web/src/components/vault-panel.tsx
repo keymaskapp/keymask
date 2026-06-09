@@ -42,6 +42,7 @@ import {
   FolderPlus,
   FolderTree,
   GripVertical,
+  History,
   LayoutList,
   MoreHorizontal,
   Pencil,
@@ -59,6 +60,7 @@ import { saveKey, loadKey, deleteKey } from "@/lib/key-store";
 import { exportVaultBackupPdf } from "@/lib/vault-pdf";
 import { testId } from "@/lib/test-id";
 import { FilePreview } from "./file-preview/FilePreview";
+import { VersionHistory } from "./version-history/VersionHistory";
 import type { StorageProvider } from "@/lib/storage";
 import {
   b64decode,
@@ -205,6 +207,7 @@ export function VaultPanel({
   const [pending, setPending] = useState(0);
   // 详情区两种模式:打开已有条目为只读 preview;新建/点击编辑进入 edit。
   const [mode, setMode] = useState<"preview" | "edit">("preview");
+  const [showHistory, setShowHistory] = useState(false); // 历史版本面板(冷路径,点开才拉)
   // 编辑态的所属文件夹
   const [editFolderId, setEditFolderId] = useState<string | null>(null);
 
@@ -502,6 +505,7 @@ export function VaultPanel({
   async function openEntry(meta: EntryMeta) {
     if (meta.id === draftId) return; // 点击正在编辑的草稿本身:保持编辑态
     discardDraft();
+    setShowHistory(false); // 切换条目时收起历史面板
     const v = vaultRef.current;
     if (!v) return;
     setBusy(true);
@@ -673,8 +677,34 @@ export function VaultPanel({
   }
 
   function editEntry() {
+    setShowHistory(false);
     setMode("edit");
     setStatus(null);
+  }
+
+  // 还原某历史版本为当前版:restoreVersion(追加新版,内容同当前则 no-op)→ 重载当前版。
+  async function restoreEntryVersion(meta: EntryMeta, ts: number) {
+    const v = vaultRef.current;
+    if (!v) return;
+    setBusy(true);
+    setStatus(t("st_decrypting", meta.title || t("untitled")));
+    try {
+      const res = await v.restoreVersion(meta.id, ts);
+      setEntries(res.entries);
+      const doc = await v.open(meta.id);
+      setSelectedId(doc.id);
+      setTitle(doc.title);
+      setContent(doc.content);
+      setEditFolderId(doc.folderId);
+      setShowHistory(false);
+      setMode("preview");
+      setPending(v.pendingCount());
+      setStatus(t("version_restored"));
+    } catch (err) {
+      setStatus(t("st_open_fail", String(err)));
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function cancelEdit() {
@@ -1564,13 +1594,27 @@ export function VaultPanel({
                   <Folder className="h-3.5 w-3.5 shrink-0" />
                   <span className="truncate">{folderPathOf(selected?.folderId ?? null)}</span>
                 </div>
-                {/* 文件条目正文不可文本编辑,隐藏「编辑」按钮 */}
-                {selected?.kind === "file" ? null : (
-                  <Button size="sm" variant="secondary" onClick={editEntry} disabled={busy}>
-                    <Pencil className="h-3.5 w-3.5" />
-                    {t("btn_edit")}
-                  </Button>
-                )}
+                {/* 历史版本入口(文本+文件都有);文件条目正文不可文本编辑,隐藏「编辑」按钮 */}
+                <div className="flex shrink-0 items-center gap-2">
+                  {selected && selected.id !== draftId ? (
+                    <Button
+                      {...testId("vault-item-history-toggle")}
+                      size="sm"
+                      variant={showHistory ? "default" : "secondary"}
+                      onClick={() => setShowHistory((s) => !s)}
+                      disabled={busy}
+                    >
+                      <History className="h-3.5 w-3.5" />
+                      {t("history_open")}
+                    </Button>
+                  ) : null}
+                  {selected?.kind === "file" ? null : (
+                    <Button size="sm" variant="secondary" onClick={editEntry} disabled={busy}>
+                      <Pencil className="h-3.5 w-3.5" />
+                      {t("btn_edit")}
+                    </Button>
+                  )}
+                </div>
               </div>
               <div {...testId("vault-item-preview-body")} className="mx-auto w-full max-w-[640px] px-6 py-8">
                 <div {...testId("vault-item-header")} className="mb-6 flex items-center gap-4">
@@ -1579,7 +1623,16 @@ export function VaultPanel({
                     {previewName}
                   </h2>
                 </div>
-                {selected?.kind === "file" ? (
+                {showHistory && selected ? (
+                  // ---- 历史版本面板(覆盖正文区,冷路径)----
+                  <VersionHistory
+                    vault={vaultRef.current!}
+                    entry={selected}
+                    busy={busy}
+                    onRestore={(ts) => restoreEntryVersion(selected, ts)}
+                    onClose={() => setShowHistory(false)}
+                  />
+                ) : selected?.kind === "file" ? (
                   // ---- 文件条目:文件名 + 大小 + 下载 + 在线预览 ----
                   <div className="space-y-4">
                   <div
@@ -1628,9 +1681,9 @@ export function VaultPanel({
                         {t("last_edited", new Date(selected.updatedAt).toLocaleString())}
                       </span>
                     </span>
-                    {selectedVault && netdiskUrl(itemRelPath(selectedVault.dir, selected.id)) ? (
+                    {selectedVault && netdiskUrl(itemRelPath(selectedVault.dir, selected.id, selected.updatedAt)) ? (
                       <a
-                        href={netdiskUrl(itemRelPath(selectedVault.dir, selected.id))!}
+                        href={netdiskUrl(itemRelPath(selectedVault.dir, selected.id, selected.updatedAt))!}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex shrink-0 items-center gap-1 text-[var(--color-primary)] hover:underline"

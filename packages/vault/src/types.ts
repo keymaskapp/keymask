@@ -27,12 +27,19 @@ export interface EntryMeta {
   title: string;
   folderId: string | null; // null = 根目录
   createdAt: number;
-  updatedAt: number;
+  updatedAt: number; // 当前版本的时间戳;同时是当前版快照文件名 items/<id>/<updatedAt>.*
   size: number; // 条目元信息信封字节数(检索用,非文件原始大小)
   kind?: EntryKind; // 缺省 = "text"
   filename?: string; // 文件条目:原始文件名
   mimeType?: string; // 文件条目:MIME 类型
   fileSize?: number; // 文件条目:原始明文字节数(展示用)
+  contentHash?: string; // 当前版明文内容 SHA-256(hex),保存时据此去重;只在加密 index 内
+}
+/** 历史版本的轻量元信息(由 items/<id>/ 目录列表派生,冷路径用)。 */
+export interface VersionMeta {
+  ts: number; // 版本时间戳(= 该版本 updatedAt,也是快照文件名)
+  kind: EntryKind; // text:仅 <ts>.json;file:含 <ts>.bin
+  size: number; // 该版本存储字节(text=信封大小;file=.bin 信封大小)
 }
 export interface IndexDoc {
   v: number;
@@ -50,6 +57,7 @@ export interface EntryDoc {
   filename?: string; // 文件条目:原始文件名
   mimeType?: string; // 文件条目:MIME 类型
   fileSize?: number; // 文件条目:原始明文字节数
+  contentHash?: string; // 该版本明文内容 SHA-256(hex)
 }
 
 /** 保险库注册表条目(明文元数据 + 密文校验块)。 */
@@ -70,13 +78,13 @@ export interface Registry {
 export function joinPath(base: string, name: string): string {
   return base ? `${base}/${name}` : name;
 }
-/** 某条目在存储后端里的相对路径(dir 为保险库数据目录,""=根)。用于展示网盘位置。 */
-export function itemRelPath(dir: string, id: string): string {
-  return joinPath(joinPath(dir, ITEMS_DIR), `${id}.json`);
+/** 某条目某版本在存储后端里的相对路径:<dir>/items/<id>/<ts>.json。用于展示网盘位置。 */
+export function itemRelPath(dir: string, id: string, ts: number): string {
+  return joinPath(joinPath(joinPath(dir, ITEMS_DIR), id), `${ts}.json`);
 }
-/** 文件条目正文 artifact(密文二进制信封)的相对路径:<dir>/items/<id>.bin。 */
-export function itemBlobRelPath(dir: string, id: string): string {
-  return joinPath(joinPath(dir, ITEMS_DIR), `${id}.bin`);
+/** 文件条目某版本正文 artifact(密文二进制信封)的相对路径:<dir>/items/<id>/<ts>.bin。 */
+export function itemBlobRelPath(dir: string, id: string, ts: number): string {
+  return joinPath(joinPath(joinPath(dir, ITEMS_DIR), id), `${ts}.bin`);
 }
 /** 新建保险库的数据目录:vaults/<id>。 */
 export function vaultDir(id: string): string {

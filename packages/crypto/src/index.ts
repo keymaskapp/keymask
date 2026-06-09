@@ -136,6 +136,19 @@ export async function decryptBytesFromBlob(key: CryptoKey, blob: Uint8Array): Pr
   return decrypt(key, iv, ct);
 }
 
+/**
+ * 明文字节的 SHA-256,返回小写 hex。用于条目内容去重(同内容不重复存版本)。
+ * 注:对 AES-GCM 密文哈希无意义(每次随机 IV → 密文不同),只能对明文哈希。
+ * 用 subtle.digest(原生、异步),100MB 文件也快。
+ */
+export async function sha256Hex(data: Uint8Array): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", toArrayBuffer(data));
+  const bytes = new Uint8Array(digest);
+  let hex = "";
+  for (const b of bytes) hex += b.toString(16).padStart(2, "0");
+  return hex;
+}
+
 /** 口令校验块:加密已知标记。解锁时解密比对,判断助记词是否正确。 */
 export async function makeVerifier(key: CryptoKey): Promise<Uint8Array> {
   return encryptToEnvelope(key, VERIFIER_MARKER);

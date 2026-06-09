@@ -222,6 +222,17 @@ const zh = {
   pdf_prev: "上一页",
   pdf_next: "下一页",
   pdf_render_fail: "PDF 渲染失败,可下载查看",
+
+  // 历史版本
+  history_title: "历史版本",
+  history_open: "历史",
+  history_close: "关闭",
+  history_load_fail: (e: string) => `加载历史失败: ${e}`,
+  history_empty: "暂无历史版本",
+  version_current: "当前",
+  version_restore: "还原此版本",
+  version_restored: "已还原为新版本",
+  version_count: (n: number) => `${n} 个版本`,
 } satisfies Record<string, Msg>;
 
 const en: typeof zh = {
@@ -428,6 +439,17 @@ const en: typeof zh = {
   pdf_prev: "Previous",
   pdf_next: "Next",
   pdf_render_fail: "PDF failed to render — download to view",
+
+  // Version history
+  history_title: "Version history",
+  history_open: "History",
+  history_close: "Close",
+  history_load_fail: (e: string) => `Failed to load history: ${e}`,
+  history_empty: "No previous versions",
+  version_current: "Current",
+  version_restore: "Restore this version",
+  version_restored: "Restored as a new version",
+  version_count: (n: number) => `${n} version${n === 1 ? "" : "s"}`,
 };
 
 export type MsgKey = keyof typeof zh;

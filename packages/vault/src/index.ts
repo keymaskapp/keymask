@@ -12,6 +12,7 @@ export {
   b64decode,
   type FolderMeta,
   type EntryMeta,
+  type VersionMeta,
   type EntryKind,
   type IndexDoc,
   type EntryDoc,

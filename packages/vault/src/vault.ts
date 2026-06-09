@@ -1,9 +1,15 @@
 // 本地优先的保险库数据层(环境无关)。每个库的数据在各自子目录 dir 下。
 //
 // 模型(以某个保险库的 dir 为基准,dir="" 表示历史单库在沙盒根):
-//   - <dir>/index.json          ← 加密信封,明文为 { v, entries, folders },做检索。
-//   - <dir>/items/<uuidv7>.json ← 每条条目一个文件,加密信封,明文为 EntryDoc。
-//   - keysark.json(沙盒根)     ← 保险库注册表(明文元数据 + 密文校验块)。
+//   - <dir>/index.json                   ← 加密信封,明文为 { v, entries, folders },做检索。
+//   - <dir>/items/<id>/<ts>.json         ← 条目某版本快照(加密信封,明文 EntryDoc),不可变。
+//   - <dir>/items/<id>/<ts>.bin          ← 文件条目某版本正文(二进制信封),不可变。
+//   - keysark.json(沙盒根)              ← 保险库注册表(明文元数据 + 密文校验块)。
+//
+// 版本:每次内容保存写一份时间戳命名的新快照,旧快照永不覆盖/删除 → 历史自然累积。
+//   当前版由 EntryMeta.updatedAt 直接指向(即当前版快照文件名)。目录列表自描述
+//   (文件名=ts=版本号+时间),故无需 manifest。保存前用明文 SHA-256 去重:内容
+//   与当前版相同则不写新快照。开/存当前版的网络往返数与无版本时一致。
 //
 // 写入流程:先加密落本地缓存(密文),再经 transport 同步到网盘。
 // 同步失败不影响本地副本,失败项标记 pending,可手动重试。
@@ -15,6 +21,7 @@ import {
   decryptFromEnvelope,
   encryptBytesToBlob,
   encryptToEnvelope,
+  sha256Hex,
 } from "@keysark/crypto";
 import {
   INDEX_NAME,
@@ -30,6 +37,7 @@ import {
   type IndexDoc,
   type Registry,
   type StorageTransport,
+  type VersionMeta,
 } from "./types";
 
 function emptyIndex(): IndexDoc {
@@ -54,6 +62,7 @@ function normalizeIndex(raw: unknown): IndexDoc {
         ...(e.filename !== undefined ? { filename: e.filename } : {}),
         ...(e.mimeType !== undefined ? { mimeType: e.mimeType } : {}),
         ...(e.fileSize !== undefined ? { fileSize: e.fileSize } : {}),
+        ...(e.contentHash !== undefined ? { contentHash: e.contentHash } : {}),
       }))
     : [];
   return { v: 2, entries, folders };
@@ -110,11 +119,15 @@ export class Vault {
   private itemsDir(): string {
     return joinPath(this.dir, ITEMS_DIR);
   }
-  private itemPath(id: string): string {
-    return joinPath(this.itemsDir(), `${id}.json`);
+  /** 某条目的版本目录:<dir>/items/<id>(其下每个版本一份 <ts>.json[/.bin])。 */
+  private versionsDir(id: string): string {
+    return joinPath(this.itemsDir(), id);
   }
-  private itemBlobPath(id: string): string {
-    return joinPath(this.itemsDir(), `${id}.bin`);
+  private versionPath(id: string, ts: number): string {
+    return joinPath(this.versionsDir(id), `${ts}.json`);
+  }
+  private blobVersionPath(id: string, ts: number): string {
+    return joinPath(this.versionsDir(id), `${ts}.bin`);
   }
 
   get entries(): EntryMeta[] {
@@ -151,7 +164,7 @@ export class Vault {
     return this.entries;
   }
 
-  /** 打开条目:本地优先,未命中再回网盘。 */
+  /** 打开条目(当前版):本地优先,未命中再回网盘读 items/<id>/<updatedAt>.json。 */
   async open(id: string): Promise<EntryDoc> {
     const cached = this.cache.getEntry(id);
     if (cached) {
@@ -161,9 +174,11 @@ export class Vault {
         /* 本地损坏 → 回网盘 */
       }
     }
-    const itemsMap = await this.transport.list(this.itemsDir());
-    const f = itemsMap.get(`${id}.json`);
-    if (!f) throw new Error("entry not found on netdisk");
+    const meta = this.index.entries.find((e) => e.id === id);
+    if (!meta) throw new Error("entry not found");
+    const versMap = await this.transport.list(this.versionsDir(id));
+    const f = versMap.get(`${meta.updatedAt}.json`);
+    if (!f) throw new Error("entry version not found on netdisk");
     const bytes = await this.transport.download(f.id);
     this.cache.setEntry(id, b64encode(bytes), false);
     return decJson<EntryDoc>(this.key, bytes);
@@ -184,10 +199,24 @@ export class Vault {
     const existing = this.index.entries.find((e) => e.id === id);
     const createdAt = existing?.createdAt ?? now;
     const folderId = input.folderId ?? null;
-    const doc: EntryDoc = { id, title: input.title, content: input.content, folderId, createdAt, updatedAt: now };
+    const contentHash = await sha256Hex(new TextEncoder().encode(input.content));
+
+    // 内容去重:与当前版内容相同 → 不写新快照(不动 updatedAt = 不生成新版本)。
+    if (existing && existing.contentHash === contentHash) {
+      // 仅 title/folder 变化时更新 index 元数据;内容无变化则完全 no-op。
+      if (existing.title !== input.title || existing.folderId !== folderId) {
+        existing.title = input.title;
+        existing.folderId = folderId;
+        const res = await this.persistIndex();
+        return { id, entries: this.entries, ...res };
+      }
+      return { id, entries: this.entries, synced: true };
+    }
+
+    const doc: EntryDoc = { id, title: input.title, content: input.content, folderId, createdAt, updatedAt: now, contentHash };
 
     const entryEnvelope = await encJson(this.key, doc);
-    const meta: EntryMeta = { id, title: input.title, folderId, createdAt, updatedAt: now, size: entryEnvelope.byteLength };
+    const meta: EntryMeta = { id, title: input.title, folderId, createdAt, updatedAt: now, size: entryEnvelope.byteLength, contentHash };
     if (existing) Object.assign(existing, meta);
     else this.index.entries.push(meta);
     const indexEnvelope = await encJson(this.key, this.index);
@@ -196,11 +225,11 @@ export class Vault {
     this.cache.setEntry(id, b64encode(entryEnvelope), true);
     this.cache.setIndex(b64encode(indexEnvelope), true);
 
-    // 2) 同步网盘:条目与 index 互不依赖,并行上传;各自成功即清各自 pending。
+    // 2) 同步网盘:写新版本快照 + index,并行上传(往返数与无版本时相同:2 PUT)。
     //    部分成功(一个成功一个失败)留失败项 pending,返回 synced=false。
     const results = await Promise.allSettled([
       this.transport
-        .upload(this.itemPath(id), entryEnvelope)
+        .upload(this.versionPath(id, now), entryEnvelope)
         .then(() => this.cache.clearPending(id)),
       this.transport
         .upload(this.indexPath(), indexEnvelope)
@@ -232,6 +261,23 @@ export class Vault {
     const createdAt = existing?.createdAt ?? now;
     const folderId = input.folderId ?? null;
     const fileSize = input.bytes.byteLength;
+    const contentHash = await sha256Hex(input.bytes);
+
+    // 内容去重:文件字节与当前版相同 → 不写新快照(不动 updatedAt)。
+    if (existing && existing.contentHash === contentHash) {
+      if (
+        existing.title !== input.title ||
+        existing.folderId !== folderId ||
+        existing.filename !== input.filename
+      ) {
+        existing.title = input.title;
+        existing.folderId = folderId;
+        existing.filename = input.filename;
+        const res = await this.persistIndex();
+        return { id, entries: this.entries, ...res };
+      }
+      return { id, entries: this.entries, synced: true };
+    }
 
     const doc: EntryDoc = {
       id,
@@ -244,6 +290,7 @@ export class Vault {
       filename: input.filename,
       mimeType: input.mimeType,
       fileSize,
+      contentHash,
     };
 
     const blob = await encryptBytesToBlob(this.key, input.bytes);
@@ -259,6 +306,7 @@ export class Vault {
       filename: input.filename,
       mimeType: input.mimeType,
       fileSize,
+      contentHash,
     };
     if (existing) Object.assign(existing, meta);
     else this.index.entries.push(meta);
@@ -268,11 +316,11 @@ export class Vault {
     this.cache.setEntry(id, b64encode(entryEnvelope), true);
     this.cache.setIndex(b64encode(indexEnvelope), true);
 
-    // 同步网盘:blob、条目、index 互不依赖,并行上传;各自成功即清各自 pending。
+    // 同步网盘:写新版本的 blob + 元信息 + index,并行上传(往返数与无版本时相同:3 PUT)。
     const results = await Promise.allSettled([
-      this.transport.upload(this.itemBlobPath(id), blob),
+      this.transport.upload(this.blobVersionPath(id, now), blob),
       this.transport
-        .upload(this.itemPath(id), entryEnvelope)
+        .upload(this.versionPath(id, now), entryEnvelope)
         .then(() => this.cache.clearPending(id)),
       this.transport
         .upload(this.indexPath(), indexEnvelope)
@@ -285,27 +333,105 @@ export class Vault {
     return { id, entries: this.entries, synced: true };
   }
 
-  /** 打开文件条目:下载 <id>.bin 密文信封 → 解密 → 原始字节。 */
+  /** 打开文件条目(当前版):下载 items/<id>/<updatedAt>.bin 密文信封 → 解密 → 原始字节。 */
   async openFile(id: string): Promise<Uint8Array> {
-    const itemsMap = await this.transport.list(this.itemsDir());
-    const f = itemsMap.get(`${id}.bin`);
+    const meta = this.index.entries.find((e) => e.id === id);
+    if (!meta) throw new Error("entry not found");
+    const versMap = await this.transport.list(this.versionsDir(id));
+    const f = versMap.get(`${meta.updatedAt}.bin`);
     if (!f) throw new Error("file blob not found on netdisk");
     const blob = await this.transport.download(f.id);
     return decryptBytesFromBlob(this.key, blob);
   }
 
+  // ---------- 历史版本(冷路径;只在用户主动查看历史时触发,不在开/存当前版的热路径) ----------
+
+  /** 列某条目的全部版本(倒序)。由 items/<id>/ 目录列表派生,文件名即时间戳。 */
+  async listVersions(id: string): Promise<VersionMeta[]> {
+    const map = await this.transport.list(this.versionsDir(id));
+    const acc = new Map<number, { hasBin: boolean; jsonSize: number; binSize: number }>();
+    for (const [name, f] of map) {
+      const m = /^(\d+)\.(json|bin)$/.exec(name);
+      if (!m) continue;
+      const ts = Number(m[1]);
+      const e = acc.get(ts) ?? { hasBin: false, jsonSize: 0, binSize: 0 };
+      if (m[2] === "bin") {
+        e.hasBin = true;
+        e.binSize = f.size;
+      } else {
+        e.jsonSize = f.size;
+      }
+      acc.set(ts, e);
+    }
+    const out: VersionMeta[] = [];
+    for (const [ts, e] of acc) {
+      out.push({ ts, kind: e.hasBin ? "file" : "text", size: e.hasBin ? e.binSize : e.jsonSize });
+    }
+    return out.sort((a, b) => b.ts - a.ts);
+  }
+
+  /** 读某条目某版本的 EntryDoc(文本正文 / 文件元信息)。 */
+  async openVersion(id: string, ts: number): Promise<EntryDoc> {
+    const map = await this.transport.list(this.versionsDir(id));
+    const f = map.get(`${ts}.json`);
+    if (!f) throw new Error("version not found on netdisk");
+    const bytes = await this.transport.download(f.id);
+    return decJson<EntryDoc>(this.key, bytes);
+  }
+
+  /** 读某文件条目某版本的原始字节。 */
+  async openFileVersion(id: string, ts: number): Promise<Uint8Array> {
+    const map = await this.transport.list(this.versionsDir(id));
+    const f = map.get(`${ts}.bin`);
+    if (!f) throw new Error("file version not found on netdisk");
+    const blob = await this.transport.download(f.id);
+    return decryptBytesFromBlob(this.key, blob);
+  }
+
   /**
-   * 删除条目:从 index 摘除 + 清本地缓存,经 transport.delete 真正删除网盘文件。
-   * 文件条目额外删 <id>.bin。删除失败不阻塞 index 同步(下次手工清理仍可)。
+   * 还原某历史版本为当前版:读旧版内容 → 以 now 走 save/saveFile 存为新版本。
+   * 经内容 hash 去重:若旧版内容与当前版相同则为 no-op(不新增版本)。保留当前 title/folder。
+   */
+  async restoreVersion(
+    id: string,
+    ts: number,
+  ): Promise<{ id: string; entries: EntryMeta[]; synced: boolean; syncError?: string }> {
+    const meta = this.index.entries.find((e) => e.id === id);
+    if (!meta) throw new Error("entry not found");
+    if (meta.kind === "file") {
+      const doc = await this.openVersion(id, ts);
+      const bytes = await this.openFileVersion(id, ts);
+      return this.saveFile({
+        id,
+        title: meta.title,
+        filename: doc.filename ?? meta.filename ?? "file",
+        mimeType: doc.mimeType ?? meta.mimeType ?? "application/octet-stream",
+        bytes,
+        folderId: meta.folderId,
+      });
+    }
+    const doc = await this.openVersion(id, ts);
+    return this.save({ id, title: meta.title, content: doc.content, folderId: meta.folderId });
+  }
+
+  /**
+   * 删除条目:从 index 摘除 + 清本地缓存,删除 items/<id>/ 子目录下全部版本文件。
+   * 删除失败不阻塞 index 同步(下次手工清理仍可)。
    */
   async remove(id: string): Promise<{ entries: EntryMeta[]; synced: boolean; syncError?: string }> {
-    const target = this.index.entries.find((e) => e.id === id);
     this.index.entries = this.index.entries.filter((e) => e.id !== id);
     this.cache.clearPending(id);
-    // 先删网盘上的条目文件(幂等;失败仅记 console,不影响 index 摘除)。
-    const paths = [this.itemPath(id)];
-    if (target?.kind === "file") paths.push(this.itemBlobPath(id));
-    await Promise.allSettled(paths.map((p) => this.transport.delete(p)));
+    // 列出该条目所有版本文件并逐个删除(无保留上限 → 可能多版本)。幂等;失败不影响 index 摘除。
+    try {
+      const versMap = await this.transport.list(this.versionsDir(id));
+      await Promise.allSettled(
+        [...versMap.keys()].map((name) =>
+          this.transport.delete(joinPath(this.versionsDir(id), name)),
+        ),
+      );
+    } catch {
+      /* 列举失败(目录已不在等)→ 跳过,index 摘除仍继续 */
+    }
     const res = await this.persistIndex();
     return { entries: this.entries, ...res };
   }
@@ -378,11 +504,13 @@ export class Vault {
   async sync(): Promise<{ remaining: number }> {
     for (const id of this.cache.pendingEntries()) {
       const env = this.cache.getEntry(id);
-      if (!env) {
+      const meta = this.index.entries.find((e) => e.id === id);
+      if (!env || !meta) {
         this.cache.clearPending(id);
         continue;
       }
-      await this.transport.upload(this.itemPath(id), b64decode(env));
+      // 重传到该条目当前版的快照路径(updatedAt 即版本文件名)。
+      await this.transport.upload(this.versionPath(id, meta.updatedAt), b64decode(env));
       this.cache.clearPending(id);
     }
     if (this.cache.indexPending()) {

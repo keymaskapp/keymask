@@ -77,4 +77,5 @@ export {
   itemRelPath,
   type EntryMeta,
   type FolderMeta,
+  type VersionMeta,
 } from "@keysark/vault";
