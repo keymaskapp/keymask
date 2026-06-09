@@ -134,6 +134,9 @@ const zh = {
   delete: "删除",
   confirm_delete_folder: (name: string) =>
     `删除文件夹「${name}」?其中的条目与子文件夹会移动到上级目录。`,
+  delete_item_title: "删除条目",
+  confirm_delete_item: (name: string) =>
+    `删除条目「${name}」?此操作不可撤销,删除后无法找回(含全部历史版本)。`,
   btn_lock: "锁定保险库",
   btn_unlock_remembered: "用本设备解锁",
   remember_device: "在此设备记住(下次免输助记词)",
@@ -193,6 +196,8 @@ const zh = {
   st_saved: "已加密保存并同步到网盘",
   st_saved_local: (e: string) => `已存本地,网盘同步失败:${e}`,
   st_save_fail: (e: string) => `保存失败: ${e}`,
+  st_deleting: (name: string) => `删除 ${name} …`,
+  item_deleted: "条目已删除",
   st_syncing: "同步中 …",
   st_sync_ok: "已全部同步到网盘",
   st_sync_fail: (e: string) => `同步失败: ${e}`,
@@ -353,6 +358,9 @@ const en: typeof zh = {
   delete: "Delete",
   confirm_delete_folder: (name: string) =>
     `Delete folder "${name}"? Its items and subfolders will move to the parent.`,
+  delete_item_title: "Delete item",
+  confirm_delete_item: (name: string) =>
+    `Delete item "${name}"? This cannot be undone — it is gone for good, including all version history.`,
   btn_lock: "Lock vault",
   btn_unlock_remembered: "Unlock with this device",
   remember_device: "Remember on this device (skip phrase next time)",
@@ -410,6 +418,8 @@ const en: typeof zh = {
   st_saved: "Encrypted, saved & synced to netdisk",
   st_saved_local: (e: string) => `Saved locally, netdisk sync failed: ${e}`,
   st_save_fail: (e: string) => `Save failed: ${e}`,
+  st_deleting: (name: string) => `Deleting ${name}…`,
+  item_deleted: "Item deleted",
   st_syncing: "Syncing…",
   st_sync_ok: "All synced to netdisk",
   st_sync_fail: (e: string) => `Sync failed: ${e}`,

@@ -20,3 +20,16 @@ export {
   DropdownMenuSeparator,
 } from "./components/dropdown-menu";
 export { Tooltip } from "./components/tooltip";
+export {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogPortal,
+  AlertDialogOverlay,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from "./components/alert-dialog";
