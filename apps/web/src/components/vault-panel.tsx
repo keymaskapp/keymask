@@ -1125,10 +1125,6 @@ export function VaultPanel({
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onSelect={downloadBackup}>
-                        <Download className="h-4 w-4" />
-                        {t("backup_pdf_option")}
-                      </DropdownMenuItem>
                       <DropdownMenuItem
                         {...testId("vault-backup-html-option")}
                         onSelect={() => {

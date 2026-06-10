@@ -101,7 +101,6 @@ const zh = {
   btn_review_again: "再看一遍助记词",
   // 加密 HTML 备份
   backup_more_options: "更多备份方式",
-  backup_pdf_option: "PDF 备份(明文,离线妥善保管)",
   backup_html_option: "加密 HTML 备份(需备份密码)",
   backup_html_title: "加密 HTML 备份",
   backup_html_desc:
@@ -116,6 +115,8 @@ const zh = {
   bk_decrypting: "解密中 …(约 1 秒)",
   bk_wrong: "密码错误或文件已损坏",
   bk_offline_note: "本文件完全离线工作,不会发出任何网络请求。解密只在你的浏览器内进行。",
+  bk_exported_at: (d: string) => `导出时间:${d}`,
+  bk_hover_hint: "单词默认遮挡,鼠标悬停(或触摸)逐个查看,谨防旁人窥屏。",
 
   // 选择保险库
   select_title: "选择保险库",
@@ -398,7 +399,6 @@ const en: typeof zh = {
   btn_review_again: "Show the phrase again",
   // Encrypted HTML backup
   backup_more_options: "More backup options",
-  backup_pdf_option: "PDF backup (plaintext, keep offline)",
   backup_html_option: "Encrypted HTML backup (needs a password)",
   backup_html_title: "Encrypted HTML backup",
   backup_html_desc:
@@ -413,6 +413,8 @@ const en: typeof zh = {
   bk_decrypting: "Decrypting… (~1 second)",
   bk_wrong: "Wrong password or corrupted file",
   bk_offline_note: "This file works fully offline and makes no network requests. Decryption happens only in your browser.",
+  bk_exported_at: (d: string) => `Exported: ${d}`,
+  bk_hover_hint: "Words are masked by default — hover (or tap) to reveal one at a time, beware of shoulder surfing.",
 
   select_title: "Choose a vault",
   select_desc: "You have multiple vaults. Pick one and enter its recovery phrase.",
