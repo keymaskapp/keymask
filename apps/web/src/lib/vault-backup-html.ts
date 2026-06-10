@@ -120,6 +120,7 @@ export async function buildEncryptedBackupHtml(input: EncryptedBackupInput): Pro
   button { margin-top: 12px; width: 100%; padding: 10px; border: 0; border-radius: 8px;
            background: #4F46E5; color: #fff; font-size: 15px; cursor: pointer; }
   button:disabled { opacity: .5; cursor: default; }
+  button.ghost { margin-top: 16px; background: #1F2937; color: #E5E7EB; border: 1px solid #4B5563; }
   .err { color: #F87171; font-size: 13px; margin-top: 10px; }
   .note { color: #6B7280; font-size: 12px; margin-top: 16px; }
   ol { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 0; margin: 16px 0 0;
@@ -151,15 +152,18 @@ export async function buildEncryptedBackupHtml(input: EncryptedBackupInput): Pro
     KeysArk v${escapeHtml(appVersion)} · <span id="exported"></span>
   </p>
   <div class="card">
-    <p style="margin-top:0" data-t="bk_prompt"></p>
-    <input id="pw" type="password" autocomplete="off">
-    <button id="go" data-t="bk_btn"></button>
-    <p id="msg" class="err" hidden></p>
+    <div id="form">
+      <p style="margin-top:0" data-t="bk_prompt"></p>
+      <input id="pw" type="password" autocomplete="off">
+      <button id="go" data-t="bk_btn"></button>
+      <p id="msg" class="err" hidden></p>
+    </div>
     <div id="out" hidden>
-      <p style="margin:16px 0 0;color:#9CA3AF;font-size:13px" data-t="pdf_phrase_label"></p>
+      <p style="margin:0;color:#9CA3AF;font-size:13px" data-t="pdf_phrase_label"></p>
       <ol id="words"></ol>
       <p class="hint" data-t="bk_hover_hint"></p>
       <p class="risk" data-t="pdf_risk_1"></p>
+      <button id="relock" class="ghost" data-t="bk_relock"></button>
     </div>
   </div>
   <p class="note" data-t="bk_offline_note"></p>
@@ -177,6 +181,7 @@ export async function buildEncryptedBackupHtml(input: EncryptedBackupInput): Pro
   var pw = document.getElementById("pw"), go = document.getElementById("go");
   var msg = document.getElementById("msg"), out = document.getElementById("out");
   var words = document.getElementById("words");
+  var form = document.getElementById("form"), relock = document.getElementById("relock");
   var msgKey = null; // 当前状态消息的 key,切语言时跟着换
 
   function S() { return STRINGS[lang]; }
@@ -228,8 +233,11 @@ export async function buildEncryptedBackupHtml(input: EncryptedBackupInput): Pro
         li.appendChild(span);
         words.appendChild(li);
       });
+      // 解密成功:清掉输入框里的密码、隐藏表单,只留助记词区 + 「重新锁定」。
+      pw.value = "";
       msgKey = null;
       msg.hidden = true;
+      form.hidden = true;
       out.hidden = false;
     } catch (e) {
       msgKey = "bk_wrong";
@@ -240,6 +248,15 @@ export async function buildEncryptedBackupHtml(input: EncryptedBackupInput): Pro
   }
   go.addEventListener("click", run);
   pw.addEventListener("keydown", function (e) { if (e.key === "Enter") run(); });
+  // 重新锁定:清掉已解密的单词,回到密码输入(密文从未离开过文件,这里只清 DOM)。
+  relock.addEventListener("click", function () {
+    words.innerHTML = "";
+    out.hidden = true;
+    form.hidden = false;
+    msg.hidden = true;
+    msgKey = null;
+    pw.focus();
+  });
 })();
 </script>
 </body>
