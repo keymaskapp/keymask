@@ -166,6 +166,8 @@ export function VaultPanel({
 }) {
   const t = useT();
   const { locale } = useLocale();
+  // 存储后端展示名(同步状态文案用):Google Drive / 百度网盘。
+  const storeName = t(provider === "google" ? "provider_google" : "provider_baidu");
   // 默认库:无名或 label 为 "default"(创建首个库时的占位)。一律不显示 "default" 字样。
   const isDefaultVault = (v: VaultDescriptor): boolean => {
     const l = v.label.trim().toLowerCase();
@@ -240,6 +242,10 @@ export function VaultPanel({
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [pending, setPending] = useState(0);
+  // 最近一次「本地与网盘确认一致」的时刻(待同步清零时打点);顶栏显示相对时间。
+  const [lastSyncAt, setLastSyncAt] = useState<number | null>(null);
+  // 相对时间显示的刷新节拍:每 1 分钟走一格,驱动「x 分钟前」重算。
+  const [nowTick, setNowTick] = useState(() => Date.now());
   // 详情区两种模式:打开已有条目为只读 preview;新建/点击编辑进入 edit。
   const [mode, setMode] = useState<"preview" | "edit">("preview");
   const [showHistory, setShowHistory] = useState(false); // 历史版本面板(冷路径,点开才拉)
@@ -342,6 +348,33 @@ export function VaultPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, idleMinutes]);
 
+  // 每 1 分钟刷新一次「最近同步」的相对时间显示(只在工作台运行)。
+  useEffect(() => {
+    if (phase !== "unlocked") return;
+    const iv = window.setInterval(() => setNowTick(Date.now()), 60_000);
+    return () => window.clearInterval(iv);
+  }, [phase]);
+
+  // 同步 pending 计数;清零即「本地与网盘一致」,顺手打点最近同步时刻。
+  function updatePending(v: Vault) {
+    const n = v.pendingCount();
+    setPending(n);
+    if (n === 0) {
+      setLastSyncAt(Date.now());
+      setNowTick(Date.now());
+    }
+  }
+
+  // 相对时间:刚刚 / x 秒前 / x 分钟前 / x 小时前 / x 天前(随 nowTick 每分钟重算)。
+  function formatAgo(ts: number): string {
+    const s = Math.max(0, Math.floor((nowTick - ts) / 1000));
+    if (s < 10) return t("time_just_now");
+    if (s < 60) return t("time_sec_ago", s);
+    if (s < 3600) return t("time_min_ago", Math.floor(s / 60));
+    if (s < 86400) return t("time_hour_ago", Math.floor(s / 3600));
+    return t("time_day_ago", Math.floor(s / 86400));
+  }
+
   // 修改密码:当前密码错(GCM 失败)→ 拒绝;成功后旧密码失效、助记词不变。
   async function submitChangePassword() {
     const v = selectedVault;
@@ -377,13 +410,14 @@ export function VaultPanel({
     vaultRef.current = v;
     setSelectedVault(descriptor);
     setPhase("unlocked");
+    setLastSyncAt(null); // 换库/重进时清掉上个库的同步时刻
     setLoadingEntries(true);
     setStatus(null);
     try {
       const list = await v.load();
       setEntries(list);
       setFolders(v.folders);
-      setPending(v.pendingCount());
+      updatePending(v);
     } catch (err) {
       setStatus(t("st_load_fail", String(err)));
     } finally {
@@ -619,9 +653,9 @@ export function VaultPanel({
       setEntries(result.entries);
       setSelectedId(result.id);
       setDraftId(null); // 草稿已落库,不再是草稿
-      setPending(v.pendingCount());
+      updatePending(v);
       setMode("preview"); // 保存后回到只读预览
-      setStatus(result.synced ? t("st_saved") : t("st_saved_local", result.syncError ?? ""));
+      setStatus(result.synced ? t("st_saved", storeName) : t("st_saved_local", storeName, result.syncError ?? ""));
     } catch (err) {
       setStatus(t("st_save_fail", String(err)));
     } finally {
@@ -662,8 +696,8 @@ export function VaultPanel({
       setSelectedId(result.id);
       setContent("");
       setMode("preview");
-      setPending(v.pendingCount());
-      setStatus(result.synced ? t("st_uploaded") : t("st_uploaded_local", result.syncError ?? ""));
+      updatePending(v);
+      setStatus(result.synced ? t("st_uploaded", storeName) : t("st_uploaded_local", storeName, result.syncError ?? ""));
     } catch (err) {
       setStatus(t("st_upload_fail", String(err)));
     } finally {
@@ -705,10 +739,11 @@ export function VaultPanel({
     setStatus(t("st_syncing"));
     try {
       const { remaining } = await v.sync();
-      setPending(remaining);
-      setStatus(remaining === 0 ? t("st_sync_ok") : t("pending_count", remaining));
+      updatePending(v);
+      // 全部同步成功不弹文案,顶栏「已同步 · 刚刚」即状态;有剩余才提示。
+      setStatus(remaining === 0 ? null : t("pending_count", remaining));
     } catch (err) {
-      setPending(v.pendingCount());
+      updatePending(v);
       setStatus(t("st_sync_fail", String(err)));
     } finally {
       setBusy(false);
@@ -744,9 +779,9 @@ export function VaultPanel({
     try {
       const res = await v.moveEntry(itemId, folderId);
       setEntries(res.entries);
-      setPending(v.pendingCount());
+      updatePending(v);
       if (folderId) setExpanded((prev) => new Set(prev).add(folderId)); // 展开目标,移动后立即可见
-      setStatus(res.synced ? t("st_saved") : t("st_saved_local", res.syncError ?? ""));
+      setStatus(res.synced ? t("st_saved", storeName) : t("st_saved_local", storeName, res.syncError ?? ""));
     } catch (err) {
       setStatus(t("st_save_fail", String(err)));
     } finally {
@@ -769,7 +804,7 @@ export function VaultPanel({
     try {
       const res = await v.remove(meta.id);
       setEntries(res.entries);
-      setPending(v.pendingCount());
+      updatePending(v);
       if (selectedId === meta.id) {
         setSelectedId(null);
         setShowHistory(false);
@@ -777,7 +812,7 @@ export function VaultPanel({
         setContent("");
         setMode("preview");
       }
-      setStatus(res.synced ? t("item_deleted") : t("st_saved_local", res.syncError ?? ""));
+      setStatus(res.synced ? t("item_deleted") : t("st_saved_local", storeName, res.syncError ?? ""));
     } catch (err) {
       setStatus(t("st_save_fail", String(err)));
     } finally {
@@ -801,7 +836,7 @@ export function VaultPanel({
       setEditFolderId(doc.folderId);
       setShowHistory(false);
       setMode("preview");
-      setPending(v.pendingCount());
+      updatePending(v);
       setStatus(t("version_restored"));
     } catch (err) {
       setStatus(t("st_open_fail", String(err)));
@@ -851,8 +886,8 @@ export function VaultPanel({
       const res = await op();
       setFolders(v.folders);
       setEntries(v.entries);
-      setPending(v.pendingCount());
-      if (!res.synced) setStatus(t("st_saved_local", res.syncError ?? ""));
+      updatePending(v);
+      if (!res.synced) setStatus(t("st_saved_local", storeName, res.syncError ?? ""));
     } catch (err) {
       setStatus(t("st_save_fail", String(err)));
     } finally {
@@ -867,12 +902,12 @@ export function VaultPanel({
     try {
       const res = await v.addFolder(t("new_folder"), parentId);
       setFolders(res.folders);
-      setPending(v.pendingCount());
+      updatePending(v);
       if (parentId) setExpanded((prev) => new Set(prev).add(parentId));
       // 立即进入重命名
       setRenamingId(res.id);
       setRenameValue(t("new_folder"));
-      if (!res.synced) setStatus(t("st_saved_local", res.syncError ?? ""));
+      if (!res.synced) setStatus(t("st_saved_local", storeName, res.syncError ?? ""));
     } catch (err) {
       setStatus(t("st_save_fail", String(err)));
     } finally {
@@ -1814,12 +1849,16 @@ export function VaultPanel({
             <div className="flex min-w-0 items-center gap-3">
               {pending > 0 ? (
                 <Button variant="secondary" size="sm" onClick={syncNow} disabled={busy}>
-                  {t("btn_sync")} · {t("pending_count", pending)}
+                  {t("btn_sync", storeName)} · {t("pending_count", pending)}
                 </Button>
               ) : (
-                <span className="flex items-center gap-1.5 text-xs text-[var(--color-muted-foreground)]">
+                <span
+                  {...testId("vault-sync-status")}
+                  className="flex items-center gap-1.5 text-xs text-[var(--color-muted-foreground)]"
+                >
                   <span className="h-1.5 w-1.5 rounded-full bg-[var(--color-success)]" />
                   {t("synced")}
+                  {lastSyncAt !== null ? <span>· {formatAgo(lastSyncAt)}</span> : null}
                 </span>
               )}
               <StatusLine status={status} inline />
