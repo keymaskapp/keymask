@@ -19,9 +19,9 @@ const zh = {
   theme_system: "跟随系统",
   theme_light: "浅色",
   theme_dark: "深色",
-  account_connected: "已连接百度网盘",
+  account_connected: (store: string) => `已连接${store}`,
   sign_out: "退出登录",
-  user_fallback: "百度用户",
+  user_fallback: (store: string) => `${store}用户`,
 
   // 落地页
   store_baidu: "百度网盘",
@@ -61,7 +61,7 @@ const zh = {
   feat_2_tag: "易用",
   feat_2_title: "助记词即主密钥",
   feat_2_body:
-    "只需记住 12 个单词,就能在任何设备解锁——无需账号密码,也没有密钥文件要保管。沿用 BIP39 标准,和 MetaMask 一致。",
+    "只需记住 12 个单词,就能在任何设备解锁——无需注册账号,也没有密钥文件要保管。沿用 BIP39 标准,和 MetaMask 一致。",
   feat_3_tag: "免费",
   feat_3_title: "存在你的网盘",
   feat_3_body: (store: string) =>
@@ -120,6 +120,42 @@ const zh = {
   new_vault: "用新助记词创建保险库",
   back_to_unlock: "返回解锁现有保险库",
 
+  // 解锁密码(每库一个,本机凭据)
+  pw_set_title: "设置解锁密码",
+  pw_set_desc:
+    "为本设备设置解锁密码:下次打开时输入密码即可解锁,无需再输 12 词助记词。密码经 Argon2id 派生密钥加密保存助记词,绝不以明文存储。",
+  pw_new_label: "新密码",
+  pw_confirm_label: "确认密码",
+  pw_rule_hint: "至少 12 位,含小写/大写/数字/符号中至少 3 类",
+  pw_mismatch: "两次输入的密码不一致",
+  btn_set_password: "设置密码并进入",
+  btn_phrase_continue: "验证并继续",
+  pw_unlock_desc: (name: string) => `输入「${name}」的解锁密码。`,
+  pw_input_ph: "解锁密码",
+  forgot_password: "忘记密码?用助记词解锁",
+  st_wrong_password: "密码错误",
+  st_setting_password: "设置密码中 …",
+  pw_strength_0: "太弱",
+  pw_strength_1: "弱",
+  pw_strength_2: "一般",
+  pw_strength_3: "强",
+  pw_strength_4: "很强",
+  pw_reason_short: "至少 12 位",
+  pw_reason_classes: "需含小写/大写/数字/符号中至少 3 类",
+  pw_reason_pattern: "过于规律(重复/连续/常见密码),请换一个",
+
+  // 修改密码 / 闲置自动锁定
+  pw_change_title: "修改密码",
+  pw_change_desc: "输入当前密码与新密码。改完后旧密码立即失效,助记词不变。",
+  pw_current_label: "当前密码",
+  btn_change_password: "确认修改",
+  pw_changed: "密码已修改",
+  autolock_title: "自动锁定时长",
+  autolock_desc: "闲置超过该时长后自动锁定保险库,需重新输入密码解锁。",
+  autolock_minutes: (n: number) => `${n} 分钟`,
+  autolock_custom_ph: "自定义分钟数",
+  btn_apply: "确定",
+
   // 工作台
   sidebar_vaults: "保管库",
   all_items: "全部条目",
@@ -138,9 +174,6 @@ const zh = {
   confirm_delete_item: (name: string) =>
     `删除条目「${name}」?此操作不可撤销,删除后无法找回(含全部历史版本)。`,
   btn_lock: "锁定保险库",
-  btn_unlock_remembered: "用本设备解锁",
-  remember_device: "在此设备记住(下次免输助记词)",
-  btn_forget_device: "忘记本设备",
   search_placeholder: "搜索条目…",
   empty_vault: "保险库还是空的,点「+ 新建」开始。",
   empty_search: "没有匹配的条目。",
@@ -247,9 +280,9 @@ const en: typeof zh = {
   theme_system: "System",
   theme_light: "Light",
   theme_dark: "Dark",
-  account_connected: "Connected to Baidu",
+  account_connected: (store: string) => `Connected to ${store}`,
   sign_out: "Sign out",
-  user_fallback: "Baidu user",
+  user_fallback: (store: string) => `${store} user`,
 
   store_baidu: "Baidu netdisk",
   store_google: "Google Drive",
@@ -288,7 +321,7 @@ const en: typeof zh = {
   feat_2_tag: "Easy",
   feat_2_title: "Your phrase is the master key",
   feat_2_body:
-    "Just remember 12 words to unlock on any device — no passwords, no key files to manage. Standard BIP39, same as MetaMask.",
+    "Just remember 12 words to unlock on any device — no accounts, no key files to manage. Standard BIP39, same as MetaMask.",
   feat_3_tag: "Free",
   feat_3_title: "Stored in your netdisk",
   feat_3_body: (store: string) =>
@@ -345,6 +378,43 @@ const en: typeof zh = {
   new_vault: "Create a vault with a new phrase",
   back_to_unlock: "Back to unlocking the existing vault",
 
+  // Unlock password (per-vault, local credential)
+  pw_set_title: "Set an unlock password",
+  pw_set_desc:
+    "Set an unlock password for this device: next time, enter it instead of the 12-word phrase. The password encrypts your phrase via an Argon2id-derived key — it is never stored in plaintext.",
+  pw_new_label: "New password",
+  pw_confirm_label: "Confirm password",
+  pw_rule_hint: "12+ chars, with 3+ of: lowercase / uppercase / digits / symbols",
+  pw_mismatch: "Passwords don't match",
+  btn_set_password: "Set password & enter",
+  btn_phrase_continue: "Verify & continue",
+  pw_unlock_desc: (name: string) => `Enter the unlock password for “${name}”.`,
+  pw_input_ph: "Unlock password",
+  forgot_password: "Forgot password? Unlock with your phrase",
+  st_wrong_password: "Wrong password",
+  st_setting_password: "Setting password…",
+  pw_strength_0: "Too weak",
+  pw_strength_1: "Weak",
+  pw_strength_2: "Fair",
+  pw_strength_3: "Strong",
+  pw_strength_4: "Very strong",
+  pw_reason_short: "At least 12 characters",
+  pw_reason_classes: "Use 3+ of: lowercase / uppercase / digits / symbols",
+  pw_reason_pattern: "Too predictable (repeats / sequences / common passwords) — pick another",
+
+  // Change password / idle auto-lock
+  pw_change_title: "Change password",
+  pw_change_desc:
+    "Enter your current and new password. The old password stops working immediately; your phrase is unchanged.",
+  pw_current_label: "Current password",
+  btn_change_password: "Change password",
+  pw_changed: "Password changed",
+  autolock_title: "Auto-lock timeout",
+  autolock_desc: "After this long without activity, the vault locks and asks for your password again.",
+  autolock_minutes: (n: number) => `${n} min`,
+  autolock_custom_ph: "Custom minutes",
+  btn_apply: "Apply",
+
   sidebar_vaults: "Vaults",
   all_items: "All Items",
   folders_label: "Folders",
@@ -362,9 +432,6 @@ const en: typeof zh = {
   confirm_delete_item: (name: string) =>
     `Delete item "${name}"? This cannot be undone — it is gone for good, including all version history.`,
   btn_lock: "Lock vault",
-  btn_unlock_remembered: "Unlock with this device",
-  remember_device: "Remember on this device (skip phrase next time)",
-  btn_forget_device: "Forget this device",
   search_placeholder: "Search items…",
   empty_vault: "Your vault is empty — hit “+ New” to start.",
   empty_search: "No matching items.",

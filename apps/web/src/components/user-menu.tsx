@@ -3,7 +3,7 @@
 // 登录后右上角的用户菜单:头像 + 名称,下拉里可退出登录。
 // 退出走已有的 POST /api/auth/logout(清会话 cookie 后重定向回首页)。
 import { useRef, useState } from "react";
-import { ChevronDown, Lock, LogOut, ShieldOff, User } from "lucide-react";
+import { ChevronDown, KeyRound, Lock, LogOut, TimerReset, User } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@keysark/ui";
 import { useT } from "./providers";
+import type { StorageProvider } from "@/lib/storage";
 
 function Avatar({ name, avatar, size = 28 }: { name: string; avatar: string | null; size?: number }) {
   const [broken, setBroken] = useState(false);
@@ -49,19 +50,26 @@ function Avatar({ name, avatar, size = 28 }: { name: string; avatar: string | nu
 export function UserMenu({
   name,
   avatar,
+  provider,
   onLock,
-  onForget,
+  onChangePassword,
+  onAutoLock,
 }: {
   name: string;
   avatar: string | null;
+  /** 当前登录的存储后端,决定「已连接 xx」与无名用户兜底文案。 */
+  provider: StorageProvider;
   /** 已解锁工作台时传入:在菜单里提供「锁定保险库」。 */
   onLock?: () => void;
-  /** 当前库在本设备记住了密钥时传入:在菜单里提供「忘记本设备」。 */
-  onForget?: () => void;
+  /** 已解锁工作台时传入:打开「修改密码」弹窗(需输当前密码;无「移除密码」)。 */
+  onChangePassword?: () => void;
+  /** 已解锁工作台时传入:打开「自动锁定时长」设置弹窗。 */
+  onAutoLock?: () => void;
 }) {
   const t = useT();
   const formRef = useRef<HTMLFormElement>(null);
-  const displayName = name.trim() || t("user_fallback");
+  const storeName = t(provider === "google" ? "provider_google" : "provider_baidu");
+  const displayName = name.trim() || t("user_fallback", storeName);
 
   return (
     <DropdownMenu>
@@ -81,7 +89,7 @@ export function UserMenu({
           <span className="flex min-w-0 flex-col">
             <span className="truncate font-medium">{displayName}</span>
             <span className="truncate text-xs font-normal text-[var(--color-muted-foreground)]">
-              {t("account_connected")}
+              {t("account_connected", storeName)}
             </span>
           </span>
         </DropdownMenuLabel>
@@ -92,10 +100,16 @@ export function UserMenu({
             {t("btn_lock")}
           </DropdownMenuItem>
         ) : null}
-        {onForget ? (
-          <DropdownMenuItem onSelect={() => onForget()}>
-            <ShieldOff className="h-4 w-4" />
-            {t("btn_forget_device")}
+        {onChangePassword ? (
+          <DropdownMenuItem onSelect={() => onChangePassword()}>
+            <KeyRound className="h-4 w-4" />
+            {t("pw_change_title")}
+          </DropdownMenuItem>
+        ) : null}
+        {onAutoLock ? (
+          <DropdownMenuItem onSelect={() => onAutoLock()}>
+            <TimerReset className="h-4 w-4" />
+            {t("autolock_title")}
           </DropdownMenuItem>
         ) : null}
         <form ref={formRef} action="/api/auth/logout" method="post">

@@ -18,6 +18,9 @@ target/
 .env.*
 !.env.example
 
+# playwright mcp 验收产物(快照/console 日志)
+.playwright-mcp/
+
 *.log
 .DS_Store
 .idea

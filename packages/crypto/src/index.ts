@@ -1,5 +1,6 @@
 // 纯浏览器 E2E 加密。BIP39 助记词 → 派生密钥 → AES-256-GCM。
 // 禁止 import node:crypto;只用 globalThis.crypto.subtle + @noble/@scure(纯 JS)。
+// 例外:Argon2id 走 hash-wasm(WebCrypto 无此原语);wasm 仅用于 Argon2id,AES 仍走 crypto.subtle。
 import {
   generateMnemonic as bip39Generate,
   validateMnemonic as bip39Validate,
@@ -8,6 +9,7 @@ import {
 import { wordlist } from "@scure/bip39/wordlists/english.js";
 import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha256 } from "@noble/hashes/sha2.js";
+import { argon2id } from "hash-wasm";
 
 const VERIFIER_MARKER = "keysark-verify-v1";
 const HKDF_INFO = new TextEncoder().encode("keysark-aes-gcm-v1");
@@ -147,6 +149,49 @@ export async function sha256Hex(data: Uint8Array): Promise<string> {
   let hex = "";
   for (const b of bytes) hex += b.toString(16).padStart(2, "0");
   return hex;
+}
+
+// ---------- 密码包裹密钥(每库解锁密码 → Argon2id → AES-256-GCM) ----------
+// 用途:用「解锁密码」在本机加密保存助记词(见 apps/web vault-lock)。
+// Argon2id 是 WebCrypto 缺失的原语,走审计过的 hash-wasm;输出喂给 crypto.subtle 当 AES key。
+
+/** Argon2id 参数。m=内存(KiB),t=迭代次数,p=并行度。 */
+export interface Argon2idParams {
+  m: number;
+  t: number;
+  p: number;
+}
+
+/** 默认参数:64MB / t=3 / p=1(经用户认可;实测延迟见 vault-lock 接入处)。 */
+export const DEFAULT_ARGON2ID_PARAMS: Argon2idParams = { m: 65536, t: 3, p: 1 };
+
+/** 生成密码包裹用的随机 salt(16 字节,每库独立、绝不复用)。 */
+export function generateWrappingSalt(): Uint8Array {
+  return crypto.getRandomValues(new Uint8Array(16));
+}
+
+/**
+ * 解锁密码 → Argon2id → non-extractable AES-256-GCM 包裹密钥。
+ * 同 password+salt+params 稳定产出同一 key;密码先 NFKC 归一化,避免同字符不同码点。
+ */
+export async function deriveWrappingKey(
+  password: string,
+  salt: Uint8Array,
+  params: Argon2idParams = DEFAULT_ARGON2ID_PARAMS,
+): Promise<CryptoKey> {
+  const keyBytes = await argon2id({
+    password: password.normalize("NFKC"),
+    salt,
+    memorySize: params.m,
+    iterations: params.t,
+    parallelism: params.p,
+    hashLength: 32,
+    outputType: "binary",
+  });
+  return crypto.subtle.importKey("raw", toArrayBuffer(keyBytes), "AES-GCM", false, [
+    "encrypt",
+    "decrypt",
+  ]);
 }
 
 /** 口令校验块:加密已知标记。解锁时解密比对,判断助记词是否正确。 */

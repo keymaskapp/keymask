@@ -64,7 +64,21 @@ import { UserMenu } from "./user-menu";
 import { useLocale, useT } from "./providers";
 import { Vault, openBrowserVault, itemRelPath, type EntryMeta, type FolderMeta } from "@/lib/vault";
 import type { MsgKey } from "@/lib/i18n";
-import { saveKey, loadKey, deleteKey } from "@/lib/key-store";
+import {
+  changePassword,
+  clearCredential,
+  hasPassword,
+  setPassword,
+  unlock as unlockCredential,
+} from "@/lib/vault-lock";
+import { scorePassword, type StrengthReason } from "@/lib/password-strength";
+import {
+  IDLE_OPTIONS,
+  loadIdleMinutes,
+  normalizeIdleMinutes,
+  saveIdleMinutes,
+  startIdleLock,
+} from "@/lib/idle-lock";
 import { exportVaultBackupPdf } from "@/lib/vault-pdf";
 import { testId } from "@/lib/test-id";
 import { FilePreview } from "./file-preview/FilePreview";
@@ -178,16 +192,29 @@ export function VaultPanel({
 
   // 解锁输入
   const [mnemonicInput, setMnemonicInput] = useState("");
-  // 本设备记住:解锁/创建成功后,是否把 non-extractable 主密钥持久化到 IndexedDB(方案①)。
-  const [rememberDevice, setRememberDevice] = useState(true);
-  // 当前选中保险库在本设备是否有可用的记住密钥(解锁界面:决定是否显示「用本设备解锁」)。
-  const [remembered, setRemembered] = useState(false);
-  // 已进入的保险库在本设备是否记住了密钥(工作台菜单:决定是否显示「忘记本设备」)。
-  const [enteredRemembered, setEnteredRemembered] = useState(false);
-  // 手动「锁定」后置真,抑制 effect 立刻自动重入(整页刷新会重置 → 下次加载仍自动解锁)。
-  const autoSuppress = useRef(false);
-  // 已尝试过自动解锁的保险库 id(防 StrictMode 双调用重复 enterVault)。
-  const autoTried = useRef<Set<string>>(new Set());
+  // 当前选中保险库在本机是否已设解锁密码(null=探测中;决定解锁界面显示密码框还是助记词框)。
+  const [credExists, setCredExists] = useState<boolean | null>(null);
+  // 密码解锁输入
+  const [passwordInput, setPasswordInput] = useState("");
+  // 有凭据但用户点了「忘记密码?用助记词解锁」:本次走助记词,验证后重新设密码。
+  const [phraseFallback, setPhraseFallback] = useState(false);
+  // 助记词验证通过 / 新库创建完成后,待设密码的 {主密钥, 助记词};设完密码才进库。
+  const [setup, setSetup] = useState<{ key: CryptoKey; mnemonic: string } | null>(null);
+  // 设置密码表单(二次确认)
+  const [newPw, setNewPw] = useState("");
+  const [newPw2, setNewPw2] = useState("");
+
+  // 修改密码弹窗(工作台;需当前密码,无「移除密码」)
+  const [showChangePw, setShowChangePw] = useState(false);
+  const [curPw, setCurPw] = useState("");
+  const [chPw, setChPw] = useState("");
+  const [chPw2, setChPw2] = useState("");
+  const [chError, setChError] = useState<string | null>(null);
+
+  // 闲置自动锁定:时长(分钟)持久化 localStorage;弹窗里调,实时生效。
+  const [idleMinutes, setIdleMinutes] = useState(loadIdleMinutes);
+  const [showAutoLock, setShowAutoLock] = useState(false);
+  const [idleCustom, setIdleCustom] = useState("");
 
   // 创建流程
   const [newLabel, setNewLabel] = useState("");
@@ -286,49 +313,70 @@ export function VaultPanel({
     return null;
   }
 
-  // 进入解锁界面时:探测本设备是否记住了该库密钥。记住且校验通过 →
-  // 新鲜加载(未被手动锁定抑制)直接自动解锁;否则只点亮「用本设备解锁」按钮。
+  // 进入解锁界面时:探测该库在本机是否已设解锁密码,决定显示密码框还是助记词框。
   useEffect(() => {
+    setPhraseFallback(false);
+    setPasswordInput("");
     if (phase !== "unlock" || !selectedVault) {
-      setRemembered(false);
+      setCredExists(null);
       return;
     }
-    const v = selectedVault;
     let alive = true;
-    setRemembered(false);
-    (async () => {
-      const k = await loadKey(v.id);
-      if (!alive || !k) return;
-      const ok = await checkVerifier(k, b64decode(v.verifier));
-      if (!alive) return;
-      if (!ok) {
-        // 记住的密钥与当前校验块不符(库被重建等)→ 清掉失效密钥。
-        await deleteKey(v.id);
-        return;
-      }
-      setRemembered(true);
-      if (!autoSuppress.current && !autoTried.current.has(v.id)) {
-        autoTried.current.add(v.id);
-        await enterVault(k, v);
-      }
-    })().catch(() => {
-      /* 自动解锁失败不打扰用户,回退到手动输入 */
-    });
+    setCredExists(null);
+    hasPassword(selectedVault.id)
+      .then((has) => {
+        if (alive) setCredExists(has);
+      })
+      .catch(() => {
+        if (alive) setCredExists(false);
+      });
     return () => {
       alive = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, selectedVault]);
+
+  // 闲置自动锁定:只在已解锁阶段挂载;时长变更 → effect 重跑 → 计时器即时重置。
+  useEffect(() => {
+    if (phase !== "unlocked") return;
+    return startIdleLock(idleMinutes * 60_000, lock);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, idleMinutes]);
+
+  // 修改密码:当前密码错(GCM 失败)→ 拒绝;成功后旧密码失效、助记词不变。
+  async function submitChangePassword() {
+    const v = selectedVault;
+    if (!v || !curPw || !scorePassword(chPw).ok || chPw !== chPw2) return;
+    setBusy(true);
+    setChError(null);
+    try {
+      await changePassword(v.id, curPw, chPw);
+      closeChangePw();
+      setStatus(t("pw_changed"));
+    } catch {
+      setChError(t("st_wrong_password"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  function closeChangePw() {
+    setShowChangePw(false);
+    setCurPw("");
+    setChPw("");
+    setChPw2("");
+    setChError(null);
+  }
+
+  function applyIdleMinutes(n: number) {
+    setIdleMinutes(n);
+    saveIdleMinutes(n);
+  }
 
   async function enterVault(key: CryptoKey, descriptor: VaultDescriptor) {
     const v = openBrowserVault(key, { id: descriptor.id, dir: descriptor.dir });
     vaultRef.current = v;
     setSelectedVault(descriptor);
     setPhase("unlocked");
-    // 记录该库在本设备是否记住了密钥(工作台据此展示「忘记本设备」)。
-    loadKey(descriptor.id)
-      .then((k) => setEnteredRemembered(!!k))
-      .catch(() => setEnteredRemembered(false));
     setLoadingEntries(true);
     setStatus(null);
     try {
@@ -351,8 +399,8 @@ export function VaultPanel({
     setPhase("unlock");
   }
 
-  // ---- 解锁(对选中的保险库校验助记词) ----
-  async function unlock() {
+  // ---- 助记词验证(无本机凭据 / 忘记密码时):通过后进入「设置密码」步骤,不直接进库 ----
+  async function verifyPhrase() {
     const m = mnemonicInput.trim().replace(/\s+/g, " ");
     if (!validateMnemonic(m)) return setStatus(t("st_invalid_mnemonic"));
     if (!selectedVault) return setStatus(t("st_missing_meta"));
@@ -366,14 +414,8 @@ export function VaultPanel({
         return;
       }
       setMnemonicInput("");
-      if (rememberDevice) {
-        try {
-          await saveKey(selectedVault.id, k);
-        } catch {
-          /* 持久化失败不阻断解锁;本次仍正常进入 */
-        }
-      }
-      await enterVault(k, selectedVault);
+      setStatus(null);
+      setSetup({ key: k, mnemonic: m });
     } catch (err) {
       setStatus(t("st_unlock_fail", String(err)));
     } finally {
@@ -381,26 +423,56 @@ export function VaultPanel({
     }
   }
 
-  // ---- 一键解锁(用本设备记住的密钥,免输助记词) ----
-  async function unlockRemembered() {
+  // ---- 密码解锁(本机已有加密凭据):密码解封助记词 → 派生主密钥 → 校验 → 进库 ----
+  async function unlockWithPassword() {
     const v = selectedVault;
-    if (!v) return;
+    if (!v || !passwordInput) return;
     setBusy(true);
     setStatus(t("st_unlocking"));
     try {
-      const k = await loadKey(v.id);
-      if (!k) {
-        setRemembered(false);
-        setStatus(null);
+      let mnemonic: string;
+      try {
+        mnemonic = await unlockCredential(v.id, passwordInput);
+      } catch {
+        // GCM 认证失败 = 密码错误;不泄露其他信息。
+        setStatus(t("st_wrong_password"));
         return;
       }
+      const k = await deriveKey(mnemonic);
       if (!(await checkVerifier(k, b64decode(v.verifier)))) {
-        await deleteKey(v.id);
-        setRemembered(false);
+        // 凭据里的助记词与当前库校验块不符(库被重建等)→ 清掉失效凭据,回助记词流程。
+        await clearCredential(v.id);
+        setCredExists(false);
         setStatus(t("st_mismatch"));
         return;
       }
+      setPasswordInput("");
       await enterVault(k, v);
+    } catch (err) {
+      setStatus(t("st_unlock_fail", String(err)));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  // ---- 设置密码(强制步骤):封装助记词落本机凭据 → 进库 ----
+  async function finishSetup() {
+    const v = selectedVault;
+    if (!v || !setup) return;
+    if (!scorePassword(newPw).ok || newPw !== newPw2) return;
+    setBusy(true);
+    setStatus(t("st_setting_password"));
+    try {
+      try {
+        await setPassword(v.id, setup.mnemonic, newPw);
+      } catch {
+        /* 凭据落库失败(如隐私模式)不阻断进入;下次仍走助记词 */
+      }
+      const key = setup.key;
+      setSetup(null);
+      setNewPw("");
+      setNewPw2("");
+      await enterVault(key, v);
     } catch (err) {
       setStatus(t("st_unlock_fail", String(err)));
     } finally {
@@ -464,16 +536,13 @@ export function VaultPanel({
       const nextRegistry: Registry = { v: 1, vaults: [...vaults, descriptor] };
       await saveRegistry(nextRegistry);
       setVaults(nextRegistry.vaults);
+      // 创建完成后强制设置本机解锁密码(unlock 界面因 setup 存在直接显示「设置密码」)。
+      setSelectedVault(descriptor);
+      setSetup({ key: k, mnemonic: newMnemonic });
       setNewMnemonic(null);
       setNewLabel("");
-      if (rememberDevice) {
-        try {
-          await saveKey(id, k);
-        } catch {
-          /* 持久化失败不阻断创建 */
-        }
-      }
-      await enterVault(k, descriptor);
+      setStatus(null);
+      setPhase("unlock");
     } catch (err) {
       setStatus(t("st_create_fail", String(err)));
     } finally {
@@ -828,8 +897,8 @@ export function VaultPanel({
     await runFolderOp(() => vaultRef.current!.deleteFolder(f.id));
   }
 
-  // 锁定:清内存密钥 + 清工作台状态,回到选择/解锁界面。保留本设备记住的密钥,
-  // 但抑制自动重入(本次需手动「用本设备解锁」)。整页刷新会重置 autoSuppress → 下次加载仍自动解锁。
+  // 锁定:清内存密钥 + 清工作台状态,回到选择/解锁界面。本机加密凭据保留,
+  // 重新解锁只需输密码(主密钥仅内存,F5/关标签同样需要重输)。
   function lock() {
     vaultRef.current = null;
     setContent("");
@@ -838,30 +907,13 @@ export function VaultPanel({
     setFolders([]);
     setSelectedId(null);
     setDraftId(null);
-    setEnteredRemembered(false);
-    autoSuppress.current = true;
     goPick();
-  }
-
-  // 忘记本设备:删除当前库在本机记住的密钥,然后锁定(下次必须重输助记词)。
-  async function forgetDevice() {
-    const v = selectedVault;
-    if (v) {
-      try {
-        await deleteKey(v.id);
-      } catch {
-        /* 删除失败不阻断锁定 */
-      }
-      autoTried.current.delete(v.id);
-    }
-    setRemembered(false);
-    lock();
   }
 
   // ============================ 选择保险库 ============================
   if (phase === "select") {
     return (
-      <CenteredShell user={user}>
+      <CenteredShell user={user} provider={provider}>
         <Card {...testId("vault-select")} className="w-full">
           <CardHeader>
             <CardTitle>{t("select_title")}</CardTitle>
@@ -905,7 +957,7 @@ export function VaultPanel({
   // ============================ 创建保险库 ============================
   if (phase === "create") {
     return (
-      <CenteredShell user={user}>
+      <CenteredShell user={user} provider={provider}>
         <Card {...testId("vault-create")} className="w-full">
           <CardHeader>
             <CardTitle>{t("create_title")}</CardTitle>
@@ -1044,49 +1096,142 @@ export function VaultPanel({
 
   // ============================ 解锁保险库 ============================
   if (phase === "unlock") {
+    // 子态一:助记词已验证 / 新库刚创建 → 强制设置本机解锁密码(设完才进库)。
+    if (setup) {
+      const pwScore = scorePassword(newPw);
+      const mismatch = newPw2.length > 0 && newPw !== newPw2;
+      const canSubmit = !busy && pwScore.ok && newPw2.length > 0 && newPw === newPw2;
+      return (
+        <CenteredShell user={user} provider={provider}>
+          <Card {...testId("vault-set-password")} className="w-full">
+            <CardHeader>
+              <CardTitle>{t("pw_set_title")}</CardTitle>
+              <CardDescription>{t("pw_set_desc")}</CardDescription>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-4">
+              <label className="flex flex-col gap-1.5">
+                <span className="text-xs font-medium text-[var(--color-muted-foreground)]">
+                  {t("pw_new_label")}
+                </span>
+                <Input
+                  type="password"
+                  autoComplete="new-password"
+                  value={newPw}
+                  onChange={(e) => setNewPw(e.target.value)}
+                  placeholder={t("pw_rule_hint")}
+                  disabled={busy}
+                />
+              </label>
+              <StrengthBar password={newPw} />
+              <label className="flex flex-col gap-1.5">
+                <span className="text-xs font-medium text-[var(--color-muted-foreground)]">
+                  {t("pw_confirm_label")}
+                </span>
+                <Input
+                  type="password"
+                  autoComplete="new-password"
+                  value={newPw2}
+                  onChange={(e) => setNewPw2(e.target.value)}
+                  disabled={busy}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && canSubmit) finishSetup();
+                  }}
+                />
+              </label>
+              {mismatch ? (
+                <p className="text-xs text-[var(--color-danger)]">{t("pw_mismatch")}</p>
+              ) : null}
+              <Button onClick={finishSetup} disabled={!canSubmit} size="lg">
+                {t("btn_set_password")}
+              </Button>
+              <div className="border-t border-[var(--color-border)] pt-3 text-center">
+                <Button
+                  variant="link"
+                  size="sm"
+                  disabled={busy}
+                  onClick={() => {
+                    setSetup(null);
+                    setNewPw("");
+                    setNewPw2("");
+                    goPick();
+                  }}
+                >
+                  {t("btn_cancel")}
+                </Button>
+              </div>
+              <StatusLine status={status} />
+            </CardContent>
+          </Card>
+        </CenteredShell>
+      );
+    }
+
+    const passwordMode = credExists === true && !phraseFallback;
     return (
-      <CenteredShell user={user}>
+      <CenteredShell user={user} provider={provider}>
         <Card {...testId("vault-unlock")} className="w-full">
           <CardHeader>
             <CardTitle>{t("unlock_title")}</CardTitle>
             <CardDescription>
-              {selectedVault ? t("unlock_desc_named", vaultName(selectedVault)) : t("unlock_desc")}
+              {passwordMode
+                ? selectedVault
+                  ? t("pw_unlock_desc", vaultName(selectedVault))
+                  : t("unlock_desc")
+                : selectedVault
+                  ? t("unlock_desc_named", vaultName(selectedVault))
+                  : t("unlock_desc")}
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
-            {remembered ? (
+            {credExists === null ? (
+              // IndexedDB 探测中(瞬时):避免助记词框闪一下又切成密码框。
+              <div className="h-20" aria-hidden="true" />
+            ) : passwordMode ? (
+              // 子态二:本机已有加密凭据 → 输密码解锁
               <>
-                <Button onClick={unlockRemembered} disabled={busy} size="lg">
-                  {t("btn_unlock_remembered")}
+                <Input
+                  {...testId("vault-unlock-password")}
+                  type="password"
+                  autoComplete="current-password"
+                  value={passwordInput}
+                  onChange={(e) => setPasswordInput(e.target.value)}
+                  placeholder={t("pw_input_ph")}
+                  autoFocus
+                  disabled={busy}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && passwordInput) unlockWithPassword();
+                  }}
+                />
+                <Button onClick={unlockWithPassword} disabled={busy || !passwordInput} size="lg">
+                  {t("btn_unlock")}
                 </Button>
-                <Button variant="link" size="sm" onClick={forgetDevice} disabled={busy}>
-                  {t("btn_forget_device")}
+                <Button
+                  variant="link"
+                  size="sm"
+                  onClick={() => setPhraseFallback(true)}
+                  disabled={busy}
+                >
+                  {t("forgot_password")}
                 </Button>
-                <div className="border-t border-[var(--color-border)]" />
               </>
-            ) : null}
-            <Textarea
-              value={mnemonicInput}
-              onChange={(e) => setMnemonicInput(e.target.value)}
-              placeholder="word1 word2 … word12"
-              rows={3}
-              className="font-mono"
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) unlock();
-              }}
-            />
-            <label className="flex items-center gap-2 text-sm text-[var(--color-muted-foreground)]">
-              <input
-                type="checkbox"
-                checked={rememberDevice}
-                onChange={(e) => setRememberDevice(e.target.checked)}
-                className="h-4 w-4 accent-[var(--color-primary)]"
-              />
-              {t("remember_device")}
-            </label>
-            <Button onClick={unlock} disabled={busy} size="lg">
-              {t("btn_unlock")}
-            </Button>
+            ) : (
+              // 子态三:无本机凭据(新设备/清缓存/忘记密码)→ 输助记词,验证后强制设密码
+              <>
+                <Textarea
+                  value={mnemonicInput}
+                  onChange={(e) => setMnemonicInput(e.target.value)}
+                  placeholder="word1 word2 … word12"
+                  rows={3}
+                  className="font-mono"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) verifyPhrase();
+                  }}
+                />
+                <Button onClick={verifyPhrase} disabled={busy} size="lg">
+                  {t("btn_phrase_continue")}
+                </Button>
+              </>
+            )}
             <div className="flex flex-col gap-1 border-t border-[var(--color-border)] pt-3 text-center">
               {vaults.length > 1 ? (
                 <Button variant="link" size="sm" onClick={goPick} disabled={busy}>
@@ -1360,6 +1505,126 @@ export function VaultPanel({
         onChange={onPickedFile}
         aria-hidden="true"
       />
+      {/* 修改密码弹窗:需当前密码(防走近已解锁屏幕者直接改密);无「移除密码」 */}
+      <AlertDialog
+        open={showChangePw}
+        onOpenChange={(open) => {
+          if (!open) closeChangePw();
+        }}
+      >
+        <AlertDialogContent {...testId("vault-change-password-dialog")}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("pw_change_title")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("pw_change_desc")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex flex-col gap-4">
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium text-[var(--color-muted-foreground)]">
+                {t("pw_current_label")}
+              </span>
+              <Input
+                type="password"
+                autoComplete="current-password"
+                value={curPw}
+                onChange={(e) => setCurPw(e.target.value)}
+                disabled={busy}
+              />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium text-[var(--color-muted-foreground)]">
+                {t("pw_new_label")}
+              </span>
+              <Input
+                type="password"
+                autoComplete="new-password"
+                value={chPw}
+                onChange={(e) => setChPw(e.target.value)}
+                placeholder={t("pw_rule_hint")}
+                disabled={busy}
+              />
+            </label>
+            <StrengthBar password={chPw} />
+            <label className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium text-[var(--color-muted-foreground)]">
+                {t("pw_confirm_label")}
+              </span>
+              <Input
+                type="password"
+                autoComplete="new-password"
+                value={chPw2}
+                onChange={(e) => setChPw2(e.target.value)}
+                disabled={busy}
+              />
+            </label>
+            {chPw2.length > 0 && chPw !== chPw2 ? (
+              <p className="text-xs text-[var(--color-danger)]">{t("pw_mismatch")}</p>
+            ) : null}
+            {chError ? <p className="text-xs text-[var(--color-danger)]">{chError}</p> : null}
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={busy}>{t("btn_cancel")}</AlertDialogCancel>
+            <Button
+              {...testId("vault-change-password-submit")}
+              onClick={submitChangePassword}
+              disabled={busy || !curPw || !scorePassword(chPw).ok || chPw !== chPw2 || !chPw2}
+            >
+              {t("btn_change_password")}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      {/* 自动锁定时长弹窗:预设档位即点即生效;自定义分钟数按「确定」生效 */}
+      <AlertDialog open={showAutoLock} onOpenChange={setShowAutoLock}>
+        <AlertDialogContent {...testId("vault-autolock-dialog")}>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("autolock_title")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("autolock_desc")}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-wrap gap-2">
+              {IDLE_OPTIONS.map((n) => (
+                <Button
+                  key={n}
+                  size="sm"
+                  variant={idleMinutes === n ? "default" : "outline"}
+                  onClick={() => {
+                    applyIdleMinutes(n);
+                    setShowAutoLock(false);
+                  }}
+                >
+                  {t("autolock_minutes", n)}
+                </Button>
+              ))}
+            </div>
+            <div className="flex items-center gap-2">
+              <Input
+                {...testId("vault-autolock-custom")}
+                type="number"
+                min={1}
+                value={idleCustom}
+                onChange={(e) => setIdleCustom(e.target.value)}
+                placeholder={t("autolock_custom_ph")}
+                className="h-9"
+              />
+              <Button
+                size="sm"
+                disabled={normalizeIdleMinutes(idleCustom) === null}
+                onClick={() => {
+                  const n = normalizeIdleMinutes(idleCustom);
+                  if (n === null) return;
+                  applyIdleMinutes(n);
+                  setShowAutoLock(false);
+                }}
+              >
+                {t("btn_apply")}
+              </Button>
+            </div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("btn_cancel")}</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       {/* 导航:文件夹 + 条目 合并的目录树 */}
       <aside {...testId("vault-nav")} className="flex flex-col border-r border-[var(--color-border)] bg-[var(--color-surface-2)]">
         <div {...testId("vault-nav-header")} className="flex h-14 items-center justify-between gap-2 border-b border-[var(--color-border)] px-4">
@@ -1564,8 +1829,13 @@ export function VaultPanel({
               <UserMenu
                 name={user.name}
                 avatar={user.avatar}
+                provider={provider}
                 onLock={lock}
-                onForget={enteredRemembered ? forgetDevice : undefined}
+                onChangePassword={() => setShowChangePw(true)}
+                onAutoLock={() => {
+                  setIdleCustom("");
+                  setShowAutoLock(true);
+                }}
               />
             </div>
           </div>
@@ -1806,7 +2076,15 @@ export function VaultPanel({
 }
 
 // 居中外壳:选择/解锁/创建页用,顶栏带品牌 + 语言/主题切换 + 用户菜单。
-function CenteredShell({ children, user }: { children: React.ReactNode; user: VaultUser }) {
+function CenteredShell({
+  children,
+  user,
+  provider,
+}: {
+  children: React.ReactNode;
+  user: VaultUser;
+  provider: StorageProvider;
+}) {
   return (
     <main {...testId("vault-shell")} className="relative flex min-h-screen flex-col bg-[var(--color-background)]">
       <div className="hero-aurora" aria-hidden="true" />
@@ -1814,13 +2092,53 @@ function CenteredShell({ children, user }: { children: React.ReactNode; user: Va
         <Wordmark className="text-lg" />
         <div className="flex items-center gap-3">
           <HeaderControls />
-          <UserMenu name={user.name} avatar={user.avatar} />
+          <UserMenu name={user.name} avatar={user.avatar} provider={provider} />
         </div>
       </header>
       <div {...testId("vault-shell-body")} className="relative z-10 flex flex-1 flex-col items-center justify-center gap-8 px-4 pb-16">
         <div className="w-full max-w-md">{children}</div>
       </div>
     </main>
+  );
+}
+
+// 密码强度条:4 段着色 + 等级文案 + 不达标原因。设密码(002)与改密码(003)共用。
+function StrengthBar({ password }: { password: string }) {
+  const t = useT();
+  const { score, ok, reasons } = scorePassword(password);
+  const levelKey = (["pw_strength_0", "pw_strength_1", "pw_strength_2", "pw_strength_3", "pw_strength_4"] as const)[score];
+  const reasonKey: Record<StrengthReason, MsgKey> = {
+    too_short: "pw_reason_short",
+    need_classes: "pw_reason_classes",
+    weak_pattern: "pw_reason_pattern",
+  };
+  const color =
+    score <= 1
+      ? "var(--color-danger)"
+      : score === 2
+        ? "var(--color-primary)"
+        : "var(--color-success)";
+  if (!password) return null;
+  return (
+    <div {...testId("password-strength")} className="flex flex-col gap-1.5">
+      <div className="flex items-center gap-2">
+        <div className="flex flex-1 gap-1">
+          {[1, 2, 3, 4].map((seg) => (
+            <span
+              key={seg}
+              className="h-1.5 flex-1 rounded-full"
+              style={{ background: seg <= score ? color : "var(--color-border)" }}
+            />
+          ))}
+        </div>
+        <span className="shrink-0 text-xs text-[var(--color-muted-foreground)]">{t(levelKey)}</span>
+      </div>
+      {!ok && reasons.length > 0 ? (
+        <p className="text-xs text-[var(--color-danger)]">
+          {reasons.map((r) => t(reasonKey[r])).join(" · ")}
+        </p>
+      ) : null}
+    </div>
   );
 }
 
