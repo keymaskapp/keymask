@@ -4,6 +4,23 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
+// build 时由 scripts/build.mjs 经 esbuild define 注入(生产 https://keysark.com,
+// 否则 http://localhost:6134);tsx 直跑源码未注入 → 回退本地 dev 端口。
+declare const __KEYSARK_DEFAULT_SERVER__: string | undefined;
+declare const __KEYSARK_VERSION__: string | undefined;
+
+/** 内置默认云端接口(build 时按环境注入)。 */
+export function defaultServer(): string {
+  return typeof __KEYSARK_DEFAULT_SERVER__ === "string"
+    ? __KEYSARK_DEFAULT_SERVER__
+    : "http://localhost:6134";
+}
+
+/** CLI 版本(build 时注入;源码直跑为 "dev")。 */
+export function cliVersion(): string {
+  return typeof __KEYSARK_VERSION__ === "string" ? __KEYSARK_VERSION__ : "dev";
+}
+
 export function keysarkDir(): string {
   return process.env.KEYSARK_HOME || join(homedir(), ".keysark");
 }
@@ -43,15 +60,21 @@ export function clearCloud(): void {
 export interface Conn {
   baseUrl: string;
   token: string | null;
+  /** baseUrl 的来源(info / 报错提示用) */
+  source: "--server" | "KEYSARK_SERVER" | "cloud.json" | "default";
 }
 
-/** 解析云端连接。serverOverride 来自 --server / KEYSARK_SERVER;未登录返回 null token。 */
-export function resolveConn(serverOverride?: string): Conn | null {
+/** 解析云端连接:--server / KEYSARK_SERVER > 登录态 cloud.json > 内置默认;未登录 token 为 null。 */
+export function resolveConn(serverOverride?: string): Conn {
   const cloud = loadCloud();
   const override = (serverOverride ?? process.env.KEYSARK_SERVER ?? "").replace(/\/+$/, "");
   if (override) {
-    return { baseUrl: override, token: cloud && cloud.server === override ? cloud.token : null };
+    return {
+      baseUrl: override,
+      token: cloud && cloud.server === override ? cloud.token : null,
+      source: serverOverride ? "--server" : "KEYSARK_SERVER",
+    };
   }
-  if (cloud) return { baseUrl: cloud.server, token: cloud.token };
-  return null;
+  if (cloud) return { baseUrl: cloud.server, token: cloud.token, source: "cloud.json" };
+  return { baseUrl: defaultServer(), token: null, source: "default" };
 }

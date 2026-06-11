@@ -59,6 +59,7 @@ import {
   MoreHorizontal,
   Pencil,
   Plus,
+  RefreshCw,
   Trash2,
   Upload,
 } from "lucide-react";
@@ -116,6 +117,20 @@ interface SortSpec {
 const DEFAULT_SORT: SortSpec = { key: "updated", dir: "desc" };
 const VIEW_KEY = "keysark.vault.viewMode";
 const SORT_KEY = "keysark.vault.sort";
+
+// 侧边栏宽度(px):拖右缘调整,双击恢复默认;持久化 localStorage。
+const NAV_WIDTH_KEY = "keysark.vault.navWidth";
+const NAV_WIDTH_DEFAULT = 320; // = 原 20rem
+const NAV_WIDTH_MIN = 220;
+const NAV_WIDTH_MAX = 560;
+function clampNavWidth(w: number): number {
+  return Math.min(NAV_WIDTH_MAX, Math.max(NAV_WIDTH_MIN, Math.round(w)));
+}
+function loadNavWidth(): number {
+  if (typeof window === "undefined") return NAV_WIDTH_DEFAULT;
+  const n = Number(window.localStorage.getItem(NAV_WIDTH_KEY));
+  return Number.isFinite(n) && n > 0 ? clampNavWidth(n) : NAV_WIDTH_DEFAULT;
+}
 
 // 文件加密上传:单文件明文上限 100MB(对齐 proposal;加密一次性在内存做,不分片)。
 const MAX_FILE_BYTES = 100 * 1024 * 1024;
@@ -254,6 +269,7 @@ export function VaultPanel({
   const [pending, setPending] = useState(0);
   // 最近一次「本地与网盘确认一致」的时刻(待同步清零时打点);顶栏显示相对时间。
   const [lastSyncAt, setLastSyncAt] = useState<number | null>(null);
+  const [syncing, setSyncing] = useState(false); // 手动同步进行中(头部按钮转圈用)
   // 相对时间显示的刷新节拍:每 1 分钟走一格,驱动「x 分钟前」重算。
   const [nowTick, setNowTick] = useState(() => Date.now());
   // 详情区两种模式:打开已有条目为只读 preview;新建/点击编辑进入 edit。
@@ -283,6 +299,32 @@ export function VaultPanel({
     } catch {
       /* 隐私模式忽略 */
     }
+  }
+
+  // 侧边栏宽度:拖右缘实时调整(pointer capture),松手持久化,双击恢复默认。
+  const [navWidth, setNavWidth] = useState<number>(loadNavWidth);
+  function persistNavWidth(w: number) {
+    try {
+      window.localStorage.setItem(NAV_WIDTH_KEY, String(w));
+    } catch {
+      /* 隐私模式忽略 */
+    }
+  }
+  function startNavResize(ev: React.PointerEvent<HTMLDivElement>) {
+    ev.preventDefault();
+    const el = ev.currentTarget;
+    el.setPointerCapture(ev.pointerId);
+    // 侧边栏从视口左缘起,clientX 即目标宽度。
+    const onMove = (e: PointerEvent) => setNavWidth(clampNavWidth(e.clientX));
+    const done = (e: PointerEvent) => {
+      el.removeEventListener("pointermove", onMove);
+      el.removeEventListener("pointerup", done);
+      el.removeEventListener("pointercancel", done);
+      persistNavWidth(clampNavWidth(e.clientX));
+    };
+    el.addEventListener("pointermove", onMove);
+    el.addEventListener("pointerup", done);
+    el.addEventListener("pointercancel", done);
   }
   // 月份分组表头格式化(铺平+按时间排序时使用):zh→「2026年6月」,en→「June 2026」。
   const monthFmt = useMemo(
@@ -775,9 +817,33 @@ export function VaultPanel({
     const v = vaultRef.current;
     if (!v) return;
     setBusy(true);
+    setSyncing(true);
     setStatus(t("st_syncing"));
     try {
       const { remaining } = await v.sync();
+      // 待同步清零且不在编辑态时,从网盘重拉 index,带回其它设备(如 CLI)的改动;
+      // 有 pending 时跳过重拉,避免远端 index 盖掉本地未推送的条目。
+      if (remaining === 0 && mode !== "edit" && !draftId) {
+        const list = await v.load();
+        setEntries(list);
+        setFolders(v.folders);
+        if (selectedId) {
+          const cur = list.find((e) => e.id === selectedId);
+          if (!cur) {
+            // 选中条目已在远端被删除
+            setSelectedId(null);
+            setShowHistory(false);
+            setTitle("");
+            setContent("");
+          } else {
+            // 重开当前条目,带回远端的新内容(本地有缓存时开销很小)
+            const doc = await v.open(cur.id);
+            setTitle(doc.title);
+            setContent(doc.content);
+            setEditFolderId(cur.folderId);
+          }
+        }
+      }
       updatePending(v);
       // 全部同步成功不弹文案,顶栏「已同步 · 刚刚」即状态;有剩余才提示。
       setStatus(remaining === 0 ? null : t("pending_count", remaining));
@@ -786,6 +852,7 @@ export function VaultPanel({
       setStatus(t("st_sync_fail", String(err)));
     } finally {
       setBusy(false);
+      setSyncing(false);
     }
   }
 
@@ -1697,7 +1764,11 @@ export function VaultPanel({
   const previewName = selected?.title || t("untitled");
 
   return (
-    <div {...testId("vault-workbench")} className="grid h-screen grid-cols-[20rem_1fr] overflow-hidden">
+    <div
+      {...testId("vault-workbench")}
+      className="grid h-screen overflow-hidden"
+      style={{ gridTemplateColumns: `${navWidth}px 1fr` }}
+    >
       {/* 隐藏文件选择框:上传文件条目时由 pickFile() 触发 */}
       <input
         ref={fileInputRef}
@@ -1827,7 +1898,7 @@ export function VaultPanel({
         </AlertDialogContent>
       </AlertDialog>
       {/* 导航:文件夹 + 条目 合并的目录树 */}
-      <aside {...testId("vault-nav")} className="flex flex-col border-r border-[var(--color-border)] bg-[var(--color-surface-2)]">
+      <aside {...testId("vault-nav")} className="relative flex flex-col border-r border-[var(--color-border)] bg-[var(--color-surface-2)]">
         <div {...testId("vault-nav-header")} className="flex h-14 items-center justify-between gap-2 border-b border-[var(--color-border)] px-4">
           <Wordmark className="text-base" />
           {/* 分体按钮:主体直接新建条目,右侧三角下拉提供「新建文件夹」 */}
@@ -2005,6 +2076,16 @@ export function VaultPanel({
             </div>
           )}
         </div>
+        {/* 右缘拖动条:拖动改宽,双击恢复默认宽度 */}
+        <div
+          {...testId("vault-nav-resizer")}
+          onPointerDown={startNavResize}
+          onDoubleClick={() => {
+            setNavWidth(NAV_WIDTH_DEFAULT);
+            persistNavWidth(NAV_WIDTH_DEFAULT);
+          }}
+          className="absolute inset-y-0 right-[-2px] z-10 w-[5px] cursor-col-resize touch-none bg-transparent transition-colors hover:bg-[var(--color-primary)]/35 active:bg-[var(--color-primary)]/55"
+        />
       </aside>
 
       {/* 详情 / 编辑(布局对齐 1Password) */}
@@ -2013,6 +2094,18 @@ export function VaultPanel({
           {/* 顶栏:同步状态 + 控件 + 用户菜单(编辑/预览共用) */}
           <div {...testId("vault-detail-header")} className="flex h-14 items-center justify-between gap-3 border-b border-[var(--color-border)] bg-[var(--color-background)] px-6">
             <div className="flex min-w-0 items-center gap-3">
+              <Tooltip label={t("sync_now")}>
+                <Button
+                  {...testId("vault-sync-now")}
+                  variant="ghost"
+                  size="sm"
+                  onClick={syncNow}
+                  disabled={busy}
+                  aria-label={t("sync_now")}
+                >
+                  <RefreshCw className={`h-3.5 w-3.5${syncing ? " animate-spin" : ""}`} />
+                </Button>
+              </Tooltip>
               {pending > 0 ? (
                 <Button variant="secondary" size="sm" onClick={syncNow} disabled={busy}>
                   {t("btn_sync", storeName)} · {t("pending_count", pending)}
