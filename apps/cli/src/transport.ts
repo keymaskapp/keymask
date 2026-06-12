@@ -8,7 +8,7 @@ export function httpTransport(baseUrl: string, token: string | null): StorageTra
   async function jsonOrThrow(res: Response, what: string): Promise<unknown> {
     if (res.status === 401) {
       throw new Error(
-        `接口拒绝(401)。令牌可能已吊销或过期,请重新 \`ark login\`。(${what})`,
+        `401 unauthorized; token may be revoked or expired. Run \`ark login\`. (${what})`,
       );
     }
     if (!res.ok) {
@@ -19,7 +19,7 @@ export function httpTransport(baseUrl: string, token: string | null): StorageTra
       } catch {
         /* ignore */
       }
-      throw new Error(`${what} 失败:${msg}`);
+      throw new Error(`${what} failed: ${msg}`);
     }
     return res.json();
   }
@@ -41,7 +41,7 @@ export function httpTransport(baseUrl: string, token: string | null): StorageTra
         body: JSON.stringify({ path, contentB64: b64encode(bytes) }),
       });
       const data = (await jsonOrThrow(res, "upload")) as { ok?: boolean };
-      if (!data.ok) throw new Error("upload 失败:服务端未确认");
+      if (!data.ok) throw new Error("upload failed: not confirmed by server");
     },
     async download(fileId) {
       const res = await fetch(

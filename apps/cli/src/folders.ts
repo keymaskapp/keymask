@@ -52,7 +52,7 @@ export async function resolveFolderPath(vault: Vault, path: string): Promise<str
       continue;
     }
     const res = await vault.addFolder(name, parentId);
-    if (!res.synced) console.error(`! 文件夹「${name}」已本地创建,同步失败:${res.syncError}`);
+    if (!res.synced) console.error(`! Folder "${name}" created locally; sync failed: ${res.syncError}`);
     parentId = res.id;
   }
   return parentId;

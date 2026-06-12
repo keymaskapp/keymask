@@ -71,7 +71,7 @@ async function readStdin(): Promise<string> {
 
 function transportFrom(args: Args): StorageTransport {
   const conn = resolveConn(flagStr(args.flags, "server"));
-  if (!conn.token) fail(`尚未在 ${conn.baseUrl} 登录。先运行 \`ark login\`。`);
+  if (!conn.token) fail(`Not logged in to ${conn.baseUrl}. Run \`ark login\`.`);
   return httpTransport(conn.baseUrl, conn.token!);
 }
 
@@ -102,16 +102,16 @@ async function ready(
   if (!mnemonic) {
     fail(
       hasCredential()
-        ? "未解锁(密码未通过或非交互环境)。也可设 KEYSARK_MNEMONIC。"
-        : "本机没有助记词。先运行 `ark import` 导入,或设 KEYSARK_MNEMONIC。",
+        ? "Locked (wrong password or non-interactive). Or set KEYSARK_MNEMONIC."
+        : "No mnemonic on this machine. Run `ark import` or set KEYSARK_MNEMONIC.",
     );
   }
-  if (!validateMnemonic(mnemonic!)) fail("助记词无效(检查 12 词与拼写)。");
+  if (!validateMnemonic(mnemonic!)) fail("Invalid mnemonic (check the 12 words).");
   const key = await deriveKey(mnemonic!);
   const vaults = await fetchVaults(transport);
-  if (vaults.length === 0) fail("网盘里没有保险库(先在桌面/网页创建)。");
+  if (vaults.length === 0) fail("No vaults found. Create one on the web first.");
   const descriptor = await pickVault(vaults, key, flagStr(args.flags, "vault"));
-  if (!descriptor) fail("助记词不匹配任何保险库(verifier 校验失败)。");
+  if (!descriptor) fail("Mnemonic does not match any vault.");
   const vault = openVault(key, descriptor!, transport);
   await vault.load();
   return { key, descriptor: descriptor!, vault, transport };
@@ -122,57 +122,56 @@ function fmtEntry(e: EntryMeta, folderPath?: string): string {
   const when = e.updatedAt ? new Date(e.updatedAt).toISOString().slice(0, 16).replace("T", " ") : "";
   const loc = folderPath ? `  [${folderPath}]` : "";
   const src = e.provider ? `  (${e.provider})` : "";
-  return `${id}  ${when}  ${e.title || "(无标题)"}${loc}${src}`;
+  return `${id}  ${when}  ${e.title || "(untitled)"}${loc}${src}`;
 }
 
 /** 把短 id / 全 id 解析成条目。 */
 function findEntry(vault: Vault, idArg: string): EntryMeta {
   const matches = vault.entries.filter((e) => e.id === idArg || e.id.startsWith(idArg));
-  if (matches.length === 0) fail(`找不到条目:${idArg}`);
-  if (matches.length > 1) fail(`id 前缀 ${idArg} 不唯一,请给更长的 id。`);
+  if (matches.length === 0) fail(`No item: ${idArg}`);
+  if (matches.length > 1) fail(`Ambiguous id prefix: ${idArg}`);
   return matches[0]!;
 }
 
-const HELP = `ark —— KeysArk E2E 网盘文本保管库 CLI(独立程序,直连云端)
+const HELP = `ark — KeysArk end-to-end encrypted vault CLI
 
-账号:
-  ark login              设备码授权登录(浏览器完成,可跨机器;server 用默认或 --server)
-  ark logout             登出:吊销令牌、清本机登录态(已导入的助记词凭据保留)
-  ark status             显示登录与助记词导入状态
-  ark info               显示版本、默认/当前 server 及其来源、配置目录
+Account:
+  ark login              Device-code login via browser
+  ark logout             Revoke token, clear local login (mnemonic credential kept)
+  ark status             Show login and mnemonic status
+  ark info               Show version, server (and its source), config dir
 
-助记词(只能导入,不能创建;创建请去网页端):
-  ark import             导入 12 词助记词:在线校验匹配保险库 → 设置解锁密码(本机加密保存)
-  ark forget             忘记本机助记词(删除加密凭据与解锁缓存)
+Mnemonic (import only; create one on the web):
+  ark import             Import 12-word mnemonic and set an unlock password
+  ark forget             Remove local mnemonic credential and unlock cache
 
-条目:
-  ark vaults             列出保险库及匹配情况
-  ark ls                 列出当前保险库的条目
-  ark get <id>           解密并打印某条目
-  ark new --title T [--content C] [--folder a/b]   新建条目(无 --content 时读 stdin)
-  ark set <id> [--title T] [--content C] [--folder a/b]   更新条目
-                             --folder 为文件夹路径,缺失层级自动创建;"/" 表示根目录
-  ark save <source> [target]   上传文本文件为条目;target 形如 a/b/标题(末尾 "/" 表示
-                             文件夹,标题用文件名)。省略 target 时自动检测并展示结果:
-                             git 仓库内 → origin 去协议 + 仓库内相对路径
-                             (如 github.com/me/repo/.env),否则根目录 + 文件名;
-                             回车采用,或当场输入自定义 target(q 取消)。
-                             目标已有条目则保存为其最新版本;与线上一致则跳过
-  ark rm <id>            删除条目(从索引摘除)
-  ark sync               重推本地待同步项
+Items:
+  ark vaults             List vaults and key match
+  ark ls                 List items
+  ark get <id>           Decrypt and print an item
+  ark new --title T [--content C] [--folder a/b]   Create item (no --content: reads stdin)
+  ark set <id> [--title T] [--content C] [--folder a/b]   Update item
+                         --folder is a path; missing levels are created; "/" = root
+  ark save <source> [target]   Upload a text file. target = a/b/title; trailing "/"
+                         keeps the filename. Without target: detected from git origin
+                         (e.g. github.com/me/repo/.env) or root + filename —
+                         Enter to accept, or type a custom target (q cancels).
+                         Existing target → new version; identical content → skipped
+  ark rm <id>            Delete item
+  ark sync               Re-push pending local changes
 
-解锁机制(与网页端一致):
-  导入时强制设置解锁密码(≥12 位 + ≥3 类字符);助记词经 Argon2id 派生密钥加密存本机。
-  输对密码后 15 分钟内免重输(有操作自动续期);过期需重新输入密码。
+Unlock (same rules as the web app):
+  Mnemonic is stored encrypted with an unlock password (12+ chars, 3+ char classes,
+  Argon2id). A correct password unlocks for 15 min (sliding renewal).
 
-全局选项(位置无关,可放在子命令前后):
-  --server <url>       覆盖云端接口地址;不传时:KEYSARK_SERVER > 登录态 > 内置默认
-                       (内置默认 build 时按环境注入:生产 https://keysark.com,本地 dev 端口)
-  --vault <id|label>   指定保险库
-环境变量:
-  KEYSARK_SERVER     云端接口(优先级高于登录态与内置默认)
-  KEYSARK_MNEMONIC   助记词(跳过本机凭据,脚本/CI 用)
-  KEYSARK_NO_BROWSER login 时不自动打开浏览器`;
+Global options (position-independent):
+  --server <url>       API base; default: KEYSARK_SERVER > login state > built-in
+                       (built-in set at build time: prod https://keysark.com, dev localhost)
+  --vault <id|label>   Select vault
+Env:
+  KEYSARK_SERVER     API base (overrides login state and built-in default)
+  KEYSARK_MNEMONIC   Mnemonic (skips local credential; for scripts/CI)
+  KEYSARK_NO_BROWSER Don't auto-open the browser on login`;
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
@@ -187,39 +186,39 @@ async function main() {
     case "import": {
       // 导入助记词:在线校验必须匹配已有保险库(CLI 不能创建)→ 强制设置解锁密码 → 本机加密保存。
       const transport = transportFrom(args);
-      if (!process.stdin.isTTY) fail("import 需要交互终端。");
+      if (!process.stdin.isTTY) fail("import requires an interactive terminal.");
 
-      const raw = (await promptVisible("输入 12 词助记词(空格分隔):")).trim().replace(/\s+/g, " ");
-      if (!validateMnemonic(raw)) fail("助记词无效(检查 12 个词与拼写)。");
+      const raw = (await promptVisible("Enter 12-word mnemonic: ")).trim().replace(/\s+/g, " ");
+      if (!validateMnemonic(raw)) fail("Invalid mnemonic (check the 12 words).");
 
-      console.log("在线校验中 …");
+      console.log("Verifying…");
       const key = await deriveKey(raw);
       const vaults = await fetchVaults(transport);
-      if (vaults.length === 0) fail("网盘里没有保险库。CLI 不能创建助记词,请先在网页端创建。");
+      if (vaults.length === 0) fail("No vaults found. Create one on the web first.");
       const matches: VaultDescriptor[] = [];
       for (const v of vaults) {
         if (await checkVerifier(key, b64decode(v.verifier))) matches.push(v);
       }
-      if (matches.length === 0) fail("助记词不匹配任何保险库(verifier 校验失败)。CLI 只能导入已有助记词。");
+      if (matches.length === 0) fail("Mnemonic does not match any vault.");
 
       const pw = await promptNewPassword();
       await saveCredential(raw, pw);
       writeUnlockCache(raw); // 刚导入视同刚解锁:15 分钟内免密
-      const names = matches.map((v) => `${v.label || "(默认)"} [${v.id.slice(0, 8)}]`).join("、");
-      console.log(`✓ 已导入并加密保存。匹配保险库:${names}`);
-      console.log("  之后的命令会要求解锁密码;输对后 15 分钟内免重输。");
+      const names = matches.map((v) => `${v.label || "(default)"} [${v.id.slice(0, 8)}]`).join(", ");
+      console.log(`✓ Imported. Matched vaults: ${names}`);
+      console.log("  Commands will ask for the unlock password (cached 15 min).");
       return;
     }
 
     case "forget":
       clearCredential();
-      console.log("✓ 已忘记本机助记词(凭据与解锁缓存已删除)。");
+      console.log("✓ Local mnemonic credential removed.");
       return;
 
     case "status": {
       const cloud = loadCloud();
-      console.log(cloud ? `登录:✓ ${cloud.server}(${cloud.provider ?? "?"})` : "登录:✗(ark login)");
-      console.log(hasCredential() ? "助记词:✓ 已导入(密码加密)" : "助记词:✗(ark import)");
+      console.log(cloud ? `Login: ✓ ${cloud.server} (${cloud.provider ?? "?"})` : "Login: ✗ (run `ark login`)");
+      console.log(hasCredential() ? "Mnemonic: ✓ imported (encrypted)" : "Mnemonic: ✗ (run `ark import`)");
       return;
     }
 
@@ -227,16 +226,16 @@ async function main() {
       const cloud = loadCloud();
       const conn = resolveConn(flagStr(args.flags, "server"));
       const sourceLabel = {
-        "--server": "--server 覆盖",
-        KEYSARK_SERVER: "环境变量 KEYSARK_SERVER",
-        "cloud.json": "登录态 cloud.json",
-        default: "内置默认",
+        "--server": "--server flag",
+        KEYSARK_SERVER: "KEYSARK_SERVER env",
+        "cloud.json": "login state",
+        default: "built-in default",
       }[conn.source];
-      console.log(`版本:${cliVersion()}`);
-      console.log(`默认 server:${defaultServer()}`);
-      console.log(`当前 server:${conn.baseUrl}(来源:${sourceLabel})`);
-      console.log(cloud ? `登录:✓ ${cloud.server}(${cloud.provider ?? "?"})` : "登录:✗(ark login)");
-      console.log(`配置目录:${keysarkDir()}`);
+      console.log(`Version: ${cliVersion()}`);
+      console.log(`Default server: ${defaultServer()}`);
+      console.log(`Server: ${conn.baseUrl} (${sourceLabel})`);
+      console.log(cloud ? `Login: ✓ ${cloud.server} (${cloud.provider ?? "?"})` : "Login: ✗ (run `ark login`)");
+      console.log(`Config dir: ${keysarkDir()}`);
       return;
     }
 
@@ -250,9 +249,9 @@ async function main() {
       ).replace(/\/+$/, "");
 
       const res = await fetch(`${server}/api/cli/device`, { method: "POST" }).catch((e) => {
-        fail(`无法连接 ${server}:${e instanceof Error ? e.message : e}`);
+        fail(`Cannot reach ${server}: ${e instanceof Error ? e.message : e}`);
       });
-      if (!res.ok) fail(`发起授权失败:HTTP ${res.status}`);
+      if (!res.ok) fail(`Authorization request failed: HTTP ${res.status}`);
       const d = (await res.json()) as {
         device_code: string;
         user_code: string;
@@ -261,16 +260,16 @@ async function main() {
         expires_in?: number;
       };
 
-      console.log(`在浏览器中打开以下链接完成授权(可在任何设备打开):\n`);
+      console.log(`Open this link in a browser to authorize (any device):\n`);
       console.log(`  ${d.verification_url}\n`);
-      console.log(`核对码:${d.user_code}(请确认网页显示的码与此一致)\n`);
+      console.log(`Code: ${d.user_code} (must match the one shown in the browser)\n`);
       if (!args.flags["no-browser"] && !process.env.KEYSARK_NO_BROWSER) {
         tryOpenBrowser(d.verification_url);
       }
 
       const intervalMs = Math.max(2, d.interval ?? 3) * 1000;
       const deadline = Date.now() + (d.expires_in ?? 600) * 1000;
-      process.stdout.write("等待网页授权 ");
+      process.stdout.write("Waiting for approval ");
       while (Date.now() < deadline) {
         await sleep(intervalMs);
         let pd: { status?: string; token?: string; provider?: string } = {};
@@ -292,22 +291,22 @@ async function main() {
         console.log();
         if (pd.status === "approved" && pd.token) {
           saveCloud({ server, token: pd.token, provider: pd.provider });
-          console.log(`✓ 登录成功:${server}(${pd.provider ?? "?"})。`);
-          if (!hasCredential()) console.log("  下一步:ark import 导入助记词。");
+          console.log(`✓ Logged in: ${server} (${pd.provider ?? "?"})`);
+          if (!hasCredential()) console.log("  Next: ark import");
           return;
         }
-        if (pd.status === "denied") fail("授权被网页侧拒绝。");
-        fail("授权已过期或失效,请重新 ark login。");
+        if (pd.status === "denied") fail("Authorization denied.");
+        fail("Authorization expired. Run `ark login` again.");
       }
       console.log();
-      fail("等待授权超时,请重新 ark login。");
+      fail("Timed out. Run `ark login` again.");
       return;
     }
 
     case "logout": {
       const cloud = loadCloud();
       if (!cloud) {
-        console.log("(未登录)");
+        console.log("(not logged in)");
         return;
       }
       try {
@@ -320,24 +319,24 @@ async function main() {
         /* 服务端不可达,本地仍登出 */
       }
       clearCloud();
-      console.log(`✓ 已登出 ${cloud.server}(令牌已吊销)。`);
-      if (hasCredential()) console.log("  本机助记词凭据保留;如需删除运行 ark forget。");
+      console.log(`✓ Logged out of ${cloud.server}.`);
+      if (hasCredential()) console.log("  Mnemonic credential kept; run `ark forget` to remove.");
       return;
     }
 
     case "vaults": {
       const transport = transportFrom(args);
       const mnemonic = await acquireMnemonic(true);
-      if (!mnemonic || !validateMnemonic(mnemonic)) fail("没有可用/有效助记词。");
+      if (!mnemonic || !validateMnemonic(mnemonic)) fail("No usable mnemonic.");
       const key = await deriveKey(mnemonic!);
       const vaults = await fetchVaults(transport);
       if (vaults.length === 0) {
-        console.log("(无保险库)");
+        console.log("(no vaults)");
         return;
       }
       for (const v of vaults) {
         const ok = await checkVerifier(key, b64decode(v.verifier));
-        console.log(`${ok ? "●" : "○"} ${v.label || "(默认)"}  [${v.id.slice(0, 8)}]  dir=${v.dir || "/"}`);
+        console.log(`${ok ? "●" : "○"} ${v.label || "(default)"}  [${v.id.slice(0, 8)}]  dir=${v.dir || "/"}`);
       }
       return;
     }
@@ -346,7 +345,7 @@ async function main() {
       const { vault } = await ready(args);
       const entries = vault.entries;
       if (entries.length === 0) {
-        console.log("(空)");
+        console.log("(empty)");
         return;
       }
       const paths = folderPathById(vault);
@@ -356,11 +355,11 @@ async function main() {
 
     case "get": {
       const idArg = args.positionals[0];
-      if (!idArg) fail("用法:ark get <id>");
+      if (!idArg) fail("usage: ark get <id>");
       const { vault } = await ready(args);
       const meta = findEntry(vault, idArg!);
       const doc = await vault.open(meta.id);
-      console.log(`# ${doc.title || "(无标题)"}\n`);
+      console.log(`# ${doc.title || "(untitled)"}\n`);
       console.log(doc.content);
       return;
     }
@@ -374,7 +373,7 @@ async function main() {
       const folderId = folderPath !== undefined ? await resolveFolderPath(vault, folderPath) : null;
       const res = await vault.save({ title, content: content ?? "", folderId });
       console.log(
-        `✓ 新建 [${res.id.slice(0, 8)}]${res.synced ? " 已同步" : ` (本地,同步失败:${res.syncError})`}`,
+        `✓ Created [${res.id.slice(0, 8)}]${res.synced ? ", synced" : ` (local; sync failed: ${res.syncError})`}`,
       );
       return;
     }
@@ -382,49 +381,49 @@ async function main() {
     case "save": {
       const fileArg = args.positionals[0];
       const targetArg = args.positionals[1];
-      if (!fileArg) fail("用法:ark save <source> [target](target 形如 a/b/标题,可省略)");
+      if (!fileArg) fail("usage: ark save <source> [target]");
       const abs = resolve(fileArg!);
       let bytes: Buffer;
       try {
         bytes = readFileSync(abs);
       } catch (err) {
-        fail(`读不到文件 ${abs}:${err instanceof Error ? err.message : err}`);
+        fail(`Cannot read ${abs}: ${err instanceof Error ? err.message : err}`);
       }
-      if (bytes!.includes(0)) fail(`${abs} 是二进制文件,save 目前只支持文本。`);
+      if (bytes!.includes(0)) fail(`${abs} is binary; only text is supported.`);
       const content = bytes!.toString("utf8");
 
       // 目标:显式 target 直接解析;省略则自动推导(git origin / 根目录),
       // 并把检测结果给用户过目——回车采用,或当场输入自定义 target。
       const explicit = targetArg !== undefined;
       let target = explicit ? parseSaveTarget(targetArg!, abs) : proposeSaveTarget(abs);
-      if (!target) fail(`target 无效:${targetArg}`);
+      if (!target) fail(`Invalid target: ${targetArg}`);
       // target 未带出 provider(首段不是已知域名)时,仍按源文件的 git origin 识别。
       target!.provider ??= detectSourceProvider(abs);
 
       const { vault } = await ready(args);
 
-      console.log(`源文件:${abs}`);
+      console.log(`Source: ${abs}`);
       if (explicit) {
-        console.log(`目标:${targetDisplay(target!)}`);
+        console.log(`Target: ${targetDisplay(target!)}`);
       } else {
-        console.log(`检测到目标:${targetDisplay(target!)}${target!.note ? `(${target!.note})` : ""}`);
+        console.log(`Detected target: ${targetDisplay(target!)}${target!.note ? ` (${target!.note})` : ""}`);
         if (process.stdin.isTTY) {
           const input = (
-            await promptVisible("回车使用该目标,或输入自定义 target(形如 a/b/标题,q 取消):")
+            await promptVisible("Enter to accept, or type a target (q to cancel): ")
           ).trim();
           if (input.toLowerCase() === "q") {
-            console.log("已取消。");
+            console.log("Cancelled.");
             return;
           }
           if (input) {
             const custom = parseSaveTarget(input, abs);
-            if (!custom) fail(`target 无效:${input}`);
+            if (!custom) fail(`Invalid target: ${input}`);
             custom.provider ??= detectSourceProvider(abs);
             target = custom;
-            console.log(`目标:${targetDisplay(target)}`);
+            console.log(`Target: ${targetDisplay(target)}`);
           }
         } else {
-          console.log("(非交互环境,使用检测到的目标)");
+          console.log("(non-interactive: using detected target)");
         }
       }
       const { folderPath, title, provider } = target!;
@@ -442,32 +441,32 @@ async function main() {
         existing?.contentHash &&
         existing.contentHash === (await sha256Hex(new TextEncoder().encode(content)))
       ) {
-        console.log(`✓ 线上最新版本(共 ${existing.versions ?? 1} 版)与本地内容一致,无需保存。`);
+        console.log(`✓ Up to date with the latest version (${existing.versions ?? 1} total); nothing to save.`);
         if (provider && provider !== existing.provider) {
           // 内容不动,仅补来源标记(元数据更新,不产生新版本)。
           const res = await vault.save({ id: existing.id, title, content, folderId: existing.folderId, provider });
-          console.log(`  已补充来源标记 (${provider})${res.synced ? ",已同步" : `(本地,同步失败:${res.syncError})`}。`);
+          console.log(`  Provider tag set (${provider})${res.synced ? ", synced" : ` (local; sync failed: ${res.syncError})`}`);
         }
         return;
       }
 
       if (existing) {
         console.log(
-          `目标路径已有条目 [${existing.id.slice(0, 8)}](${existing.versions ?? 1} 个版本),将保存为该条目的最新版本。`,
+          `Target exists [${existing.id.slice(0, 8)}] (${existing.versions ?? 1} versions); will save as its latest version.`,
         );
       }
 
       const folderId = folderPath !== undefined ? await resolveFolderPath(vault, folderPath) : null;
       const res = await vault.save({ id: existing?.id, title, content, folderId, provider });
       console.log(
-        `✓ ${existing ? "更新" : "新建"} ${display} [${res.id.slice(0, 8)}]${provider ? ` (${provider})` : ""}${res.synced ? " 已同步" : ` (本地,同步失败:${res.syncError})`}`,
+        `✓ ${existing ? "Updated" : "Created"} ${display} [${res.id.slice(0, 8)}]${provider ? ` (${provider})` : ""}${res.synced ? ", synced" : ` (local; sync failed: ${res.syncError})`}`,
       );
       return;
     }
 
     case "set": {
       const idArg = args.positionals[0];
-      if (!idArg) fail("用法:ark set <id> [--title T] [--content C] [--folder a/b]");
+      if (!idArg) fail("usage: ark set <id> [--title T] [--content C] [--folder a/b]");
       const { vault } = await ready(args);
       const meta = findEntry(vault, idArg!);
       const cur = await vault.open(meta.id);
@@ -478,29 +477,29 @@ async function main() {
       const folderId =
         folderPath !== undefined ? await resolveFolderPath(vault, folderPath) : cur.folderId;
       const res = await vault.save({ id: meta.id, title, content, folderId });
-      console.log(`✓ 更新 [${meta.id.slice(0, 8)}]${res.synced ? " 已同步" : ` (本地:${res.syncError})`}`);
+      console.log(`✓ Updated [${meta.id.slice(0, 8)}]${res.synced ? ", synced" : ` (local; ${res.syncError})`}`);
       return;
     }
 
     case "rm": {
       const idArg = args.positionals[0];
-      if (!idArg) fail("用法:ark rm <id>");
+      if (!idArg) fail("usage: ark rm <id>");
       const { vault } = await ready(args);
       const meta = findEntry(vault, idArg!);
       const res = await vault.remove(meta.id);
-      console.log(`✓ 删除 [${meta.id.slice(0, 8)}]${res.synced ? " 已同步" : ` (本地:${res.syncError})`}`);
+      console.log(`✓ Deleted [${meta.id.slice(0, 8)}]${res.synced ? ", synced" : ` (local; ${res.syncError})`}`);
       return;
     }
 
     case "sync": {
       const { vault } = await ready(args);
       const { remaining } = await vault.sync();
-      console.log(remaining === 0 ? "✓ 全部已同步" : `还剩 ${remaining} 项待同步`);
+      console.log(remaining === 0 ? "✓ All synced" : `${remaining} pending`);
       return;
     }
 
     default:
-      fail(`未知命令:${args.cmd}\n运行 \`ark help\` 查看用法。`);
+      fail(`Unknown command: ${args.cmd}. See \`ark help\`.`);
   }
 }
 

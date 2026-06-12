@@ -51,10 +51,10 @@ export function proposeSaveTarget(sourceFile: string): SaveTarget {
       folderPath: git.originPath,
       title: relative(git.repoRoot, sourceFile),
       provider: providerForHost(host)?.id ?? host,
-      note: "由 git origin 推导",
+      note: "from git origin",
     };
   }
-  return { title: basename(sourceFile), note: "非 git 仓库,存根目录" };
+  return { title: basename(sourceFile), note: "not a git repo; root folder" };
 }
 
 /** 展示用完整目标路径。 */

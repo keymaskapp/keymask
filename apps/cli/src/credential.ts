@@ -83,7 +83,7 @@ export async function saveCredential(mnemonic: string, password: string): Promis
 /** 密码解锁:还原助记词。无凭据或密码错误(GCM 认证失败)都抛错。 */
 export async function unlockCredential(password: string): Promise<string> {
   const raw = JSON.parse(readFileSync(credentialPath(), "utf8")) as Credential;
-  if (raw.v !== 1 || raw.kdf !== "argon2id") throw new Error("凭据格式不支持");
+  if (raw.v !== 1 || raw.kdf !== "argon2id") throw new Error("Unsupported credential format");
   const key = await deriveWrappingKey(password, unb64(raw.salt), raw.params);
   const pt = await decrypt(key, unb64(raw.iv), unb64(raw.ct));
   return new TextDecoder().decode(pt);
@@ -179,23 +179,23 @@ export function promptSecret(question: string): Promise<string> {
 }
 
 const REASON_TEXT: Record<StrengthReason, string> = {
-  too_short: "至少 12 位",
-  need_classes: "需含小写/大写/数字/符号中至少 3 类",
-  weak_pattern: "过于规律(重复/连续/常见密码)",
+  too_short: "12+ chars",
+  need_classes: "need 3 of: lower/upper/digit/symbol",
+  weak_pattern: "too predictable",
 };
 
 /** 交互设置解锁密码:强度校验(与 web 同一套规则)+ 二次确认,直到合格。 */
 export async function promptNewPassword(): Promise<string> {
   for (;;) {
-    const pw = await promptSecret("设置解锁密码(至少 12 位,含 3 类字符):");
+    const pw = await promptSecret("Set unlock password (12+ chars, 3+ classes): ");
     const score = scorePassword(pw);
     if (!score.ok) {
-      console.error(`✗ 密码不达标:${score.reasons.map((r) => REASON_TEXT[r]).join(" · ")}`);
+      console.error(`✗ Weak password: ${score.reasons.map((r) => REASON_TEXT[r]).join(" · ")}`);
       continue;
     }
-    const pw2 = await promptSecret("再输一遍确认:");
+    const pw2 = await promptSecret("Confirm: ");
     if (pw !== pw2) {
-      console.error("✗ 两次输入不一致,重来。");
+      console.error("✗ Mismatch, try again.");
       continue;
     }
     return pw;
@@ -217,14 +217,14 @@ export async function acquireMnemonic(allowPrompt = true): Promise<string | null
   if (!allowPrompt || !process.stdin.isTTY) return null;
 
   for (let attempt = 1; attempt <= 3; attempt++) {
-    const pw = await promptSecret("解锁密码:");
+    const pw = await promptSecret("Unlock password: ");
     if (!pw) continue;
     try {
       const mnemonic = await unlockCredential(pw);
       writeUnlockCache(mnemonic); // 输对密码 → 15 分钟内免重输
       return mnemonic;
     } catch {
-      console.error(attempt < 3 ? "✗ 密码错误,再试一次。" : "✗ 密码错误。");
+      console.error(attempt < 3 ? "✗ Wrong password, try again." : "✗ Wrong password.");
     }
   }
   return null;
