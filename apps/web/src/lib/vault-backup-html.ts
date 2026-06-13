@@ -11,7 +11,14 @@ import {
   encrypt,
   generateWrappingSalt,
 } from "@keysark/crypto";
-import { BUILD_COMMIT, BUILD_REPO, BUILD_VERSION, commitUrl } from "@/lib/build-info";
+import {
+  BUILD_COMMIT,
+  BUILD_REPO,
+  BUILD_VERSION,
+  collectProvenance,
+  commitUrl,
+  provenanceRows,
+} from "@/lib/build-info";
 import { translate, type Locale, type MsgKey } from "@/lib/i18n";
 
 export type EncryptedBackupInput = {
@@ -80,6 +87,8 @@ export async function buildEncryptedBackupHtml(input: EncryptedBackupInput): Pro
     userAgent,
     createdAt: createdAt.toISOString(),
     locale: input.locale,
+    // 完整出处清单(构建/运行环境 + 加密方案规格),供多年后还原当时的运行环境。
+    provenance: collectProvenance(input.locale),
   };
 
   // 源码出处:仓库地址 @ 提交;能拼出提交链接时渲染为可点击外链(用户点了才联网,文件本身仍零请求)。
@@ -90,6 +99,9 @@ export async function buildEncryptedBackupHtml(input: EncryptedBackupInput): Pro
         sourceText,
       )}</a>`
     : escapeHtml(sourceText);
+
+  // 出处清单(中英各一份内嵌,随文件内语言切换;技术值跨语言一致,仅标签随语言)。
+  const prov = { zh: provenanceRows("zh"), en: provenanceRows("en") };
 
   // 双语文案:两种语言各一份内嵌,文件内可切换。
   const strings: Record<string, Record<string, string>> = {};
@@ -149,6 +161,12 @@ export async function buildEncryptedBackupHtml(input: EncryptedBackupInput): Pro
   .hint { color: #9CA3AF; font-size: 12px; margin: 10px 0 0; }
   .env { color: #4B5563; font-size: 11px; margin-top: 6px; word-break: break-all; }
   .risk { color: #FCA5A5; font-size: 13px; margin-top: 16px; }
+  details.prov { margin-top: 20px; border-top: 1px solid #374151; padding-top: 14px; }
+  details.prov summary { color: #9CA3AF; font-size: 12px; cursor: pointer; }
+  details.prov dl { margin: 12px 0 0; display: grid; grid-template-columns: max-content 1fr;
+                    gap: 6px 14px; font-size: 11px; }
+  details.prov dt { color: #6B7280; white-space: nowrap; }
+  details.prov dd { color: #9CA3AF; margin: 0; word-break: break-word; font-family: ui-monospace, Menlo, monospace; }
 </style>
 </head>
 <body>
@@ -183,16 +201,21 @@ export async function buildEncryptedBackupHtml(input: EncryptedBackupInput): Pro
     </div>
   </div>
   <p class="note" data-t="bk_offline_note"></p>
-  <p class="env">${escapeHtml(userAgent)}</p>
+  <details class="prov">
+    <summary id="prov-title"></summary>
+    <dl id="prov-rows"></dl>
+  </details>
 </main>
 <script id="payload" type="application/json">${JSON.stringify(payload).replace(/</g, "\\u003c")}</script>
 <script id="strings" type="application/json">${JSON.stringify(strings).replace(/</g, "\\u003c")}</script>
+<script id="prov" type="application/json">${JSON.stringify(prov).replace(/</g, "\\u003c")}</script>
 <script>${argon2Src}</script>
 <script>
 (function () {
   "use strict";
   var data = JSON.parse(document.getElementById("payload").textContent);
   var STRINGS = JSON.parse(document.getElementById("strings").textContent);
+  var PROV = JSON.parse(document.getElementById("prov").textContent);
   var lang = data.locale === "en" ? "en" : "zh";
   var pw = document.getElementById("pw"), go = document.getElementById("go");
   var msg = document.getElementById("msg"), out = document.getElementById("out");
@@ -211,6 +234,16 @@ export async function buildEncryptedBackupHtml(input: EncryptedBackupInput): Pro
     document.getElementById("lang-zh").className = lang === "zh" ? "on" : "";
     document.getElementById("lang-en").className = lang === "en" ? "on" : "";
     if (msgKey) msg.textContent = S()[msgKey];
+    // 出处清单:随语言切换重渲染(标签随语言,技术值不变)。
+    var prov = PROV[lang];
+    document.getElementById("prov-title").textContent = prov.title;
+    var dl = document.getElementById("prov-rows");
+    dl.innerHTML = "";
+    prov.rows.forEach(function (r) {
+      var dt = document.createElement("dt"); dt.textContent = r.label;
+      var dd = document.createElement("dd"); dd.textContent = r.value;
+      dl.appendChild(dt); dl.appendChild(dd);
+    });
   }
   document.getElementById("lang-zh").addEventListener("click", function () { lang = "zh"; applyLang(); });
   document.getElementById("lang-en").addEventListener("click", function () { lang = "en"; applyLang(); });

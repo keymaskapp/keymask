@@ -6,7 +6,7 @@
 // 安全:本模块只在浏览器事件回调中调用;mnemonic / url / 库名仅在内存与本地下载的
 // 文件中出现,不发起任何网络请求(符合 E2E 约束 #3)。
 
-import { sourceLabel } from "@/lib/build-info";
+import { provenanceRows, sourceLabel } from "@/lib/build-info";
 import { translate, type Locale } from "@/lib/i18n";
 
 export type VaultBackupInput = {
@@ -83,6 +83,56 @@ function roundRect(
 ): void {
   ctx.beginPath();
   ctx.roundRect(x, y, w, h, r);
+}
+
+/** 第二页:出处清单 —— 构建/运行环境 + 加密方案规格,供多年后还原当时的运行环境。 */
+function renderProvenanceCanvas(locale: Locale): HTMLCanvasElement {
+  const { title, rows } = provenanceRows(locale);
+  const canvas = document.createElement("canvas");
+  canvas.width = CANVAS_W;
+  canvas.height = CANVAS_H;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("canvas 2d context unavailable");
+  ctx.fillStyle = "#FFFFFF";
+  ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+  ctx.textBaseline = "alphabetic";
+
+  let y = 132;
+  ctx.fillStyle = COLOR.indigo;
+  ctx.font = `700 34px ${SANS}`;
+  for (const ln of wrapText(ctx, title, CONTENT_W)) {
+    ctx.fillText(ln, MARGIN, y);
+    y += 44;
+  }
+  y += 4;
+  ctx.strokeStyle = COLOR.line;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(MARGIN, y);
+  ctx.lineTo(CANVAS_W - MARGIN, y);
+  ctx.stroke();
+  y += 44;
+
+  const labelW = 300;
+  const valueX = MARGIN + labelW;
+  const valueW = CONTENT_W - labelW;
+  const lineH = 34;
+  for (const { label, value } of rows) {
+    ctx.font = `400 24px ${SANS}`;
+    const lines = wrapText(ctx, value, valueW);
+    ctx.fillStyle = COLOR.muted;
+    ctx.font = `600 22px ${SANS}`;
+    ctx.fillText(label, MARGIN, y + 24);
+    ctx.fillStyle = COLOR.ink;
+    ctx.font = `400 24px ${SANS}`;
+    let vy = y + 24;
+    for (const ln of lines) {
+      ctx.fillText(ln, valueX, vy);
+      vy += lineH;
+    }
+    y += Math.max(lineH, lines.length * lineH) + 16;
+  }
+  return canvas;
 }
 
 export async function exportVaultBackupPdf(input: VaultBackupInput): Promise<void> {
@@ -225,6 +275,9 @@ export async function exportVaultBackupPdf(input: VaultBackupInput): Promise<voi
   const pageW = pdf.internal.pageSize.getWidth();
   const pageH = pdf.internal.pageSize.getHeight();
   pdf.addImage(canvas.toDataURL("image/png"), "PNG", 0, 0, pageW, pageH);
+  // 第二页:出处清单(构建/运行环境 + 加密规格)。
+  pdf.addPage();
+  pdf.addImage(renderProvenanceCanvas(locale).toDataURL("image/png"), "PNG", 0, 0, pageW, pageH);
   // 非默认库名时,把库名并进文件名(剔除文件系统非法字符、空白折成连字符;CJK 保留)。
   const trimmed = vaultName.trim();
   const safeName =
