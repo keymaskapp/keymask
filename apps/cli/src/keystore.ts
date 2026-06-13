@@ -57,8 +57,17 @@ const macKeychain: Backend = {
     }
   },
   set(key) {
-    // -U:已存在则更新。-w 取值走 stdin(避免 base64 出现在 argv / ps 里)。
-    run("security", ["add-generic-password", "-U", "-s", SERVICE, "-a", ACCOUNT, "-w", key.toString("base64")]);
+    // -U:已存在则更新。-w 不带值 → security 交互式读「密码 + 重输」两行;从 stdin 喂两遍,
+    // 让 base64 key 绝不出现在 argv(否则同机其它用户能在那一瞬用 `ps` 抓到它,
+    // 而它能解 5 分钟解锁缓存)。base64 不含换行,故 "key\nkey\n" 解析无歧义。
+    const b64 = key.toString("base64");
+    run("security", ["add-generic-password", "-U", "-s", SERVICE, "-a", ACCOUNT, "-w"], {
+      input: Buffer.from(`${b64}\n${b64}\n`, "utf8"),
+    });
+    // security 即便「两次不一致」也返回 0(什么都没存),故写后回读校验;
+    // 写入未落实 → 抛 KeystoreUnavailable,调用方据此禁用缓存(比静默失配更稳)。
+    const back = macKeychain.get();
+    if (!back || !back.equals(key)) throw new KeystoreUnavailable("keychain write unverified");
   },
   remove() {
     try {
