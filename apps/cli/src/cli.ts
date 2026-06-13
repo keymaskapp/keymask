@@ -420,7 +420,10 @@ async function main() {
       if (matches.length === 0) fail("Mnemonic does not match any vault.");
 
       const pw = await promptNewPassword();
+      const spSave = process.stdout.isTTY ? spinner() : null;
+      spSave?.start("Encrypting credential…"); // Argon2id(512MB)~1-2s
       await saveCredential(raw, pw);
+      spSave?.stop();
       writeUnlockCache(raw); // 刚导入视同刚解锁:15 分钟内免密
       const names = matches.map((v) => `${v.label || "(default)"} [${v.id.slice(0, 8)}]`).join(", ");
       console.log(`${OK} Imported. Matched vaults: ${names}`);

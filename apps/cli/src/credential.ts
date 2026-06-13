@@ -20,7 +20,7 @@ import {
   type StrengthReason,
 } from "@keysark/crypto";
 import { keysarkDir } from "./config";
-import { askPassword, log } from "./ui";
+import { askPassword, log, spinner } from "./ui";
 
 /** 解锁缓存有效期:15 分钟(对齐 web 闲置自动锁定默认值),命中滑动续期。 */
 const UNLOCK_TTL_MS = 15 * 60 * 1000;
@@ -184,11 +184,16 @@ export async function acquireMnemonic(allowPrompt = true): Promise<string | null
   for (let attempt = 1; attempt <= 3; attempt++) {
     const pw = await askPassword("Unlock password");
     if (!pw) continue;
+    // Argon2id(512MB)派生要 ~1-2s,转个 spinner 免得像卡死。
+    const sp = spinner();
+    sp.start("Deriving key…");
     try {
       const mnemonic = await unlockCredential(pw);
+      sp.stop();
       writeUnlockCache(mnemonic); // 输对密码 → 15 分钟内免重输
       return mnemonic;
     } catch {
+      sp.stop();
       log.error(attempt < 3 ? "Wrong password, try again." : "Wrong password.");
     }
   }

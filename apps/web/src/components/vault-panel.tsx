@@ -1343,8 +1343,17 @@ export function VaultPanel({
                     onClick={downloadEncryptedBackup}
                     disabled={busy || !scorePassword(bkPw).ok || bkPw !== bkPw2 || !bkPw2}
                   >
-                    <Lock className="h-4 w-4" />
-                    {t("btn_download_html")}
+                    {busy ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        {t("st_encrypting_backup")}
+                      </>
+                    ) : (
+                      <>
+                        <Lock className="h-4 w-4" />
+                        {t("btn_download_html")}
+                      </>
+                    )}
                   </Button>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -1403,7 +1412,14 @@ export function VaultPanel({
                 <p className="text-xs text-[var(--color-danger)]">{t("pw_mismatch")}</p>
               ) : null}
               <Button onClick={finishSetup} disabled={!canSubmit} size="lg">
-                {t("btn_set_password")}
+                {busy ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {t("st_setting_password")}
+                  </>
+                ) : (
+                  t("btn_set_password")
+                )}
               </Button>
               <div className="border-t border-[var(--color-border)] pt-3 text-center">
                 <Button
@@ -1927,7 +1943,14 @@ export function VaultPanel({
               onClick={submitChangePassword}
               disabled={busy || !curPw || !scorePassword(chPw).ok || chPw !== chPw2 || !chPw2}
             >
-              {t("btn_change_password")}
+              {busy ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {t("st_changing_password")}
+                </>
+              ) : (
+                t("btn_change_password")
+              )}
             </Button>
           </AlertDialogFooter>
         </AlertDialogContent>

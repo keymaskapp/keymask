@@ -148,6 +148,10 @@ export async function buildEncryptedBackupHtml(input: EncryptedBackupInput): Pro
   button { margin-top: 12px; width: 100%; padding: 10px; border: 0; border-radius: 8px;
            background: #4F46E5; color: #fff; font-size: 15px; cursor: pointer; }
   button:disabled { opacity: .5; cursor: default; }
+  @keyframes ks-spin { to { transform: rotate(360deg); } }
+  button.busy::before { content: ""; display: inline-block; width: 14px; height: 14px;
+           margin-right: 8px; vertical-align: -2px; border: 2px solid rgba(255,255,255,.35);
+           border-top-color: #fff; border-radius: 50%; animation: ks-spin .6s linear infinite; }
   button.ghost { margin-top: 16px; background: #1F2937; color: #E5E7EB; border: 1px solid #4B5563; }
   .err { color: #F87171; font-size: 13px; margin-top: 10px; }
   .note { color: #6B7280; font-size: 12px; margin-top: 16px; }
@@ -258,6 +262,7 @@ export async function buildEncryptedBackupHtml(input: EncryptedBackupInput): Pro
   async function run() {
     if (!pw.value) return;
     go.disabled = true;
+    go.classList.add("busy"); // CSS spinner;512MB Argon2id 解密要 ~1-2s
     msg.hidden = false;
     msgKey = "bk_decrypting";
     msg.textContent = S().bk_decrypting;
@@ -294,6 +299,7 @@ export async function buildEncryptedBackupHtml(input: EncryptedBackupInput): Pro
       msg.textContent = S().bk_wrong;
     } finally {
       go.disabled = false;
+      go.classList.remove("busy");
     }
   }
   go.addEventListener("click", run);
