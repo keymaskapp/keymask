@@ -11,6 +11,18 @@ const pkg = JSON.parse(readFileSync(join(process.cwd(), "package.json"), "utf8")
   repository?: string | { url?: string };
 };
 
+/** ark CLI(@keysark/cli)的版本号:从同仓库的 apps/cli/package.json 读取,展示在文档/落地页。 */
+function cliVersion(): string {
+  try {
+    const j = JSON.parse(
+      readFileSync(join(process.cwd(), "..", "cli", "package.json"), "utf8"),
+    ) as { version?: string };
+    return j.version ?? "0.0.0";
+  } catch {
+    return "0.0.0";
+  }
+}
+
 /** 归一化仓库地址为可点击的 https 形式:git@github.com:org/repo.git → https://github.com/org/repo */
 function normalizeRepo(raw: string): string {
   let s = raw.replace(/^git\+/, "").trim();
@@ -106,6 +118,7 @@ const buildManifest = {
 const config: NextConfig = {
   env: {
     NEXT_PUBLIC_KEYSARK_VERSION: pkg.version ?? "0.0.0",
+    NEXT_PUBLIC_KEYSARK_CLI_VERSION: cliVersion(),
     NEXT_PUBLIC_KEYSARK_COMMIT: gitCommit(),
     NEXT_PUBLIC_KEYSARK_REPO: repoUrl(),
     NEXT_PUBLIC_KEYSARK_BUILD: JSON.stringify(buildManifest),

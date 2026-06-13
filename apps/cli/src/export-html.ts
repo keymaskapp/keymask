@@ -23,6 +23,7 @@ export interface ExportData {
   vaultId: string;
   source: string; // 备份来源路径(展示用)
   exportedAt: number;
+  version: string; // 生成该页的 ark CLI 版本(溯源用)
   items: ExportItem[];
 }
 
@@ -99,6 +100,8 @@ export function renderVaultHtml(data: ExportData): string {
   header.top { border-bottom: 1px solid var(--line); padding-bottom: 18px; margin-bottom: 22px; }
   .brand { font-weight: 700; letter-spacing: .3px; }
   .brand .k { color: var(--accent); }
+  .ver { font-weight: 500; font-size: 11px; color: var(--muted); background: var(--chip);
+    padding: 2px 7px; border-radius: 999px; margin-left: 4px; letter-spacing: 0; }
   h1 { font-size: 22px; margin: 8px 0 4px; }
   .sub { color: var(--muted); font-size: 13px; display: flex; flex-wrap: wrap; gap: 6px 14px; }
   .sub code { color: var(--fg); }
@@ -133,7 +136,7 @@ export function renderVaultHtml(data: ExportData): string {
 <body>
 <div class="wrap">
   <header class="top">
-    <div class="brand"><span class="k">Keys</span>Ark</div>
+    <div class="brand"><span class="k">Keys</span>Ark <span class="ver">ark v${esc(data.version)}</span></div>
     <h1>${esc(data.vaultLabel || "(default)")}</h1>
     <div class="sub">
       <span>vault <code>${esc(data.vaultId.slice(0, 8))}</code></span>
@@ -147,7 +150,7 @@ export function renderVaultHtml(data: ExportData): string {
   <main id="list">
 ${itemsHtml}
   </main>
-  <footer>Decrypted locally with <span class="brand"><span class="k">Keys</span>Ark</span> · this file stays on your machine</footer>
+  <footer>Decrypted locally with <span class="brand"><span class="k">Keys</span>Ark</span> ark v${esc(data.version)} · this file stays on your machine</footer>
 </div>
 <script>
   (function () {

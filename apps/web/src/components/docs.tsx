@@ -8,6 +8,7 @@ import { useState } from "react";
 import { Wordmark } from "./brand";
 import { HeaderControls } from "./controls";
 import { useT } from "./providers";
+import { CLI_VERSION } from "@/lib/build-info";
 import type { MsgKey } from "@/lib/i18n";
 import { testId } from "@/lib/test-id";
 
@@ -156,6 +157,13 @@ export function Docs() {
 
             {/* 安装 */}
             <Section id="install" title={t("docs_install_title")}>
+              <span
+                {...testId("docs-cli-version")}
+                className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1 font-mono text-xs text-[var(--color-muted-foreground)]"
+              >
+                <Terminal className="h-3.5 w-3.5" />
+                @keysark/cli@{CLI_VERSION}
+              </span>
               <CodeBlock code="npm install -g @keysark/cli" id="install" />
               <p className="text-sm text-[var(--color-muted-foreground)]">{t("docs_install_note")}</p>
             </Section>

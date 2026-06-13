@@ -18,6 +18,7 @@ import { Fragment } from "react";
 import { Wordmark } from "./brand";
 import { CONTROL_TRIGGER, HeaderControls } from "./controls";
 import { useT } from "./providers";
+import { CLI_VERSION } from "@/lib/build-info";
 import type { MsgKey } from "@/lib/i18n";
 import { storageLabel, type ProviderFlags } from "@/lib/providers";
 import { testId } from "@/lib/test-id";
@@ -271,7 +272,9 @@ export function Landing({ error, providers }: { error?: string; providers: Provi
                   <span className="h-2.5 w-2.5 rounded-full bg-[var(--color-danger)]/60" />
                   <span className="h-2.5 w-2.5 rounded-full bg-[var(--color-warning,#f59e0b)]/60" />
                   <span className="h-2.5 w-2.5 rounded-full bg-[var(--color-success)]/60" />
-                  <span className="ml-2 font-mono text-xs text-[var(--color-muted-foreground)]">ark</span>
+                  <span className="ml-2 font-mono text-xs text-[var(--color-muted-foreground)]">
+                    ark v{CLI_VERSION}
+                  </span>
                 </div>
                 <div className="px-4 py-4 font-mono text-xs leading-relaxed">
                   <p className="text-[var(--color-muted-foreground)]"># {t("cli_home_install_hint")}</p>

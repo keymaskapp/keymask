@@ -8,6 +8,8 @@ import { DEFAULT_ARGON2ID_PARAMS } from "@keysark/crypto";
 import type { Locale } from "@/lib/i18n";
 
 export const BUILD_VERSION = process.env.NEXT_PUBLIC_KEYSARK_VERSION ?? "0.0.0";
+/** ark CLI(@keysark/cli)版本;构建期从 apps/cli/package.json 注入,展示在文档/落地页。 */
+export const CLI_VERSION = process.env.NEXT_PUBLIC_KEYSARK_CLI_VERSION ?? "0.0.0";
 export const BUILD_COMMIT = process.env.NEXT_PUBLIC_KEYSARK_COMMIT ?? "unknown";
 export const BUILD_REPO = process.env.NEXT_PUBLIC_KEYSARK_REPO ?? "";
 

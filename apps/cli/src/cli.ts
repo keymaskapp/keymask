@@ -301,6 +301,7 @@ async function runLocal(srcArg: string, args: Args): Promise<void> {
     vaultId: descriptor!.id,
     source: src,
     exportedAt: Date.now(),
+    version: cliVersion(),
     items: exported,
   };
   const htmlPath = join(outDir, "index.html");
