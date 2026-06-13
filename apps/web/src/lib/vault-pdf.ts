@@ -187,7 +187,7 @@ export async function exportVaultBackupPdf(input: VaultBackupInput): Promise<voi
   drawField(tr("pdf_url_label"), url);
   drawField(tr("pdf_name_label"), vaultName);
 
-  // 助记词网格(3 列 × 4 行)
+  // 助记词网格(3 列;行数随词数:12 词=4 行,24 词=8 行)
   y += 70;
   ctx.fillStyle = COLOR.muted;
   ctx.font = `600 22px ${SANS}`;
@@ -196,9 +196,10 @@ export async function exportVaultBackupPdf(input: VaultBackupInput): Promise<voi
   y += 28;
   const words = mnemonic.split(" ");
   const cols = 3;
-  const gap = 18;
+  const rowCount = Math.ceil(words.length / cols); // 12 词→4 行,24 词→8 行
+  const gap = 14;
   const boxW = (CONTENT_W - gap * (cols - 1)) / cols;
-  const boxH = 74;
+  const boxH = 64;
   words.forEach((w, i) => {
     const col = i % cols;
     const row = Math.floor(i / cols);
@@ -217,7 +218,7 @@ export async function exportVaultBackupPdf(input: VaultBackupInput): Promise<voi
     ctx.font = `600 30px ${MONO}`;
     ctx.fillText(w, bx + 78, by + boxH / 2 + 11);
   });
-  y += 4 * boxH + 3 * gap + 64;
+  y += rowCount * boxH + (rowCount - 1) * gap + 64;
 
   // 风险提示框
   const risks = [tr("pdf_risk_1"), tr("pdf_risk_2"), tr("pdf_risk_3"), tr("pdf_risk_4")];
