@@ -93,7 +93,7 @@ export async function buildEncryptedBackupHtml(input: EncryptedBackupInput): Pro
 
   // 源码出处:仓库地址 @ 提交;能拼出提交链接时渲染为可点击外链(用户点了才联网,文件本身仍零请求)。
   const cUrl = commitUrl();
-  const sourceText = repo ? `${repo} @ ${commit}` : commit;
+  const sourceText = repo ? `${repo}@${commit}` : commit;
   const sourceHtml = cUrl
     ? `<a href="${escapeHtml(cUrl)}" target="_blank" rel="noreferrer noopener" style="color:#818CF8">${escapeHtml(
         sourceText,
@@ -182,7 +182,7 @@ export async function buildEncryptedBackupHtml(input: EncryptedBackupInput): Pro
   <h1 data-t="bk_title"></h1>
   <p class="meta">
     <span data-t="pdf_name_label"></span>:${escapeHtml(input.vaultName)} · <span data-t="pdf_url_label"></span>:${escapeHtml(input.url)}<br>
-    KeysArk v${escapeHtml(appVersion)} · <span id="exported"></span><br>
+    <span id="exported"></span><br>
     <span data-t="pdf_source"></span>:${sourceHtml}
   </p>
   <div class="card">

@@ -27,7 +27,7 @@ const BUILD: BuildManifest = (() => {
 
 /** 形如 "https://github.com/org/keysark @ a1b2c3d · v0.0.1";无仓库地址时省略前段。 */
 export function sourceLabel(): string {
-  const left = BUILD_REPO ? `${BUILD_REPO} @ ${BUILD_COMMIT}` : BUILD_COMMIT;
+  const left = BUILD_REPO ? `${BUILD_REPO}@${BUILD_COMMIT}` : BUILD_COMMIT;
   return `${left} · v${BUILD_VERSION}`;
 }
 

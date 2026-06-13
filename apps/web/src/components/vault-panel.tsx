@@ -2179,7 +2179,7 @@ export function VaultPanel({
         <div {...testId("vault-detail-scroll")} className="flex-1 overflow-y-auto">
           {/* 顶栏:同步状态 + 控件 + 用户菜单(编辑/预览共用) */}
           <div {...testId("vault-detail-header")} className="flex h-14 items-center justify-between gap-3 border-b border-[var(--color-border)] bg-[var(--color-background)] px-6">
-            <div className="flex min-w-0 items-center gap-3">
+            <div className="flex min-w-0 items-center gap-2">
               <Tooltip label={t("sync_now")}>
                 <Button
                   {...testId("vault-sync-now")}
@@ -2188,6 +2188,7 @@ export function VaultPanel({
                   onClick={syncNow}
                   disabled={busy}
                   aria-label={t("sync_now")}
+                  className="-ml-2"
                 >
                   <RefreshCw className={`h-3.5 w-3.5${syncing ? " animate-spin" : ""}`} />
                 </Button>
