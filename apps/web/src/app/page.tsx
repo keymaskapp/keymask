@@ -2,13 +2,7 @@ import { getConnectedStorage } from "@/lib/storage";
 import { providerFlags } from "@/lib/providers";
 import { Landing } from "@/components/landing";
 import { VaultPanel } from "@/components/vault-panel";
-import {
-  LEGACY_META_NAME,
-  LEGACY_VAULT_ID,
-  REGISTRY_NAME,
-  type Registry,
-  type VaultDescriptor,
-} from "@/lib/registry";
+import { REGISTRY_NAME, type Registry, type VaultDescriptor } from "@/lib/registry";
 
 export default async function Home({
   searchParams,
@@ -48,26 +42,6 @@ export default async function Home({
         if (Array.isArray(reg.vaults)) vaults = reg.vaults;
       } catch (err) {
         console.error("registry read failed", err);
-      }
-    } else {
-      // 历史单库迁移:无注册表但有旧 .keysark.json → 合成一个根目录(dir="")保险库。
-      // 旧数据(根 index.json + items/)原样可读;用户新建第二个库时再持久化注册表。
-      const legacy = files.find((f) => f.name === LEGACY_META_NAME);
-      if (legacy) {
-        try {
-          const bytes = await conn.client.download(legacy.id);
-          vaults = [
-            {
-              id: LEGACY_VAULT_ID,
-              label: "",
-              dir: "",
-              verifier: Buffer.from(bytes).toString("base64"),
-              createdAt: 0,
-            },
-          ];
-        } catch (err) {
-          console.error("legacy meta read failed", err);
-        }
       }
     }
   }

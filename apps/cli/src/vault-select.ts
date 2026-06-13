@@ -1,13 +1,9 @@
 // 读注册表(keysark.json)、按 verifier 把派生密钥匹配到保险库。
-// 兼容历史单库(无注册表但有 .keysark.json → dir="" 的 legacy 库)。
 import { checkVerifier } from "@keysark/crypto";
 import {
-  LEGACY_META_NAME,
-  LEGACY_VAULT_ID,
   REGISTRY_NAME,
   Vault,
   b64decode,
-  b64encode,
   makeCache,
   memoryKv,
   vaultVerifierAad,
@@ -17,21 +13,13 @@ import {
 
 const decoder = new TextDecoder();
 
-/** 拉取注册表里的保险库列表(含历史单库迁移)。 */
+/** 拉取注册表里的保险库列表。 */
 export async function fetchVaults(transport: StorageTransport): Promise<VaultDescriptor[]> {
   const root = await transport.list("");
-  const reg = root.get(REGISTRY_NAME);
-  if (reg) {
-    const bytes = await transport.download(REGISTRY_NAME);
-    const parsed = JSON.parse(decoder.decode(bytes)) as { vaults?: VaultDescriptor[] };
-    return Array.isArray(parsed.vaults) ? parsed.vaults : [];
-  }
-  const legacy = root.get(LEGACY_META_NAME);
-  if (legacy) {
-    const bytes = await transport.download(LEGACY_META_NAME);
-    return [{ id: LEGACY_VAULT_ID, label: "", dir: "", verifier: b64encode(bytes), createdAt: 0 }];
-  }
-  return [];
+  if (!root.get(REGISTRY_NAME)) return [];
+  const bytes = await transport.download(REGISTRY_NAME);
+  const parsed = JSON.parse(decoder.decode(bytes)) as { vaults?: VaultDescriptor[] };
+  return Array.isArray(parsed.vaults) ? parsed.vaults : [];
 }
 
 /** 在保险库里挑出与密钥匹配的那个;--vault 可按 id/label 先过滤。 */

@@ -7,10 +7,6 @@ export const INDEX_NAME = "index.json";
 export const ITEMS_DIR = "items";
 /** 保险库注册表文件名(沙盒一级目录)。 */
 export const REGISTRY_NAME = "keysark.json";
-/** 历史单库的校验文件名(无注册表时据此迁移为单个 legacy 保险库)。 */
-export const LEGACY_META_NAME = ".keysark.json";
-/** 历史单库的固定 id;其数据在沙盒根目录(dir="")。 */
-export const LEGACY_VAULT_ID = "legacy";
 
 // ---------- 数据模型 ----------
 /** 文件夹:靠 parentId 串成无限嵌套的树;只存在于 index 里(无独立文件)。 */
@@ -67,9 +63,9 @@ export interface EntryDoc {
 
 /** 保险库注册表条目(明文元数据 + 密文校验块)。 */
 export interface VaultDescriptor {
-  id: string; // uuidv7;历史单库为 LEGACY_VAULT_ID
+  id: string; // uuidv7
   label: string; // 用户可见名称(明文元数据,可为空 → 前端回退默认名)
-  dir: string; // 条目数据目录(相对沙盒根);"" 表示历史库(根目录)
+  dir: string; // 条目数据目录(相对沙盒根),形如 vaults/<id>
   verifier: string; // 校验块密文信封的 base64
   createdAt: number;
 }
@@ -79,7 +75,7 @@ export interface Registry {
 }
 
 // ---------- 路径工具 ----------
-/** 拼接沙盒内相对路径;base="" 时直接返回 name(历史单库在根目录)。 */
+/** 拼接沙盒内相对路径;base="" 时直接返回 name。 */
 export function joinPath(base: string, name: string): string {
   return base ? `${base}/${name}` : name;
 }

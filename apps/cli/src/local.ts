@@ -10,7 +10,7 @@
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, sep } from "node:path";
 import { inflateRawSync } from "node:zlib";
-import { LEGACY_META_NAME, REGISTRY_NAME, type StorageTransport } from "@keysark/vault";
+import { REGISTRY_NAME, type StorageTransport } from "@keysark/vault";
 
 /** 归一化后的归档:每个文件一条 posix 相对路径 + 大小 + 惰性读取。 */
 interface RawArchive {
@@ -94,14 +94,11 @@ function readDir(root: string): RawArchive {
   };
 }
 
-/** 探测公共前缀:找最浅的 keysark.json / .keysark.json,其所在目录即沙盒根。 */
+/** 探测公共前缀:找最浅的 keysark.json,其所在目录即沙盒根。 */
 function detectPrefix(arc: RawArchive): string {
   const regs = arc.entries
     .map((e) => e.name)
-    .filter((n) => {
-      const base = n.split("/").pop();
-      return base === REGISTRY_NAME || base === LEGACY_META_NAME;
-    })
+    .filter((n) => n.split("/").pop() === REGISTRY_NAME)
     .sort((a, b) => a.split("/").length - b.split("/").length);
   if (regs.length === 0) {
     throw new Error(`no ${REGISTRY_NAME} found — this does not look like a KeysArk backup`);

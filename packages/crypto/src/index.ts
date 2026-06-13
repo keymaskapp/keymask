@@ -31,8 +31,7 @@ function b64decode(s: string): Uint8Array {
   return u;
 }
 
-/** BIP39 助记词,固定 24 词 + 英文词表(256-bit 熵,标准 BIP39,可导入 MetaMask)。
- *  历史库为 12 词:validateMnemonic / deriveKey 同样接受,无需迁移。 */
+/** BIP39 助记词,固定 24 词 + 英文词表(256-bit 熵,标准 BIP39,可导入 MetaMask)。 */
 export function generateMnemonic(): string {
   return bip39Generate(wordlist, 256);
 }
@@ -86,7 +85,7 @@ export async function decrypt(
 }
 
 interface Envelope {
-  v: 1 | 2; // v2:加密时绑定了 AAD(解密必须提供同一 AAD);v1:无 AAD(历史数据)
+  v: 2; // 恒为 2:加密时必绑定 AAD(解密必须提供同一 AAD)
   alg: "A256GCM";
   kdf: "BIP39+HKDF-SHA256";
   iv: string;
@@ -95,16 +94,15 @@ interface Envelope {
 
 const enc = new TextEncoder();
 
-/** 明文字符串 → 加密 → envelope JSON 字节(存上网盘的格式)。传 aad 时绑定上下文(v2)。 */
+/** 明文字符串 → 加密 → envelope JSON 字节(存上网盘的格式)。aad 必填,把密文绑定到逻辑位置/身份。 */
 export async function encryptToEnvelope(
   key: CryptoKey,
   plaintext: string,
-  aad?: string,
+  aad: string,
 ): Promise<Uint8Array> {
-  const aadBytes = aad !== undefined ? enc.encode(aad) : undefined;
-  const { iv, ct } = await encrypt(key, enc.encode(plaintext), aadBytes);
+  const { iv, ct } = await encrypt(key, enc.encode(plaintext), enc.encode(aad));
   const env: Envelope = {
-    v: aadBytes ? 2 : 1,
+    v: 2,
     alg: "A256GCM",
     kdf: "BIP39+HKDF-SHA256",
     iv: b64encode(iv),
@@ -116,54 +114,51 @@ export async function encryptToEnvelope(
 export async function decryptFromEnvelope(
   key: CryptoKey,
   envelopeBytes: Uint8Array,
-  aad?: string,
+  aad: string,
 ): Promise<string> {
   const env = JSON.parse(new TextDecoder().decode(envelopeBytes)) as Envelope;
-  // v2 绑定了 AAD,必须用同一 AAD 解密;v1(历史)无 AAD,忽略传入 aad。
-  const aadBytes = env.v === 2 && aad !== undefined ? enc.encode(aad) : undefined;
-  const pt = await decrypt(key, b64decode(env.iv), b64decode(env.ct), aadBytes);
+  if (env.v !== 2) throw new Error(`unsupported envelope version ${env.v}`);
+  const pt = await decrypt(key, b64decode(env.iv), b64decode(env.ct), enc.encode(aad));
   return new TextDecoder().decode(pt);
 }
 
 // ---------- 二进制信封(文件密文专用,无 base64/JSON,省 33% 体积) ----------
-// 帧格式:magic(4B "KSF1") + ver(1B) + iv(12B) + ct(剩余全部)。
-// ver=1:无 AAD(历史);ver=2:加密时绑定了 AAD(解密需提供同一 AAD)。
-// 文本条目继续用上面的 JSON 信封;大文件走这套裸字节帧。
+// 帧格式:magic(4B "KSF1") + ver(1B,恒=2) + iv(12B) + ct(剩余全部)。
+// ver=2:加密时必绑定 AAD(解密需提供同一 AAD)。文本条目走上面的 JSON 信封;大文件走这套裸字节帧。
 const BLOB_MAGIC = new Uint8Array([0x4b, 0x53, 0x46, 0x31]); // "KSF1"
+const BLOB_VER = 2;
 const BLOB_HEADER_LEN = 4 + 1 + 12; // = 17
 
-/** 原始字节 → 加密 → 二进制信封字节。传 aad 时绑定上下文(ver=2)。 */
+/** 原始字节 → 加密 → 二进制信封字节。aad 必填,把密文绑定到逻辑位置/身份。 */
 export async function encryptBytesToBlob(
   key: CryptoKey,
   data: Uint8Array,
-  aad?: string,
+  aad: string,
 ): Promise<Uint8Array> {
-  const aadBytes = aad !== undefined ? enc.encode(aad) : undefined;
-  const { iv, ct } = await encrypt(key, data, aadBytes);
+  const { iv, ct } = await encrypt(key, data, enc.encode(aad));
   const out = new Uint8Array(BLOB_HEADER_LEN + ct.byteLength);
   out.set(BLOB_MAGIC, 0);
-  out[4] = aadBytes ? 2 : 1;
+  out[4] = BLOB_VER;
   out.set(iv, 5);
   out.set(ct, BLOB_HEADER_LEN);
   return out;
 }
 
-/** 二进制信封字节 → 解密 → 原始字节。ver=2 的帧需提供同一 aad。 */
+/** 二进制信封字节 → 解密 → 原始字节。需提供加密时同一 aad。 */
 export async function decryptBytesFromBlob(
   key: CryptoKey,
   blob: Uint8Array,
-  aad?: string,
+  aad: string,
 ): Promise<Uint8Array> {
   if (blob.byteLength < BLOB_HEADER_LEN) throw new Error("blob too short");
   for (let i = 0; i < BLOB_MAGIC.length; i++) {
     if (blob[i] !== BLOB_MAGIC[i]) throw new Error("bad blob magic");
   }
   const ver = blob[4];
-  if (ver !== 1 && ver !== 2) throw new Error(`unsupported blob version ${ver}`);
+  if (ver !== BLOB_VER) throw new Error(`unsupported blob version ${ver}`);
   const iv = blob.subarray(5, BLOB_HEADER_LEN);
   const ct = blob.subarray(BLOB_HEADER_LEN);
-  const aadBytes = ver === 2 && aad !== undefined ? enc.encode(aad) : undefined;
-  return decrypt(key, iv, ct, aadBytes);
+  return decrypt(key, iv, ct, enc.encode(aad));
 }
 
 /**
@@ -231,17 +226,16 @@ export {
 } from "./password-strength";
 
 /** 口令校验块:加密已知标记。解锁时解密比对,判断助记词是否正确。
- *  传 aad(如 vault id|dir)→ 绑定上下文(v2):描述符被恶意存储后端改 dir / 掉包时,
- *  重建的 AAD 与创建时不符 → 校验失败,从而检出篡改。
- *  旧 v1 校验块无 AAD,传入 aad 会被 decryptFromEnvelope 忽略(向后兼容)。 */
-export async function makeVerifier(key: CryptoKey, aad?: string): Promise<Uint8Array> {
+ *  aad(如 vault id|dir)必填 → 绑定上下文:描述符被恶意存储后端改 dir / 掉包时,
+ *  重建的 AAD 与创建时不符 → 校验失败,从而检出篡改。 */
+export async function makeVerifier(key: CryptoKey, aad: string): Promise<Uint8Array> {
   return encryptToEnvelope(key, VERIFIER_MARKER, aad);
 }
 
 export async function checkVerifier(
   key: CryptoKey,
   verifierBytes: Uint8Array,
-  aad?: string,
+  aad: string,
 ): Promise<boolean> {
   try {
     return (await decryptFromEnvelope(key, verifierBytes, aad)) === VERIFIER_MARKER;

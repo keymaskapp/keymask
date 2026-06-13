@@ -1,6 +1,6 @@
 // 本地优先的保险库数据层(环境无关)。每个库的数据在各自子目录 dir 下。
 //
-// 模型(以某个保险库的 dir 为基准,dir="" 表示历史单库在沙盒根):
+// 模型(以某个保险库的 dir 为基准,形如 vaults/<id>):
 //   - <dir>/index.json                   ← 加密信封,明文为 { v, entries, folders },做检索。
 //   - <dir>/items/<id>/<ts>.json         ← 条目某版本快照(加密信封,明文 EntryDoc),不可变。
 //   - <dir>/items/<id>/<ts>.bin          ← 文件条目某版本正文(二进制信封),不可变。
@@ -94,10 +94,10 @@ function normalizeIndex(raw: unknown): IndexDoc {
 }
 
 // ---------- 加解密 JSON(aad 绑定逻辑位置,防替换/回滚) ----------
-async function encJson(key: CryptoKey, obj: unknown, aad?: string): Promise<Uint8Array> {
+async function encJson(key: CryptoKey, obj: unknown, aad: string): Promise<Uint8Array> {
   return encryptToEnvelope(key, JSON.stringify(obj), aad);
 }
-async function decJson<T>(key: CryptoKey, bytes: Uint8Array, aad?: string): Promise<T> {
+async function decJson<T>(key: CryptoKey, bytes: Uint8Array, aad: string): Promise<T> {
   return JSON.parse(await decryptFromEnvelope(key, bytes, aad)) as T;
 }
 
@@ -123,7 +123,7 @@ export class Vault {
 
   /**
    * @param key 助记词派生的主密钥(只在内存)。
-   * @param opts.dir 数据目录,""=沙盒根(历史单库)。
+   * @param opts.dir 数据目录,形如 vaults/<id>。
    * @param transport 密文中转(浏览器=fetch /api/files;CLI=HTTP localhost)。
    * @param cache 本地密文缓存(按保险库 id 分命名空间)。
    */

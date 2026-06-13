@@ -2,8 +2,6 @@ export {
   INDEX_NAME,
   ITEMS_DIR,
   REGISTRY_NAME,
-  LEGACY_META_NAME,
-  LEGACY_VAULT_ID,
   joinPath,
   itemRelPath,
   itemBlobRelPath,
