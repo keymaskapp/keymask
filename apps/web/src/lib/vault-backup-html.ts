@@ -1,6 +1,7 @@
 // 加密 HTML 备份 —— 纯客户端生成的自解密单文件。
 //
-// 文件内嵌:Argon2id(m=64MB/t=3/p=1,与解锁密码同参)+ AES-256-GCM 加密的助记词密文
+// 文件内嵌:Argon2id(m=512MB/t=4/p=1,与解锁密码同参;实际参数随 payload 一并嵌入,
+//   解密按嵌入值进行)+ AES-256-GCM 加密的助记词密文
 // + 内联 argon2 wasm(hash-wasm UMD,从 /argon2.umd.min.js 取)+ 解密 UI。
 // 恢复:离线双击用任意浏览器打开(file:// 是安全上下文,WebCrypto 可用),输备份密码即见助记词。
 // 双语:中英文案全部内嵌,右上角可切换,默认为导出时语言。品牌 logo 内联 SVG(brand.tsx 同源)。

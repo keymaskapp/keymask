@@ -31,9 +31,10 @@ function b64decode(s: string): Uint8Array {
   return u;
 }
 
-/** BIP39 助记词,固定 12 词 + 英文词表(对齐 MetaMask)。 */
+/** BIP39 助记词,固定 24 词 + 英文词表(256-bit 熵,标准 BIP39,可导入 MetaMask)。
+ *  历史库为 12 词:validateMnemonic / deriveKey 同样接受,无需迁移。 */
 export function generateMnemonic(): string {
-  return bip39Generate(wordlist, 128);
+  return bip39Generate(wordlist, 256);
 }
 
 export function validateMnemonic(mnemonic: string): boolean {
@@ -189,8 +190,9 @@ export interface Argon2idParams {
   p: number;
 }
 
-/** 默认参数:64MB / t=3 / p=1(经用户认可;实测延迟见 vault-lock 接入处)。 */
-export const DEFAULT_ARGON2ID_PARAMS: Argon2idParams = { m: 65536, t: 3, p: 1 };
+/** 默认参数:512MB / t=4 / p=1(高强度抗离线暴破;桌面/中高端手机约 0.5-1s,
+ *  低端设备可能更慢。参数随凭据存储,调高仅影响新封装,老凭据用各自存的参数解。)。 */
+export const DEFAULT_ARGON2ID_PARAMS: Argon2idParams = { m: 524288, t: 4, p: 1 };
 
 /** 生成密码包裹用的随机 salt(16 字节,每库独立、绝不复用)。 */
 export function generateWrappingSalt(): Uint8Array {

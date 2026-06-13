@@ -42,7 +42,7 @@ const zh = {
   how_browser_label: "你的浏览器",
   how_browser_note: "助记词、派生密钥、明文都只存在于此,永不上传。",
   how_s1_title: "写下助记词",
-  how_s1_body: "生成或输入 12 词 BIP39 助记词,它就是你的主密钥。",
+  how_s1_body: "生成或输入 BIP39 助记词,它就是你的主密钥。",
   how_s2_title: "本地派生密钥",
   how_s2_body: "助记词在浏览器里派生出 AES-256 密钥。",
   how_s3_title: "浏览器内加密",
@@ -69,7 +69,7 @@ const zh = {
 
   // 创建保险库
   create_title: "创建你的保险库",
-  create_desc_a: "KeysArk 会生成 12 词助记词作为主密钥。它",
+  create_desc_a: "KeysArk 会生成 24 词助记词作为主密钥。它",
   create_desc_strong: "只显示一次、只存在你这里",
   create_desc_b: "。",
   create_warn_a: "请准备好纸笔。生成后请抄写并妥善保管——",
@@ -89,7 +89,7 @@ const zh = {
   pdf_doc_title: "保险库备份",
   pdf_url_label: "访问网址",
   pdf_name_label: "保险库名称",
-  pdf_phrase_label: "助记词(主密钥 · 12 词)",
+  pdf_phrase_label: "助记词(主密钥)",
   pdf_risk_title: "风险提示 · 务必阅读",
   pdf_risk_1:
     "这 12 个词是打开保险库的唯一主密钥;任何人拿到它,就能解密你的全部内容。",
@@ -132,9 +132,9 @@ const zh = {
 
   // 解锁
   unlock_title: "解锁保险库",
-  unlock_desc: "输入 12 词助记词,在本地派生密钥以解密内容。",
+  unlock_desc: "输入助记词,在本地派生密钥以解密内容。",
   unlock_desc_named: (name: string) =>
-    `输入「${name}」的 12 词助记词,在本地派生密钥以解密内容。`,
+    `输入「${name}」的助记词,在本地派生密钥以解密内容。`,
   switch_vault: "切换其他保险库",
   btn_unlock: "解锁",
   new_vault: "新建保险库",
@@ -143,7 +143,7 @@ const zh = {
   // 解锁密码(每库一个,本机凭据)
   pw_set_title: "设置解锁密码",
   pw_set_desc:
-    "为本设备设置解锁密码:下次打开时输入密码即可解锁,无需再输 12 词助记词。密码经 Argon2id 派生密钥加密保存助记词,绝不以明文存储。",
+    "为本设备设置解锁密码:下次打开时输入密码即可解锁,无需再输助记词。密码经 Argon2id 派生密钥加密保存助记词,绝不以明文存储。",
   pw_new_label: "新密码",
   pw_confirm_label: "确认密码",
   pw_rule_hint: "至少 12 位,含小写/大写/数字/符号中至少 3 类",
@@ -194,7 +194,7 @@ const zh = {
     "在终端里读写你的端到端加密保险库。明文与助记词只留在本地,离开设备的永远只有密文。",
   docs_intro_title: "这是什么",
   docs_intro_body:
-    "ark 是 KeysArk 的官方命令行客户端,把网页保险库的能力带到终端:列出条目、按路径读取、保存本地文件、创建与更新条目。所有加解密都在本地用你的 12 词助记词完成——服务端与网盘后端全程只经手不透明密文。",
+    "ark 是 KeysArk 的官方命令行客户端,把网页保险库的能力带到终端:列出条目、按路径读取、保存本地文件、创建与更新条目。所有加解密都在本地用你的助记词完成——服务端与网盘后端全程只经手不透明密文。",
   docs_install_title: "安装",
   docs_install_note: "需要 Node.js 18+。安装后即可使用 ark(以及别名 keysark)命令。",
   docs_setup_title: "首次配置",
@@ -202,10 +202,10 @@ const zh = {
   docs_setup_login_note:
     "ark login 走设备码授权:终端给出一个链接与代码,在浏览器里核对代码并确认。授权态等同一次浏览器登录,只能搬运密文,拿不到你的助记词或明文。",
   docs_setup_import_note:
-    "ark import 让你输入 12 词助记词,并为本机设置一个解锁密码。助记词经 Argon2id 派生密钥加密后存在本地(~/.keysark),绝不上传;解锁缓存 15 分钟,期间无需重复输入密码。",
+    "ark import 让你输入助记词,并为本机设置一个解锁密码。助记词经 Argon2id 派生密钥加密后存在本地(~/.keysark),绝不上传;解锁缓存 15 分钟,期间无需重复输入密码。",
   docs_commands_title: "命令一览",
   docs_cmd_login: "设备码授权这台设备(会打开浏览器核对)。",
-  docs_cmd_import: "导入 12 词助记词并设置本机解锁密码。",
+  docs_cmd_import: "导入助记词并设置本机解锁密码。",
   docs_cmd_status: "查看登录与助记词状态。",
   docs_cmd_info: "查看版本、服务端来源与配置目录。",
   docs_cmd_vaults: "列出账号下的所有保险库,并标注助记词是否匹配。",
@@ -229,7 +229,7 @@ const zh = {
   docs_ex_ci: "在 CI / 脚本里免交互使用(用环境变量提供助记词):",
   docs_env_title: "环境变量",
   docs_env_server: "服务端地址(等同 --server)。",
-  docs_env_mnemonic: "直接提供 12 词助记词,跳过本机凭据——适合 CI / 脚本。",
+  docs_env_mnemonic: "直接提供助记词,跳过本机凭据——适合 CI / 脚本。",
   docs_env_home: "配置目录,默认 ~/.keysark。",
   docs_env_no_browser: "设置后登录时不自动打开浏览器。",
   docs_security_title: "安全说明",
@@ -317,7 +317,7 @@ const zh = {
   loading_entries: "加载条目中…",
 
   // 状态提示
-  st_invalid_mnemonic: "助记词无效(请检查 12 个词与拼写)",
+  st_invalid_mnemonic: "助记词无效(请检查每个词与拼写)",
   st_missing_meta: "缺少保险库元数据",
   st_unlocking: "解锁中 …",
   st_mismatch: "助记词不匹配此保险库",
@@ -410,7 +410,7 @@ const en: typeof zh = {
   how_browser_label: "In your browser",
   how_browser_note: "Your phrase, derived key and plaintext live only here — never uploaded.",
   how_s1_title: "Write down your phrase",
-  how_s1_body: "Generate or enter a 12-word BIP39 phrase — that's your master key.",
+  how_s1_body: "Generate or enter a BIP39 recovery phrase — that's your master key.",
   how_s2_title: "Derive the key locally",
   how_s2_body: "The phrase derives an AES-256 key, right in the browser.",
   how_s3_title: "Encrypt in the browser",
@@ -429,14 +429,14 @@ const en: typeof zh = {
   feat_2_tag: "Easy",
   feat_2_title: "Your phrase is the key",
   feat_2_body:
-    "Just remember 12 words to unlock on any device — no accounts, no key files to manage. Standard BIP39, same as MetaMask.",
+    "Just remember your recovery phrase to unlock on any device — no accounts, no key files to manage. Standard BIP39, importable into MetaMask.",
   feat_3_tag: "Free",
   feat_3_title: "Stored in your netdisk",
   feat_3_body: (store: string) =>
     `Ciphertext goes straight into your own ${store}, using free space you already have — we never touch your storage or charge you.`,
 
   create_title: "Create your vault",
-  create_desc_a: "KeysArk generates a 12-word recovery phrase as your master key. It is ",
+  create_desc_a: "KeysArk generates a 24-word recovery phrase as your master key. It is ",
   create_desc_strong: "shown once and lives only with you",
   create_desc_b: ".",
   create_warn_a: "Have pen and paper ready. After generating, write it down and store it safely — ",
@@ -456,10 +456,10 @@ const en: typeof zh = {
   pdf_doc_title: "Vault Backup",
   pdf_url_label: "Access URL",
   pdf_name_label: "Vault name",
-  pdf_phrase_label: "Recovery phrase (master key · 12 words)",
+  pdf_phrase_label: "Recovery phrase (master key)",
   pdf_risk_title: "Important — please read",
   pdf_risk_1:
-    "These 12 words are the only master key to your vault; anyone who gets them can decrypt everything you store.",
+    "Your recovery phrase is the only master key to your vault; anyone who gets it can decrypt everything you store.",
   pdf_risk_2:
     "We never store and cannot recover your phrase. If you lose it, your data is gone forever.",
   pdf_risk_3:
@@ -498,9 +498,9 @@ const en: typeof zh = {
   create_label_ph: "e.g. Personal / Work (optional)",
 
   unlock_title: "Unlock vault",
-  unlock_desc: "Enter your 12-word phrase to derive the key locally and decrypt.",
+  unlock_desc: "Enter your recovery phrase to derive the key locally and decrypt.",
   unlock_desc_named: (name: string) =>
-    `Enter the 12-word phrase for “${name}” to derive the key locally and decrypt.`,
+    `Enter the recovery phrase for “${name}” to derive the key locally and decrypt.`,
   switch_vault: "Switch to another vault",
   btn_unlock: "Unlock",
   new_vault: "Create new vault",
@@ -509,7 +509,7 @@ const en: typeof zh = {
   // Unlock password (per-vault, local credential)
   pw_set_title: "Set an unlock password",
   pw_set_desc:
-    "Set an unlock password for this device: next time, enter it instead of the 12-word phrase. The password encrypts your phrase via an Argon2id-derived key — it is never stored in plaintext.",
+    "Set an unlock password for this device: next time, enter it instead of your recovery phrase. The password encrypts your phrase via an Argon2id-derived key — it is never stored in plaintext.",
   pw_new_label: "New password",
   pw_confirm_label: "Confirm password",
   pw_rule_hint: "12+ chars, with 3+ of: lowercase / uppercase / digits / symbols",
@@ -560,7 +560,7 @@ const en: typeof zh = {
     "Read and write your end-to-end encrypted vault from the terminal. Your plaintext and phrase stay local — only ciphertext ever leaves the device.",
   docs_intro_title: "What is it",
   docs_intro_body:
-    "ark is the official KeysArk command-line client. It brings the web vault to your terminal: list items, read by path, save local files, create and update entries. All encryption and decryption happen locally with your 12-word phrase — the server and cloud backend only ever handle opaque ciphertext.",
+    "ark is the official KeysArk command-line client. It brings the web vault to your terminal: list items, read by path, save local files, create and update entries. All encryption and decryption happen locally with your recovery phrase — the server and cloud backend only ever handle opaque ciphertext.",
   docs_install_title: "Install",
   docs_install_note: "Requires Node.js 18+. Installs the ark command (aliased as keysark).",
   docs_setup_title: "First-time setup",
@@ -568,10 +568,10 @@ const en: typeof zh = {
   docs_setup_login_note:
     "ark login uses device-code authorization: the terminal shows a link and a code; open it in your browser, confirm the code matches, and approve. The grant is equivalent to a browser session — it can only move ciphertext, never your phrase or plaintext.",
   docs_setup_import_note:
-    "ark import asks for your 12-word phrase and sets a local unlock password. The phrase is encrypted with an Argon2id-derived key and stored locally (~/.keysark) — never uploaded. The unlock stays cached for 15 minutes so you needn't retype the password.",
+    "ark import asks for your recovery phrase and sets a local unlock password. The phrase is encrypted with an Argon2id-derived key and stored locally (~/.keysark) — never uploaded. The unlock stays cached for 15 minutes so you needn't retype the password.",
   docs_commands_title: "Command reference",
   docs_cmd_login: "Authorize this device via device code (opens the browser to confirm).",
-  docs_cmd_import: "Import a 12-word phrase and set a local unlock password.",
+  docs_cmd_import: "Import a recovery phrase and set a local unlock password.",
   docs_cmd_status: "Show login and phrase status.",
   docs_cmd_info: "Show version, server source and config directory.",
   docs_cmd_vaults: "List all vaults on the account, flagging which match your phrase.",
@@ -595,7 +595,7 @@ const en: typeof zh = {
   docs_ex_ci: "Non-interactive use in CI / scripts (phrase supplied via an env var):",
   docs_env_title: "Environment variables",
   docs_env_server: "Server URL (same as --server).",
-  docs_env_mnemonic: "Supply the 12-word phrase directly, bypassing the local credential — for CI / scripts.",
+  docs_env_mnemonic: "Supply the recovery phrase directly, bypassing the local credential — for CI / scripts.",
   docs_env_home: "Config directory, defaults to ~/.keysark.",
   docs_env_no_browser: "When set, login won't auto-open the browser.",
   docs_security_title: "Security",
@@ -681,7 +681,7 @@ const en: typeof zh = {
   pending_count: (n: number) => `${n} pending`,
   loading_entries: "Loading entries…",
 
-  st_invalid_mnemonic: "invalid phrase (check the 12 words and spelling)",
+  st_invalid_mnemonic: "invalid phrase (check the words and spelling)",
   st_missing_meta: "missing vault metadata",
   st_unlocking: "unlocking…",
   st_mismatch: "phrase doesn't match this vault",

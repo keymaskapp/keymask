@@ -45,7 +45,7 @@ export function commitUrl(): string | null {
 // 即便源码失传,凭这几行也足以重新实现解密。
 const A = DEFAULT_ARGON2ID_PARAMS;
 const CRYPTO_SPEC = {
-  mnemonic: "BIP39 · 12 words · English wordlist (128-bit entropy)",
+  mnemonic: "BIP39 · 24 words (legacy vaults 12) · English wordlist (256/128-bit entropy)",
   vaultKey:
     "BIP39 seed (PBKDF2-HMAC-SHA512) → HKDF-SHA256 (info=keysark-aes-gcm-v1, 32B) → AES-256-GCM, 96-bit IV",
   backupKdf: `Argon2id (m=${A.m} KiB, t=${A.t}, p=${A.p}, 32B, NFKC) → AES-256-GCM, 96-bit IV`,

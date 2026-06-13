@@ -258,8 +258,9 @@ export function VaultPanel({
   const [confirming, setConfirming] = useState(false);
   const challengeIdx = useMemo(() => {
     if (!newMnemonic) return [];
+    const count = newMnemonic.split(" ").length; // 12 或 24,按实际词数抽
     const idx = new Set<number>();
-    while (idx.size < 3) idx.add(Math.floor(Math.random() * 12));
+    while (idx.size < 3) idx.add(Math.floor(Math.random() * count));
     return [...idx].sort((a, b) => a - b);
   }, [newMnemonic]);
   const [challengeInput, setChallengeInput] = useState<Record<number, string>>({});

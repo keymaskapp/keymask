@@ -122,7 +122,7 @@ async function ready(
         : "No mnemonic on this machine. Run `ark import` or set KEYSARK_MNEMONIC.",
     );
   }
-  if (!validateMnemonic(mnemonic!)) fail("Invalid mnemonic (check the 12 words).");
+  if (!validateMnemonic(mnemonic!)) fail("Invalid mnemonic (check the words).");
   const key = await deriveKey(mnemonic!);
   const vaults = await fetchVaults(transport);
   if (vaults.length === 0) fail("No vaults found. Create one on the web first.");
@@ -226,15 +226,15 @@ async function runLocal(srcArg: string, args: Args): Promise<void> {
       "ark local",
     );
     mnemonic = (
-      await askText("Enter the vault's 12-word mnemonic", {
+      await askText("Enter the vault's recovery phrase (mnemonic)", {
         validate: (v) =>
-          validateMnemonic(v.trim().replace(/\s+/g, " ")) ? undefined : "Invalid mnemonic (check the 12 words)",
+          validateMnemonic(v.trim().replace(/\s+/g, " ")) ? undefined : "Invalid mnemonic (check the words)",
       })
     )
       .trim()
       .replace(/\s+/g, " ");
   }
-  if (!validateMnemonic(mnemonic)) fail("Invalid mnemonic (check the 12 words).");
+  if (!validateMnemonic(mnemonic)) fail("Invalid mnemonic (check the words).");
 
   const key = await deriveKey(mnemonic);
   const descriptor = await pickVault(vaults!, key, flagStr(args.flags, "vault"));
@@ -327,7 +327,7 @@ Account:
   ark info               Show version, server (and its source), config dir
 
 Mnemonic (import only; create one on the web):
-  ark import             Import 12-word mnemonic and set an unlock password
+  ark import             Import recovery phrase (mnemonic) and set an unlock password
   ark forget             Remove local mnemonic credential and unlock cache
 
 Items:
@@ -352,7 +352,7 @@ Items:
 Local (offline; no login):
   ark local <zip|dir> [--out <dir>]   Decrypt a backup downloaded from your netdisk
                          (a .zip of the KeysArk folder, or its extracted directory).
-                         Prompts for the vault's 12-word mnemonic, then writes one
+                         Prompts for the vault's recovery phrase, then writes one
                          JSON per item plus a self-contained index.html. Everything
                          stays on this machine — nothing is uploaded.
   ark <zip|dir>          Shorthand: a path argument runs \`ark local\` directly.
@@ -402,8 +402,8 @@ async function main() {
       if (!process.stdin.isTTY) fail("import requires an interactive terminal.");
 
       const raw = (
-        await askText("Enter 12-word mnemonic", {
-          validate: (v) => (validateMnemonic(v.trim().replace(/\s+/g, " ")) ? undefined : "Invalid mnemonic (check the 12 words)"),
+        await askText("Enter recovery phrase (mnemonic)", {
+          validate: (v) => (validateMnemonic(v.trim().replace(/\s+/g, " ")) ? undefined : "Invalid mnemonic (check the words)"),
         })
       )
         .trim()

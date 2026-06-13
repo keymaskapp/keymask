@@ -26,7 +26,8 @@ pnpm monorepo. Workspaces: `apps/*`, `packages/*`。
 
 - 加密/解密只在浏览器,只在 `@keysark/crypto` + client component。**主密钥(助记词派生)、助记词本身、明文内容**禁止出现在任何服务端代码、API 请求/响应体、URL、cookie、日志、DB。
 - 服务端 API 只搬运**不透明 base64 密文**;`@keysark/baidupan` 与 `@keysark/googledrive` 字节进字节出,内容无关。
-- 助记词 = BIP39 **12 词 + 英文词表**(对齐 MetaMask)。AES-256-GCM,IV 每次随机 96-bit、绝不复用。
+- 助记词 = BIP39 **24 词 + 英文词表**(256-bit 熵,标准 BIP39,可导入 MetaMask)。历史库的 12 词助记词继续被接受(`validateMnemonic` / `deriveKey` 不做长度限制),无需迁移;只有**新建库**生成 24 词。AES-256-GCM,IV 每次随机 96-bit、绝不复用。
+- 本机解锁密码包裹助记词:Argon2id **512MB / t=4 / p=1**(`DEFAULT_ARGON2ID_PARAMS`)。参数随凭据存储,调高仅影响新封装。
 
 ### 4. 所有布局容器必须带固定 `data-testid`
 

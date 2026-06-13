@@ -1,5 +1,5 @@
 // 助记词的本机凭据与解锁缓存(机制与 web 版 vault-lock 一致):
-//   - credential.json:用「解锁密码」经 Argon2id(m=64MB/t=3/p=1)派生密钥,
+//   - credential.json:用「解锁密码」经 Argon2id(m=512MB/t=4/p=1,参数随凭据存储)派生密钥,
 //     AES-256-GCM 加密助记词。格式 {v, kdf, salt, params, iv, ct},全 base64。
 //     本地永不存明文密码;密码对不对靠 GCM 认证标签。
 //   - unlock-cache.json:输对密码后 15 分钟内免重输(对齐 web 闲置自动锁定默认值)。
