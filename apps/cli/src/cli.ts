@@ -2,11 +2,13 @@
 // 本地派生主密钥、本地加解密,只把 envelope 密文经云端中转。
 // 明文/助记词/主密钥/解锁密码绝不出 CLI 进程。
 import { spawn } from "node:child_process";
-import { existsSync, readFileSync, statSync, writeFileSync } from "node:fs";
-import { basename, join, resolve } from "node:path";
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { basename, dirname, extname, join, resolve } from "node:path";
 import { checkVerifier, deriveKey, sha256Hex, validateMnemonic } from "@keysark/crypto";
 import { b64decode } from "@keysark/vault";
 import type { EntryMeta, StorageTransport, Vault, VaultDescriptor } from "@keysark/vault";
+import { openLocalSource } from "./local";
+import { renderVaultHtml, type ExportData, type ExportItem } from "./export-html";
 import { cliVersion, clearCloud, defaultServer, keysarkDir, loadCloud, normalizeServer, resolveConn, saveCloud } from "./config";
 import { httpTransport } from "./transport";
 import {
@@ -185,6 +187,136 @@ async function resolveEntryArg(vault: Vault, arg: string): Promise<EntryMeta> {
   fail(`Ambiguous path: ${matches.length} items match (${matches.map((m) => m.id.slice(0, 8)).join(", ")})`);
 }
 
+/** 文件名安全化:去掉路径分隔符与控制字符,空则回退。 */
+function safeName(name: string, fallback: string): string {
+  const s = name.replace(/[\/\\]+/g, "_").replace(/[\x00-\x1f]/g, "").trim();
+  return s || fallback;
+}
+
+/**
+ * 本地模式:把一份从网盘下载的备份(.zip 或解压目录)在本机离线解密,
+ * 把每个条目导出为 JSON,并生成一个自包含的可视化 HTML。明文只落到本机输出目录。
+ */
+async function runLocal(srcArg: string, args: Args): Promise<void> {
+  const src = resolve(srcArg);
+  if (!existsSync(src)) fail(`No such file or directory: ${src}`);
+
+  let source: ReturnType<typeof openLocalSource>;
+  try {
+    source = openLocalSource(src);
+  } catch (err) {
+    fail(`Cannot read backup: ${err instanceof Error ? err.message : err}`);
+  }
+  const { transport, kind } = source!;
+
+  const vaults = await fetchVaults(transport).catch((err) => {
+    fail(`Not a KeysArk backup: ${err instanceof Error ? err.message : err}`);
+  });
+  if (vaults!.length === 0) fail("No vaults found in this backup.");
+
+  // 助记词:env(脚本)优先,否则交互输入。绝不落盘、绝不出本进程。
+  const env = process.env.KEYSARK_MNEMONIC?.trim();
+  let mnemonic = env ? env.replace(/\s+/g, " ") : "";
+  if (!mnemonic) {
+    if (!process.stdin.isTTY) fail("Set KEYSARK_MNEMONIC or run in an interactive terminal.");
+    note(
+      `${dim("backup")}  ${src} ${dim(`(${kind})`)}\n${dim("vaults")}  ${vaults!
+        .map((v) => `${v.label || "(default)"} [${v.id.slice(0, 8)}]`)
+        .join(", ")}`,
+      "ark local",
+    );
+    mnemonic = (
+      await askText("Enter the vault's 12-word mnemonic", {
+        validate: (v) =>
+          validateMnemonic(v.trim().replace(/\s+/g, " ")) ? undefined : "Invalid mnemonic (check the 12 words)",
+      })
+    )
+      .trim()
+      .replace(/\s+/g, " ");
+  }
+  if (!validateMnemonic(mnemonic)) fail("Invalid mnemonic (check the 12 words).");
+
+  const key = await deriveKey(mnemonic);
+  const descriptor = await pickVault(vaults!, key, flagStr(args.flags, "vault"));
+  if (!descriptor) fail("Mnemonic does not match any vault in this backup.");
+  const vault = openVault(key, descriptor!, transport);
+  await vault.load();
+
+  // 输出目录:--out,否则在源旁建 <名字>-decrypted。
+  const defaultBase = `${basename(src, kind === "zip" ? extname(src) : "")}-decrypted`;
+  const outDir = resolve(flagStr(args.flags, "out") ?? join(dirname(src), defaultBase));
+  const itemsDir = join(outDir, "items");
+  const filesDir = join(outDir, "files");
+  mkdirSync(itemsDir, { recursive: true });
+
+  const paths = folderPathById(vault);
+  const entries = vault.entries;
+  const sp = process.stdout.isTTY ? spinner() : null;
+  if (sp) sp.start(`Decrypting ${entries.length} items…`);
+
+  const exported: ExportItem[] = [];
+  const docsForJson: unknown[] = [];
+  const failures: { id: string; title: string; error: string }[] = [];
+
+  for (const meta of entries) {
+    const folderPath = meta.folderId ? paths.get(meta.folderId) ?? "" : "";
+    if (sp) sp.message(`Decrypting ${meta.title || meta.id.slice(0, 8)}…`);
+    try {
+      const doc = await vault.open(meta.id); // 解密当前版元信息/文本正文
+      const base: ExportItem = {
+        id: meta.id,
+        title: doc.title ?? meta.title ?? "",
+        folderPath,
+        kind: meta.kind === "file" ? "file" : "text",
+        createdAt: doc.createdAt ?? meta.createdAt,
+        updatedAt: doc.updatedAt ?? meta.updatedAt,
+        provider: meta.provider,
+        versions: meta.versions,
+      };
+
+      if (meta.kind === "file") {
+        const bytes = await vault.openFile(meta.id);
+        mkdirSync(filesDir, { recursive: true });
+        const fname = `${meta.id.slice(0, 8)}-${safeName(doc.filename ?? meta.filename ?? "file", "file")}`;
+        writeFileSync(join(filesDir, fname), bytes);
+        base.filename = doc.filename ?? meta.filename;
+        base.mimeType = doc.mimeType ?? meta.mimeType;
+        base.fileSize = doc.fileSize ?? meta.fileSize ?? bytes.byteLength;
+        base.fileHref = `files/${fname}`;
+      } else {
+        base.content = doc.content ?? "";
+      }
+
+      exported.push(base);
+      const jsonDoc = { ...doc, folderPath };
+      docsForJson.push(jsonDoc);
+      writeFileSync(join(itemsDir, `${meta.id}.json`), JSON.stringify(jsonDoc, null, 2));
+    } catch (err) {
+      failures.push({ id: meta.id, title: meta.title, error: err instanceof Error ? err.message : String(err) });
+    }
+  }
+
+  const data: ExportData = {
+    vaultLabel: descriptor!.label,
+    vaultId: descriptor!.id,
+    source: src,
+    exportedAt: Date.now(),
+    items: exported,
+  };
+  const htmlPath = join(outDir, "index.html");
+  writeFileSync(htmlPath, renderVaultHtml(data));
+  writeFileSync(join(outDir, "items.json"), JSON.stringify(docsForJson, null, 2));
+
+  if (sp) sp.stop();
+  console.log(`${OK} Decrypted ${green(String(exported.length))} item${exported.length === 1 ? "" : "s"} → ${bold(outDir)}`);
+  console.log(`  ${dim("items:")} ${cyan(`${outDir}/items/*.json`)} ${dim("(+ items.json)")}`);
+  console.log(`  ${dim("html: ")} ${cyan(htmlPath)}`);
+  if (failures.length) {
+    console.log(red(`  ${failures.length} item(s) failed to decrypt:`));
+    for (const f of failures) console.log(red(`    [${f.id.slice(0, 8)}] ${f.title || "(untitled)"}: ${f.error}`));
+  }
+}
+
 const HELP = `ark — KeysArk end-to-end encrypted vault CLI
 
 Account:
@@ -215,6 +347,14 @@ Items:
                          Existing target → new version; identical content → skipped
   ark rm <id>            Delete item
   ark sync               Re-push pending local changes
+
+Local (offline; no login):
+  ark local <zip|dir> [--out <dir>]   Decrypt a backup downloaded from your netdisk
+                         (a .zip of the KeysArk folder, or its extracted directory).
+                         Prompts for the vault's 12-word mnemonic, then writes one
+                         JSON per item plus a self-contained index.html. Everything
+                         stays on this machine — nothing is uploaded.
+  ark <zip|dir>          Shorthand: a path argument runs \`ark local\` directly.
 
 Unlock (same rules as the web app):
   Mnemonic is stored encrypted with an unlock password (12+ chars, 3+ char classes,
@@ -640,7 +780,23 @@ async function main() {
       return;
     }
 
+    case "local": {
+      const src = args.positionals[0];
+      if (!src) fail("usage: ark local <zip-or-dir> [--out <dir>]");
+      await runLocal(src!, args);
+      return;
+    }
+
     default:
+      // 直接把路径当命令:`ark ./backup.zip` 等价于 `ark local ./backup.zip`。
+      if (existsSync(args.cmd)) {
+        await runLocal(args.cmd, args);
+        return;
+      }
+      // 看起来是个路径(含分隔符或 .zip 后缀)但不存在 → 给路径相关提示,而非「未知命令」。
+      if (/[\/\\]/.test(args.cmd) || args.cmd.toLowerCase().endsWith(".zip")) {
+        fail(`No such file or directory: ${resolve(args.cmd)}`);
+      }
       fail(`Unknown command: ${args.cmd}. See \`ark help\`.`);
   }
 }
