@@ -41,17 +41,12 @@ let cachedDeviceKey: Buffer | null = null; // 进程内缓存:避免每次缓存
 let deviceKeyResolved = false; // 区分「没解析过」与「解析过=无 keystore(null)」
 let warnedNoKeystore = false;
 
-/** DPAPI 受保护 blob 的落点(仅 Windows 用;darwin/linux 后端忽略此路径)。 */
-function dpapiBlobPath(): string {
-  return `${deviceKeyPath()}.dpapi`;
-}
-
 /** 解锁缓存用的对称密钥;无可用 OS keystore 时返回 null → 调用方禁用缓存。 */
 function deviceKey(): Buffer | null {
   if (deviceKeyResolved) return cachedDeviceKey;
   deviceKeyResolved = true;
   ensureDir();
-  const res = loadOrCreateDeviceKey(dpapiBlobPath());
+  const res = loadOrCreateDeviceKey(keysarkDir());
   if (!res) {
     if (!warnedNoKeystore) {
       warnedNoKeystore = true;
@@ -111,7 +106,7 @@ export async function unlockCredential(password: string): Promise<string> {
 export function clearCredential(): void {
   rmSync(credentialPath(), { force: true });
   clearUnlockCache();
-  deleteDeviceKey(deviceKeyPath(), dpapiBlobPath());
+  deleteDeviceKey(keysarkDir(), deviceKeyPath());
   cachedDeviceKey = null;
   deviceKeyResolved = false;
 }

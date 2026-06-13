@@ -10,6 +10,8 @@ import {
   type StorageTransport,
   type VaultDescriptor,
 } from "@keysark/vault";
+import { keysarkDir } from "./config";
+import { makeRevAnchor } from "./keystore";
 
 const decoder = new TextDecoder();
 
@@ -43,5 +45,12 @@ export function openVault(
   transport: StorageTransport,
 ): Vault {
   // CLI 进程短命:用内存缓存,每次从网盘读最新,避免陈旧。
-  return new Vault(key, { dir: descriptor.dir }, transport, makeCache(memoryKv(), descriptor.id));
+  // rev 锚点存 OS keystore:内存缓存无法跨进程检出回滚,锚点是 CLI 唯一的回滚检测来源。
+  return new Vault(
+    key,
+    { dir: descriptor.dir },
+    transport,
+    makeCache(memoryKv(), descriptor.id),
+    makeRevAnchor(descriptor.id, keysarkDir()),
+  );
 }

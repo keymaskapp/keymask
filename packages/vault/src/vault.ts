@@ -40,6 +40,14 @@ import {
   type VersionMeta,
 } from "./types";
 
+/** 可信单调锚点:持久记录"已接受的最新 index rev",独立于可被清空/篡改的本地缓存。
+ *  CLI 用 OS keystore 实现;web 暂无等价安全存储,传 undefined → 退回仅缓存比较。
+ *  bump 实现必须单调(只增不减),get 返回当前锚定值或 null(从未锚定)。 */
+export interface RevAnchor {
+  get(): number | null;
+  bump(rev: number): void;
+}
+
 /** load 检测到网盘 index 版本回退(rev 低于本地已接受值)时抛出。 */
 export class VaultRollbackError extends Error {
   constructor(
@@ -120,22 +128,33 @@ export class Vault {
   private readonly dir: string;
   private readonly cache: CacheStore;
   private readonly transport: StorageTransport;
+  private readonly revAnchor?: RevAnchor;
 
   /**
    * @param key 助记词派生的主密钥(只在内存)。
    * @param opts.dir 数据目录,形如 vaults/<id>。
    * @param transport 密文中转(浏览器=fetch /api/files;CLI=HTTP localhost)。
    * @param cache 本地密文缓存(按保险库 id 分命名空间)。
+   * @param revAnchor 可选:存"已接受最新 rev"的可信单调锚点(CLI=OS keystore),
+   *   抗清缓存/本地缓存篡改导致的回滚检测失效。不传则只靠本地缓存比较。
    */
   constructor(
     private readonly key: CryptoKey,
     opts: { dir: string },
     transport: StorageTransport,
     cache: CacheStore,
+    revAnchor?: RevAnchor,
   ) {
     this.dir = opts.dir;
     this.transport = transport;
     this.cache = cache;
+    this.revAnchor = revAnchor;
+  }
+
+  /** index 提交成功(已落网盘)→ 清 pending 并把已接受 rev 推进可信锚点。 */
+  private commitIndex(): void {
+    this.cache.clearIndexPending();
+    this.revAnchor?.bump(this.index.rev ?? 0);
   }
 
   private indexPath(): string {
@@ -215,6 +234,7 @@ export class Vault {
     await this.assertNoRollback(remote);
     this.index = remote;
     this.cache.setIndex(b64encode(bytes), false);
+    this.revAnchor?.bump(remote.rev ?? 0); // 接受的最新 rev 推进可信锚点
     return this.entries;
   }
 
@@ -230,19 +250,23 @@ export class Vault {
     return this.entries;
   }
 
-  /** 比对本地已接受的 index rev(缓存,非 pending 才算)与网盘 rev,检出回滚。 */
+  /** 检出回滚:网盘 rev 低于(a)可信锚点 或(b)本地已接受缓存 rev,即为回滚。 */
   private async assertNoRollback(remote: IndexDoc): Promise<void> {
     if (this.cache.indexPending()) return; // 本地有未同步改动,领先是合法的
+    const remoteRev = remote.rev ?? 0;
+    // 1) 可信锚点(OS keystore):抗清缓存/本地缓存被篡改;新设备首次为 null 时跳过。
+    const anchored = this.revAnchor?.get() ?? null;
+    if (anchored !== null && remoteRev < anchored) throw new VaultRollbackError(anchored, remoteRev);
+    // 2) 本地缓存 rev:无锚点时的退路。
     const cached = this.cache.getIndex();
     if (!cached) return;
-    let prevRev: number;
     try {
       const prev = normalizeIndex(await decJson<unknown>(this.key, b64decode(cached), this.idxAad()));
-      prevRev = prev.rev ?? 0;
-    } catch {
-      return; // 缓存损坏/无法解密 → 无从比较,放行
+      if (remoteRev < (prev.rev ?? 0)) throw new VaultRollbackError(prev.rev ?? 0, remoteRev);
+    } catch (e) {
+      if (e instanceof VaultRollbackError) throw e;
+      // 缓存损坏/无法解密 → 无从比较,放行(锚点已先挡过)
     }
-    if ((remote.rev ?? 0) < prevRev) throw new VaultRollbackError(prevRev, remote.rev ?? 0);
   }
 
   /** 打开条目(当前版):本地优先,未命中再回网盘读 items/<id>/<updatedAt>.json。 */
@@ -336,7 +360,7 @@ export class Vault {
         .then(() => this.cache.clearPending(id)),
       this.transport
         .upload(this.indexPath(), indexEnvelope)
-        .then(() => this.cache.clearIndexPending()),
+        .then(() => this.commitIndex()),
     ]);
     const failed = results.find((r) => r.status === "rejected") as PromiseRejectedResult | undefined;
     if (failed) {
@@ -439,7 +463,7 @@ export class Vault {
         .then(() => this.cache.clearPending(id)),
       this.transport
         .upload(this.indexPath(), indexEnvelope)
-        .then(() => this.cache.clearIndexPending()),
+        .then(() => this.commitIndex()),
     ]);
     const failed = results.find((r) => r.status === "rejected") as PromiseRejectedResult | undefined;
     if (failed) {
@@ -564,7 +588,7 @@ export class Vault {
     this.cache.setIndex(b64encode(env), true);
     try {
       await this.transport.upload(this.indexPath(), env);
-      this.cache.clearIndexPending();
+      this.commitIndex();
       return { synced: true };
     } catch (err) {
       return { synced: false, syncError: String(err) };
@@ -635,7 +659,7 @@ export class Vault {
       const idx = this.cache.getIndex();
       if (idx) {
         await this.transport.upload(this.indexPath(), b64decode(idx));
-        this.cache.clearIndexPending();
+        this.commitIndex();
       }
     }
     return { remaining: this.cache.pendingCount() };

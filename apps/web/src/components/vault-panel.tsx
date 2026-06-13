@@ -1638,6 +1638,9 @@ export function VaultPanel({
               </Button>
             </div>
             <StatusLine status={status} />
+            <p {...testId("vault-lock-scope-note")} className="text-center text-xs text-[var(--color-muted-foreground)]">
+              {t("lock_scope_note")}
+            </p>
           </CardContent>
         </Card>
       </CenteredShell>

@@ -3,6 +3,8 @@
 // Markdown 预览:已解密明文 → markdown-it 渲染为格式化 HTML(懒加载)。
 // 安全:html:false 关掉原始 HTML 注入;markdown-it 默认 validateLink 拦截
 // javascript:/vbscript:/file: 等不安全 scheme。无需额外 DOMPurify。
+// 隐私:默认不自动加载图片(<img> 会在渲染时就发外部 HTTPS 请求,暴露阅读行为/
+// 文件内嵌 URL)。把图片改渲染为「点击在新标签打开」的链接,请求改为用户主动发起。
 import { useEffect, useState } from "react";
 import { useT } from "../providers";
 import { testId } from "@/lib/test-id";
@@ -50,6 +52,15 @@ export function MarkdownPreview({ bytes }: { bytes: Uint8Array }) {
           tokens[idx]?.attrSet("target", "_blank");
           tokens[idx]?.attrSet("rel", "noopener noreferrer");
           return defaultLinkOpen(tokens, idx, options, env, self);
+        };
+        // 图片不自动加载:渲染成点击才打开(新标签)的链接,避免渲染即发外部请求。
+        // src 已过 markdown-it 的 validateLink(挡 javascript: 等);此处仅做 HTML 转义。
+        md.renderer.rules.image = (tokens, idx) => {
+          const tok = tokens[idx];
+          const src = tok?.attrGet("src") ?? "";
+          const alt = (tok?.content || tok?.attrGet("alt") || src).trim() || src;
+          const esc = md.utils.escapeHtml;
+          return `<a class="md-img-link" href="${esc(src)}" target="_blank" rel="noopener noreferrer nofollow">🖼 ${esc(alt)}</a>`;
         };
         const html = md.render(text);
         if (!cancelled) setState({ phase: "rendered", html });
