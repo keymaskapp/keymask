@@ -337,7 +337,7 @@ Items:
   ark vaults             List vaults and key match
   ark ls                 List items
   ark get <path> [local]   Decrypt an item by path (a/b/title; id prefix also works).
-                         Always prompts for the unlock password (ignores the 15-min
+                         Always prompts for the unlock password (ignores the 5-min
                          cache); KEYSARK_MNEMONIC still bypasses for scripts.
                          No local: print to stdout (piped output is content-only).
                          With local: write the file — asks before overwriting a
@@ -364,7 +364,7 @@ Local (offline; no login):
 
 Unlock (same rules as the web app):
   Mnemonic is stored encrypted with an unlock password (12+ chars, 3+ char classes,
-  Argon2id). A correct password unlocks for 15 min (sliding renewal).
+  Argon2id). A correct password unlocks until 5 min of inactivity (sliding renewal).
 
 Global options (position-independent):
   --server <url>       API base; default: KEYSARK_SERVER, else https://keysark.com
@@ -450,10 +450,10 @@ async function main() {
       spSave?.start("Encrypting credential…"); // Argon2id(512MB)~1-2s
       await saveCredential(raw, pw);
       spSave?.stop();
-      writeUnlockCache(raw); // 刚导入视同刚解锁:15 分钟内免密
+      writeUnlockCache(raw); // 刚导入视同刚解锁:5 分钟无操作内免密
       const names = matches.map((v) => `${v.label || "(default)"} [${v.id.slice(0, 8)}]`).join(", ");
       console.log(`${OK} Imported. Matched vaults: ${names}`);
-      console.log(dim("  Commands will ask for the unlock password (cached 15 min)."));
+      console.log(dim("  Commands will ask for the unlock password (cached, 5-min idle)."));
       return;
     }
 
@@ -628,7 +628,7 @@ async function main() {
       const pathArg = args.positionals[0];
       const localArg = args.positionals[1];
       if (!pathArg) fail("usage: ark get <path> [local-file]");
-      // get 是敏感读取:每次都强制输密码,不吃 15 分钟解锁缓存。
+      // get 是敏感读取:每次都强制输密码,不吃解锁缓存。
       const { vault } = await ready(args, true, true);
       const meta = await resolveEntryArg(vault, pathArg!);
       const doc = await vault.open(meta.id);

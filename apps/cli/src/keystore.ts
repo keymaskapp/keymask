@@ -3,20 +3,22 @@
 //   - macOS  : 登录钥匙串(security generic-password,受登录密码保护)。
 //   - Linux  : Secret Service / libsecret(secret-tool;GNOME Keyring、KWallet 等)。
 //   - Windows: DPAPI(ProtectedData,CurrentUser 绑定;受保护 blob 仍落盘但仅本用户可解)。
-//   - 其它/工具缺失:回退到原 0600 文件(行为不变),由调用方告警一次。
-// 零原生依赖:只 shell out 到各 OS 自带 CLI。device key 本身不是秘密(只护 15 分钟缓存),
+//   - 其它/工具缺失:无可用 keystore → 返回 null,调用方禁用解锁缓存(每次要密码),
+//     不再落明文文件回退(否则 key 与缓存同处 ~/.keysark,被「拷目录」一并带走)。
+// 零原生依赖:只 shell out 到各 OS 自带 CLI。device key 本身不是秘密(只护短期解锁缓存),
 // 但把它移出 ~/.keysark 才能让「拷目录」失效——这正是接入的目的。
 import { execFileSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
-import { chmodSync, existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 
 const SERVICE = "keysark";
 const ACCOUNT = "device-key"; // 钥匙串/Secret Service 里的条目名
 const KEY_LEN = 32;
 
-export type KeystoreBackend = "keychain" | "secret-service" | "dpapi" | "file";
+// 无明文文件回退:DPAPI 的 blob 虽落盘,但绑定 Windows 当前用户、拷走解不开,仍算安全后端。
+export type KeystoreBackend = "keychain" | "secret-service" | "dpapi";
 
-/** 后端工具不存在(spawn ENOENT)时抛此错 → 调用方回退到文件。 */
+/** 后端工具不存在(spawn ENOENT)时抛此错 → 调用方据此判定「无可用 keystore」。 */
 class KeystoreUnavailable extends Error {}
 
 interface Backend {
@@ -134,51 +136,43 @@ function winDpapi(blobPath: string): Backend {
   };
 }
 
-/** 当前平台的首选后端;不支持的平台返回 null(走文件回退)。 */
-function pickBackend(filePath: string): Backend | null {
+/** 当前平台的首选后端;不支持的平台返回 null(无可用 keystore)。 */
+function pickBackend(blobPath: string): Backend | null {
   switch (process.platform) {
     case "darwin":
       return macKeychain;
     case "linux":
       return linuxSecretService;
     case "win32":
-      return winDpapi(`${filePath}.dpapi`);
+      return winDpapi(blobPath);
     default:
       return null;
   }
 }
 
-/** 文件回退:原 device.key 行为(32 随机字节、0600)。 */
-function fileGetOrCreate(filePath: string): Buffer {
-  if (!existsSync(filePath)) writeFileSync(filePath, randomBytes(KEY_LEN), { mode: 0o600 });
-  chmodSync(filePath, 0o600);
-  return readFileSync(filePath);
-}
-
 /**
- * 取(或首次创建)device key。优先 OS keystore;命中即返回,否则新建随机 key 存入。
- * keystore 工具缺失 → 回退文件,backend 返回 "file"(调用方据此告警)。
+ * 取(或首次创建)device key,仅经 OS keystore。命中即返回,否则新建随机 key 存入。
+ * 无可用 keystore(不支持的平台 / 工具缺失)→ 返回 null,调用方据此禁用解锁缓存。
+ * 不再落明文文件回退:避免 key 与它保护的缓存同处 ~/.keysark、被「拷目录」一并带走。
  */
-export function loadOrCreateDeviceKey(filePath: string): { key: Buffer; backend: KeystoreBackend } {
-  const primary = pickBackend(filePath);
-  if (primary) {
-    try {
-      const existing = primary.get();
-      if (existing) return { key: existing, backend: primary.name };
-      const key = randomBytes(KEY_LEN);
-      primary.set(key);
-      return { key, backend: primary.name };
-    } catch (e) {
-      if (!(e instanceof KeystoreUnavailable)) throw e;
-      // 工具缺失(如无 libsecret 的精简 Linux):落到文件回退。
-    }
+export function loadOrCreateDeviceKey(blobPath: string): { key: Buffer; backend: KeystoreBackend } | null {
+  const primary = pickBackend(blobPath);
+  if (!primary) return null;
+  try {
+    const existing = primary.get();
+    if (existing) return { key: existing, backend: primary.name };
+    const key = randomBytes(KEY_LEN);
+    primary.set(key);
+    return { key, backend: primary.name };
+  } catch (e) {
+    if (e instanceof KeystoreUnavailable) return null; // 如无 libsecret 的精简 Linux
+    throw e;
   }
-  return { key: fileGetOrCreate(filePath), backend: "file" };
 }
 
-/** 彻底清除 device key:keystore 条目 + 历史明文文件 + DPAPI blob 都删。 */
-export function deleteDeviceKey(filePath: string): void {
-  const primary = pickBackend(filePath);
+/** 彻底清除 device key:keystore 条目 + 历史遗留文件 + DPAPI blob 都删。 */
+export function deleteDeviceKey(legacyFilePath: string, blobPath: string): void {
+  const primary = pickBackend(blobPath);
   if (primary) {
     try {
       primary.remove();
@@ -186,5 +180,5 @@ export function deleteDeviceKey(filePath: string): void {
       /* 工具缺失或条目不存在,忽略 */
     }
   }
-  rmSync(filePath, { force: true });
+  rmSync(legacyFilePath, { force: true }); // 清掉旧版本可能留下的明文 device.key
 }

@@ -2,10 +2,11 @@
 //   - credential.json:用「解锁密码」经 Argon2id(m=512MB/t=4/p=1,参数随凭据存储)派生密钥,
 //     AES-256-GCM 加密助记词。格式 {v, kdf, salt, params, iv, ct},全 base64。
 //     本地永不存明文密码;密码对不对靠 GCM 认证标签。
-//   - unlock-cache.json:输对密码后 15 分钟内免重输(对齐 web 闲置自动锁定默认值)。
+//   - unlock-cache.json:输对密码后免重输,连续 5 分钟无操作即失效(命中滑动续期)。
 //     用设备密钥 AES-256-GCM 加密 + 过期时间,每次命中滑动续期;过期即删,回到要密码的状态。
-//     设备密钥优先存 OS keystore(钥匙串 / Secret Service / DPAPI,见 ./keystore),
-//     使「拷贝整个 ~/.keysark」拿不到该密钥;keystore 不可用时回退到 0600 文件。
+//     设备密钥只存 OS keystore(钥匙串 / Secret Service / DPAPI,见 ./keystore),
+//     使「拷贝整个 ~/.keysark」拿不到该密钥;无可用 keystore 时直接禁用缓存(每次要密码),
+//     不落明文文件回退。
 // 助记词/明文绝不进网络;加解密用 @keysark/crypto(与 web 同一套实现)。
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 import { existsSync, readFileSync, rmSync } from "node:fs";
@@ -25,8 +26,8 @@ import { ensureSecureDir, writeSecureFile } from "./fsperm";
 import { deleteDeviceKey, loadOrCreateDeviceKey } from "./keystore";
 import { askPassword, log, spinner } from "./ui";
 
-/** 解锁缓存有效期:15 分钟(对齐 web 闲置自动锁定默认值),命中滑动续期。 */
-const UNLOCK_TTL_MS = 15 * 60 * 1000;
+/** 解锁缓存有效期:连续 5 分钟无操作即失效;每次命中滑动续期(再给 5 分钟)。 */
+const UNLOCK_TTL_MS = 5 * 60 * 1000;
 
 const credentialPath = () => join(keysarkDir(), "credential.json");
 const cachePath = () => join(keysarkDir(), "unlock-cache.json");
@@ -37,18 +38,29 @@ function ensureDir() {
 }
 
 let cachedDeviceKey: Buffer | null = null; // 进程内缓存:避免每次缓存读写都 spawn keystore CLI
-let warnedFileFallback = false;
+let deviceKeyResolved = false; // 区分「没解析过」与「解析过=无 keystore(null)」
+let warnedNoKeystore = false;
 
-function deviceKey(): Buffer {
-  if (cachedDeviceKey) return cachedDeviceKey;
+/** DPAPI 受保护 blob 的落点(仅 Windows 用;darwin/linux 后端忽略此路径)。 */
+function dpapiBlobPath(): string {
+  return `${deviceKeyPath()}.dpapi`;
+}
+
+/** 解锁缓存用的对称密钥;无可用 OS keystore 时返回 null → 调用方禁用缓存。 */
+function deviceKey(): Buffer | null {
+  if (deviceKeyResolved) return cachedDeviceKey;
+  deviceKeyResolved = true;
   ensureDir();
-  const { key, backend } = loadOrCreateDeviceKey(deviceKeyPath());
-  if (backend === "file" && !warnedFileFallback) {
-    warnedFileFallback = true;
-    log.warn("OS keystore unavailable; unlock-cache key stored in ~/.keysark (weaker). Copying that dir within the 15-min window exposes the mnemonic.");
+  const res = loadOrCreateDeviceKey(dpapiBlobPath());
+  if (!res) {
+    if (!warnedNoKeystore) {
+      warnedNoKeystore = true;
+      log.warn("OS keystore unavailable; unlock caching disabled — you'll be asked for the password each time. Set KEYSARK_MNEMONIC for non-interactive use.");
+    }
+    return null;
   }
-  cachedDeviceKey = key;
-  return key;
+  cachedDeviceKey = res.key;
+  return res.key;
 }
 
 const b64 = (u: Uint8Array) => Buffer.from(u).toString("base64");
@@ -99,11 +111,12 @@ export async function unlockCredential(password: string): Promise<string> {
 export function clearCredential(): void {
   rmSync(credentialPath(), { force: true });
   clearUnlockCache();
-  deleteDeviceKey(deviceKeyPath());
+  deleteDeviceKey(deviceKeyPath(), dpapiBlobPath());
   cachedDeviceKey = null;
+  deviceKeyResolved = false;
 }
 
-// ---------- 15 分钟解锁缓存(device.key 加密,滑动续期) ----------
+// ---------- 解锁缓存(device key 加密,5 分钟无操作失效,滑动续期) ----------
 
 interface UnlockCache {
   iv: string;
@@ -113,8 +126,10 @@ interface UnlockCache {
 }
 
 export function writeUnlockCache(mnemonic: string): void {
+  const dk = deviceKey();
+  if (!dk) return; // 无 keystore → 不缓存(每次都要密码)
   const iv = randomBytes(12);
-  const cipher = createCipheriv("aes-256-gcm", deviceKey(), iv);
+  const cipher = createCipheriv("aes-256-gcm", dk, iv);
   const ct = Buffer.concat([cipher.update(mnemonic, "utf8"), cipher.final()]);
   const cache: UnlockCache = {
     iv: iv.toString("base64"),
@@ -125,8 +140,10 @@ export function writeUnlockCache(mnemonic: string): void {
   writeSecureFile(keysarkDir(), cachePath(), JSON.stringify(cache));
 }
 
-/** 读解锁缓存:过期返回 null 并删除;命中则滑动续期(再给 15 分钟)。 */
+/** 读解锁缓存:过期返回 null 并删除;命中则滑动续期(再给 5 分钟)。 */
 export function readUnlockCache(): string | null {
+  const dk = deviceKey();
+  if (!dk) return null; // 无 keystore → 没有缓存可读
   try {
     const cache = JSON.parse(readFileSync(cachePath(), "utf8")) as UnlockCache;
     if (!cache.expiresAt || cache.expiresAt < Date.now()) {
@@ -135,7 +152,7 @@ export function readUnlockCache(): string | null {
     }
     const decipher = createDecipheriv(
       "aes-256-gcm",
-      deviceKey(),
+      dk,
       Buffer.from(cache.iv, "base64"),
     );
     decipher.setAuthTag(Buffer.from(cache.tag, "base64"));
@@ -176,7 +193,7 @@ export async function promptNewPassword(): Promise<string> {
 }
 
 /**
- * 取助记词:env > 解锁缓存(15 分钟,滑动续期)> 密码解锁凭据(最多 3 次)。
+ * 取助记词:env > 解锁缓存(5 分钟无操作失效,滑动续期)> 密码解锁凭据(最多 3 次)。
  * allowPrompt=false 时不交互(脚本场景)。返回 null 表示无可用助记词(应先 import)。
  * forcePassword=true:跳过解锁缓存、每次都强制输密码,且不写/续期缓存(敏感操作如 get)。
  *   注:KEYSARK_MNEMONIC 是显式的非交互脚本覆盖,forcePassword 下仍然生效。
@@ -202,7 +219,7 @@ export async function acquireMnemonic(allowPrompt = true, forcePassword = false)
     try {
       const mnemonic = await unlockCredential(pw);
       sp.stop();
-      if (!forcePassword) writeUnlockCache(mnemonic); // 输对密码 → 15 分钟内免重输;forcePassword 不续期
+      if (!forcePassword) writeUnlockCache(mnemonic); // 输对密码 → 5 分钟内免重输;forcePassword 不续期
       return mnemonic;
     } catch {
       sp.stop();

@@ -204,7 +204,7 @@ const zh = {
   docs_setup_login_note:
     "ark login 走设备码授权:终端给出一个链接与代码,在浏览器里核对代码并确认。授权态等同一次浏览器登录,只能搬运密文,拿不到你的助记词或明文。",
   docs_setup_import_note:
-    "ark import 让你输入助记词,并为本机设置一个解锁密码。助记词经 Argon2id 派生密钥加密后存在本地(~/.keysark),绝不上传;解锁缓存 15 分钟,期间无需重复输入密码。",
+    "ark import 让你输入助记词,并为本机设置一个解锁密码。助记词经 Argon2id 派生密钥加密后存在本地(~/.keysark),绝不上传;解锁缓存连续 5 分钟无操作即失效,期间无需重复输入密码。",
   docs_commands_title: "命令一览",
   docs_cmd_login: "设备码授权这台设备(会打开浏览器核对)。",
   docs_cmd_import: "导入助记词并设置本机解锁密码。",
@@ -572,7 +572,7 @@ const en: typeof zh = {
   docs_setup_login_note:
     "ark login uses device-code authorization: the terminal shows a link and a code; open it in your browser, confirm the code matches, and approve. The grant is equivalent to a browser session — it can only move ciphertext, never your phrase or plaintext.",
   docs_setup_import_note:
-    "ark import asks for your recovery phrase and sets a local unlock password. The phrase is encrypted with an Argon2id-derived key and stored locally (~/.keysark) — never uploaded. The unlock stays cached for 15 minutes so you needn't retype the password.",
+    "ark import asks for your recovery phrase and sets a local unlock password. The phrase is encrypted with an Argon2id-derived key and stored locally (~/.keysark) — never uploaded. The unlock stays cached until 5 minutes of inactivity so you needn't retype the password.",
   docs_commands_title: "Command reference",
   docs_cmd_login: "Authorize this device via device code (opens the browser to confirm).",
   docs_cmd_import: "Import a recovery phrase and set a local unlock password.",
