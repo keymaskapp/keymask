@@ -177,6 +177,64 @@ const zh = {
   cli_auth_denied: "已拒绝该请求。本页可以关闭。",
   cli_auth_error: "操作失败,请重试。",
 
+  // 首页 CLI 区 + 命令行客户端
+  nav_docs: "文档",
+  cli_home_tag: "命令行",
+  cli_home_title: "ark —— 终端里的保险库",
+  cli_home_body:
+    "ark 是 KeysArk 的命令行客户端:在终端登录、导入助记词后即可读写保险库——把 .env、API 密钥、配置直接存取。和网页端一样,加解密只在你的设备上完成,云端只见密文。最适合开发者与脚本 / CI。",
+  cli_home_install_hint: "一行安装,跨平台:",
+  cli_home_cta: "查看 CLI 文档",
+
+  // CLI 使用文档页
+  docs_nav_back: "返回首页",
+  docs_title: "ark CLI 使用文档",
+  docs_subtitle:
+    "在终端里读写你的端到端加密保险库。明文与助记词只留在本地,离开设备的永远只有密文。",
+  docs_intro_title: "这是什么",
+  docs_intro_body:
+    "ark 是 KeysArk 的官方命令行客户端,把网页保险库的能力带到终端:列出条目、按路径读取、保存本地文件、创建与更新条目。所有加解密都在本地用你的 12 词助记词完成——服务端与网盘后端全程只经手不透明密文。",
+  docs_install_title: "安装",
+  docs_install_note: "需要 Node.js 18+。安装后即可使用 ark(以及别名 keysark)命令。",
+  docs_setup_title: "首次配置",
+  docs_setup_body: "两步:授权这台设备,再导入你的助记词。",
+  docs_setup_login_note:
+    "ark login 走设备码授权:终端给出一个链接与代码,在浏览器里核对代码并确认。授权态等同一次浏览器登录,只能搬运密文,拿不到你的助记词或明文。",
+  docs_setup_import_note:
+    "ark import 让你输入 12 词助记词,并为本机设置一个解锁密码。助记词经 Argon2id 派生密钥加密后存在本地(~/.keysark),绝不上传;解锁缓存 15 分钟,期间无需重复输入密码。",
+  docs_commands_title: "命令一览",
+  docs_cmd_login: "设备码授权这台设备(会打开浏览器核对)。",
+  docs_cmd_import: "导入 12 词助记词并设置本机解锁密码。",
+  docs_cmd_status: "查看登录与助记词状态。",
+  docs_cmd_info: "查看版本、服务端来源与配置目录。",
+  docs_cmd_vaults: "列出账号下的所有保险库,并标注助记词是否匹配。",
+  docs_cmd_ls: "列出当前保险库里的所有条目。",
+  docs_cmd_get: "按路径或 ID 解密读取条目;不带文件名打印到标准输出,带文件名写入文件。",
+  docs_cmd_new: "新建条目;省略 --content 时从标准输入读取内容。",
+  docs_cmd_set: "按 ID 更新条目的标题、内容或所在文件夹。",
+  docs_cmd_save: "把本地文本文件存进保险库;在 git 仓库里会按 origin 自动推断目标路径。",
+  docs_cmd_rm: "按 ID 删除条目。",
+  docs_cmd_sync: "把本地待同步的改动推送到服务端。",
+  docs_cmd_logout: "清除本机登录态(保留助记词凭据)。",
+  docs_cmd_forget: "删除本机保存的助记词凭据与解锁缓存。",
+  docs_options_title: "全局选项",
+  docs_opt_server: "覆盖服务端地址(默认 https://keysark.com)。",
+  docs_opt_vault: "按 ID 或名称选择保险库(默认取第一个匹配助记词的库)。",
+  docs_opt_no_browser: "登录时不自动打开浏览器。",
+  docs_examples_title: "常用示例",
+  docs_ex_get: "把一个条目解密写到本地文件:",
+  docs_ex_save: "在项目目录里把 .env 存进保险库(自动按 git origin 推断路径):",
+  docs_ex_new: "用管道把内容创建成新条目:",
+  docs_ex_ci: "在 CI / 脚本里免交互使用(用环境变量提供助记词):",
+  docs_env_title: "环境变量",
+  docs_env_server: "服务端地址(等同 --server)。",
+  docs_env_mnemonic: "直接提供 12 词助记词,跳过本机凭据——适合 CI / 脚本。",
+  docs_env_home: "配置目录,默认 ~/.keysark。",
+  docs_env_no_browser: "设置后登录时不自动打开浏览器。",
+  docs_security_title: "安全说明",
+  docs_security_body:
+    "助记词、派生主密钥与明文永远不离开你的设备:ark 在本地加解密,只把密文发往服务端与网盘。设备授权态只能搬运密文;即便被泄露,也读不到你保险库里的任何内容。",
+
   // 修改密码 / 闲置自动锁定
   pw_change_title: "修改密码",
   pw_change_desc: "输入当前密码与新密码。改完后旧密码立即失效,助记词不变。",
@@ -368,7 +426,7 @@ const en: typeof zh = {
   feat_1_body: (store: string) =>
     `Content is sealed with AES-256-GCM in your browser before it leaves the device; ${store} and our servers only ever see ciphertext — a breach reveals nothing.`,
   feat_2_tag: "Easy",
-  feat_2_title: "Your phrase is the master key",
+  feat_2_title: "Your phrase is the key",
   feat_2_body:
     "Just remember 12 words to unlock on any device — no accounts, no key files to manage. Standard BIP39, same as MetaMask.",
   feat_3_tag: "Free",
@@ -483,6 +541,64 @@ const en: typeof zh = {
   cli_auth_approved: "Approved ✓ Return to your terminal — you can close this page.",
   cli_auth_denied: "Request denied. You can close this page.",
   cli_auth_error: "Something went wrong, please retry.",
+
+  // Home CLI section + command-line client
+  nav_docs: "Docs",
+  cli_home_tag: "Command line",
+  cli_home_title: "ark — your vault in the terminal",
+  cli_home_body:
+    "ark is the KeysArk command-line client. Log in and import your phrase, then read and write your vault from the terminal — pull .env files, API keys and configs in and out. Just like the web app, all encryption and decryption happen on your device; the cloud only ever sees ciphertext. Built for developers and scripts / CI.",
+  cli_home_install_hint: "One line, cross-platform:",
+  cli_home_cta: "Read the CLI docs",
+
+  // CLI documentation page
+  docs_nav_back: "Back to home",
+  docs_title: "ark CLI documentation",
+  docs_subtitle:
+    "Read and write your end-to-end encrypted vault from the terminal. Your plaintext and phrase stay local — only ciphertext ever leaves the device.",
+  docs_intro_title: "What is it",
+  docs_intro_body:
+    "ark is the official KeysArk command-line client. It brings the web vault to your terminal: list items, read by path, save local files, create and update entries. All encryption and decryption happen locally with your 12-word phrase — the server and cloud backend only ever handle opaque ciphertext.",
+  docs_install_title: "Install",
+  docs_install_note: "Requires Node.js 18+. Installs the ark command (aliased as keysark).",
+  docs_setup_title: "First-time setup",
+  docs_setup_body: "Two steps: authorize this device, then import your phrase.",
+  docs_setup_login_note:
+    "ark login uses device-code authorization: the terminal shows a link and a code; open it in your browser, confirm the code matches, and approve. The grant is equivalent to a browser session — it can only move ciphertext, never your phrase or plaintext.",
+  docs_setup_import_note:
+    "ark import asks for your 12-word phrase and sets a local unlock password. The phrase is encrypted with an Argon2id-derived key and stored locally (~/.keysark) — never uploaded. The unlock stays cached for 15 minutes so you needn't retype the password.",
+  docs_commands_title: "Command reference",
+  docs_cmd_login: "Authorize this device via device code (opens the browser to confirm).",
+  docs_cmd_import: "Import a 12-word phrase and set a local unlock password.",
+  docs_cmd_status: "Show login and phrase status.",
+  docs_cmd_info: "Show version, server source and config directory.",
+  docs_cmd_vaults: "List all vaults on the account, flagging which match your phrase.",
+  docs_cmd_ls: "List all items in the current vault.",
+  docs_cmd_get: "Decrypt an item by path or ID; prints to stdout, or writes to a file if one is given.",
+  docs_cmd_new: "Create an item; reads content from stdin when --content is omitted.",
+  docs_cmd_set: "Update an item's title, content or folder by ID.",
+  docs_cmd_save: "Save a local text file into the vault; infers the target path from git origin inside a repo.",
+  docs_cmd_rm: "Delete an item by ID.",
+  docs_cmd_sync: "Push pending local changes to the server.",
+  docs_cmd_logout: "Clear the local login (keeps the phrase credential).",
+  docs_cmd_forget: "Remove the locally stored phrase credential and unlock cache.",
+  docs_options_title: "Global options",
+  docs_opt_server: "Override the server URL (default https://keysark.com).",
+  docs_opt_vault: "Select a vault by ID or label (defaults to the first one matching your phrase).",
+  docs_opt_no_browser: "Don't auto-open the browser during login.",
+  docs_examples_title: "Common examples",
+  docs_ex_get: "Decrypt an item to a local file:",
+  docs_ex_save: "From a project directory, save .env into the vault (path inferred from git origin):",
+  docs_ex_new: "Create a new item by piping content in:",
+  docs_ex_ci: "Non-interactive use in CI / scripts (phrase supplied via an env var):",
+  docs_env_title: "Environment variables",
+  docs_env_server: "Server URL (same as --server).",
+  docs_env_mnemonic: "Supply the 12-word phrase directly, bypassing the local credential — for CI / scripts.",
+  docs_env_home: "Config directory, defaults to ~/.keysark.",
+  docs_env_no_browser: "When set, login won't auto-open the browser.",
+  docs_security_title: "Security",
+  docs_security_body:
+    "Your phrase, derived master key and plaintext never leave your device: ark encrypts and decrypts locally and only sends ciphertext to the server and cloud. The device grant can only move ciphertext — even if leaked, it reveals nothing inside your vault.",
 
   // Change password / idle auto-lock
   pw_change_title: "Change password",

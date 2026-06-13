@@ -12,7 +12,8 @@ import {
 import { useLocale, useTheme } from "./providers";
 import { LOCALES, THEMES, type Theme } from "@/lib/i18n";
 
-const TRIGGER =
+// 头部圆形图标按钮样式(语言/主题/文档共用,保持视觉一致)。
+export const CONTROL_TRIGGER =
   "inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-foreground)] shadow-sm transition-colors hover:bg-[var(--color-accent)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-ring)] data-[state=open]:bg-[var(--color-accent)]";
 
 function ThemeGlyph({ theme, className }: { theme: Theme; className?: string }) {
@@ -30,7 +31,7 @@ export function HeaderControls() {
       {/* 语言 */}
       <DropdownMenu>
         <DropdownMenuTrigger
-          className={TRIGGER}
+          className={CONTROL_TRIGGER}
           aria-label={locale === "zh" ? "切换语言" : "Switch language"}
         >
           <Globe className="h-[1.05rem] w-[1.05rem]" />
@@ -47,7 +48,7 @@ export function HeaderControls() {
 
       {/* 主题 */}
       <DropdownMenu>
-        <DropdownMenuTrigger className={TRIGGER} aria-label={t("theme_label")}>
+        <DropdownMenuTrigger className={CONTROL_TRIGGER} aria-label={t("theme_label")}>
           <ThemeGlyph theme={theme} className="h-[1.05rem] w-[1.05rem]" />
         </DropdownMenuTrigger>
         <DropdownMenuContent>

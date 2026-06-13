@@ -5,16 +5,18 @@ import { Button } from "@keysark/ui";
 import {
   ArrowRight,
   Binary,
+  BookText,
   CloudUpload,
   KeyRound,
   LockKeyhole,
   MonitorSmartphone,
   ShieldCheck,
+  Terminal,
   type LucideIcon,
 } from "lucide-react";
 import { Fragment } from "react";
 import { Wordmark } from "./brand";
-import { HeaderControls } from "./controls";
+import { CONTROL_TRIGGER, HeaderControls } from "./controls";
 import { useT } from "./providers";
 import type { MsgKey } from "@/lib/i18n";
 import { storageLabel, type ProviderFlags } from "@/lib/providers";
@@ -58,6 +60,9 @@ export function Landing({ error, providers }: { error?: string; providers: Provi
         <header {...testId("landing-header")} className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5">
           <Wordmark className="text-lg" />
           <div className="flex items-center gap-3">
+            <a href="/docs" className={CONTROL_TRIGGER} aria-label={t("nav_docs")} title={t("nav_docs")}>
+              <BookText className="h-[1.05rem] w-[1.05rem]" />
+            </a>
             <HeaderControls />
             {showGoogle ? (
               <a href="/api/auth/google">
@@ -227,6 +232,62 @@ export function Landing({ error, providers }: { error?: string; providers: Provi
                 <p className="mt-1 text-xs leading-relaxed text-[var(--color-muted-foreground)]">
                   {t("how_cloud_note")}
                 </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* 命令行客户端介绍 */}
+        <section {...testId("landing-cli")} className="border-t border-[var(--color-border)]">
+          <div {...testId("landing-cli-inner")} className="mx-auto w-full max-w-6xl px-6 py-16">
+            <div className="grid items-center gap-10 lg:grid-cols-2">
+              <div {...testId("landing-cli-copy")}>
+                <span className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)]/80 px-4 py-1.5 text-xs font-medium text-[var(--color-primary)] shadow-sm backdrop-blur">
+                  <Terminal className="h-3.5 w-3.5" />
+                  {t("cli_home_tag")}
+                </span>
+                <h2 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl">
+                  {t("cli_home_title")}
+                </h2>
+                <p className="mt-4 max-w-xl text-[var(--color-muted-foreground)] leading-relaxed">
+                  {t("cli_home_body")}
+                </p>
+                <div className="mt-7">
+                  <a href="/docs">
+                    <Button size="lg" variant="outline" className="px-7">
+                      {t("cli_home_cta")}
+                      <ArrowRight className="ml-1.5 h-4 w-4" />
+                    </Button>
+                  </a>
+                </div>
+              </div>
+
+              {/* 终端示意:install + 三步常用命令 */}
+              <div
+                {...testId("landing-cli-terminal")}
+                className="overflow-hidden rounded-[calc(var(--radius)+0.5rem)] border border-[var(--color-border)] bg-[var(--color-surface-2)]/80 shadow-sm backdrop-blur"
+              >
+                <div className="flex items-center gap-1.5 border-b border-[var(--color-border)] px-4 py-3">
+                  <span className="h-2.5 w-2.5 rounded-full bg-[var(--color-danger)]/60" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-[var(--color-warning,#f59e0b)]/60" />
+                  <span className="h-2.5 w-2.5 rounded-full bg-[var(--color-success)]/60" />
+                  <span className="ml-2 font-mono text-xs text-[var(--color-muted-foreground)]">ark</span>
+                </div>
+                <div className="px-4 py-4 font-mono text-xs leading-relaxed">
+                  <p className="text-[var(--color-muted-foreground)]"># {t("cli_home_install_hint")}</p>
+                  <p>
+                    <span className="text-[var(--color-success)]">$</span> npm install -g @keysark/cli
+                  </p>
+                  <p className="mt-3">
+                    <span className="text-[var(--color-success)]">$</span> ark login
+                  </p>
+                  <p>
+                    <span className="text-[var(--color-success)]">$</span> ark import
+                  </p>
+                  <p className="mt-3">
+                    <span className="text-[var(--color-success)]">$</span> ark get github.com/me/app/.env .env
+                  </p>
+                </div>
               </div>
             </div>
           </div>
