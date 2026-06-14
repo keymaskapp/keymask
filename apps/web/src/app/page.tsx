@@ -1,8 +1,26 @@
+import type { Metadata } from "next";
 import { getConnectedStorage } from "@/lib/storage";
 import { providerFlags } from "@/lib/providers";
 import { Landing } from "@/components/landing";
 import { VaultPanel } from "@/components/vault-panel";
 import { REGISTRY_NAME, type Registry, type VaultDescriptor } from "@/lib/registry";
+import { localeHref } from "@/lib/i18n";
+import { getServerLocale } from "@/lib/locale-server";
+
+// 首页的 canonical 与 hreflang(只放在首页,避免污染 /docs 等其它路由的规范链接)。
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getServerLocale();
+  return {
+    alternates: {
+      canonical: localeHref("/", locale),
+      languages: {
+        en: "/",
+        "zh-CN": "/zh",
+        "x-default": "/",
+      },
+    },
+  };
+}
 
 export default async function Home({
   searchParams,

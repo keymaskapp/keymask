@@ -5,8 +5,8 @@ import { Button } from "@keysark/ui";
 import {
   ArrowRight,
   Binary,
-  BookText,
   CloudUpload,
+  GitBranch,
   KeyRound,
   LockKeyhole,
   MonitorSmartphone,
@@ -15,18 +15,19 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Fragment } from "react";
-import { Wordmark } from "./brand";
-import { CONTROL_TRIGGER, HeaderControls } from "./controls";
-import { useT } from "./providers";
-import { CLI_VERSION } from "@/lib/build-info";
-import type { MsgKey } from "@/lib/i18n";
+import { GithubMark, Wordmark } from "./brand";
+import { DocsButton, HeaderControls, RepoButton } from "./controls";
+import { useLocale } from "./providers";
+import { BUILD_REPO, CLI_VERSION } from "@/lib/build-info";
+import { localeHref, type MsgKey } from "@/lib/i18n";
 import { storageLabel, type ProviderFlags } from "@/lib/providers";
 import { testId } from "@/lib/test-id";
 
+// 第一屏三特性:安全 / 免费 / 开源。
 const FEATURES: { tag: MsgKey; title: MsgKey; body: MsgKey; icon: LucideIcon }[] = [
   { tag: "feat_1_tag", title: "feat_1_title", body: "feat_1_body", icon: ShieldCheck },
-  { tag: "feat_2_tag", title: "feat_2_title", body: "feat_2_body", icon: KeyRound },
   { tag: "feat_3_tag", title: "feat_3_title", body: "feat_3_body", icon: CloudUpload },
+  { tag: "feat_os_tag", title: "feat_os_title", body: "feat_os_body", icon: GitBranch },
 ];
 
 // 工作原理示意图:浏览器边界内的三步(slug 稳定,供 testId 用),边界外是云端存储。
@@ -37,10 +38,27 @@ const HOW_STEPS: { id: string; title: MsgKey; body: MsgKey; icon: LucideIcon }[]
 ];
 
 export function Landing({ error, providers }: { error?: string; providers: ProviderFlags }) {
-  const t = useT();
+  const { t, locale } = useLocale();
   const { google: showGoogle, baidu: showBaidu } = providers;
   // 联动主页文案:存储后端展示名随启用的入口变化。
   const store = storageLabel(providers, { google: t("store_google"), baidu: t("store_baidu") });
+  // 站内链接随当前语言加前缀(默认英文无前缀);外链(GitHub、/api/*)不加。
+  const homeHref = localeHref("/", locale);
+  const docsHref = localeHref("/docs", locale);
+  const repo = BUILD_REPO;
+
+  // 结构化数据:帮助搜索引擎理解这是一款开源免费的密码/密钥管理软件。
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "KeysArk",
+    applicationCategory: "SecurityApplication",
+    operatingSystem: "Web, macOS, Windows, Linux",
+    description: t("meta_description", store),
+    offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+    isAccessibleForFree: true,
+    ...(repo ? { codeRepository: repo, license: `${repo}/blob/main/LICENSE` } : {}),
+  };
   const errMsg = error
     ? error === "oauth_state"
       ? t("err_state")
@@ -51,6 +69,11 @@ export function Landing({ error, providers }: { error?: string; providers: Provi
 
   return (
     <div {...testId("landing")} className="relative flex min-h-screen flex-col">
+      {/* SEO 结构化数据 */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* 背景层(纯 CSS 动态:漂移极光 + 平移网格 + 扫描光束) */}
       <div className="hero-aurora" aria-hidden="true" />
       <div className="hero-grid" aria-hidden="true" />
@@ -59,11 +82,12 @@ export function Landing({ error, providers }: { error?: string; providers: Provi
       <div className="relative z-10 flex min-h-screen flex-col">
         {/* 顶栏 */}
         <header {...testId("landing-header")} className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5">
-          <Wordmark className="text-lg" />
+          <a href={homeHref} aria-label="KeysArk">
+            <Wordmark className="text-lg" />
+          </a>
           <div className="flex items-center gap-3">
-            <a href="/docs" className={CONTROL_TRIGGER} aria-label={t("nav_docs")} title={t("nav_docs")}>
-              <BookText className="h-[1.05rem] w-[1.05rem]" />
-            </a>
+            <RepoButton />
+            <DocsButton />
             <HeaderControls />
             {showGoogle ? (
               <a href="/api/auth/google">
@@ -254,7 +278,7 @@ export function Landing({ error, providers }: { error?: string; providers: Provi
                   {t("cli_home_body")}
                 </p>
                 <div className="mt-7">
-                  <a href="/docs">
+                  <a href={docsHref}>
                     <Button size="lg" variant="outline" className="px-7">
                       {t("cli_home_cta")}
                       <ArrowRight className="ml-1.5 h-4 w-4" />
@@ -299,7 +323,20 @@ export function Landing({ error, providers }: { error?: string; providers: Provi
         {/* 页脚 */}
         <footer {...testId("landing-footer")} className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-8 text-xs text-[var(--color-muted-foreground)]">
           <Wordmark className="text-sm font-medium" />
-          <span>{t("footer_tagline", store)}</span>
+          <div className="flex items-center gap-4">
+            {repo ? (
+              <a
+                href={repo}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 transition-colors hover:text-[var(--color-foreground)]"
+              >
+                <GithubMark className="h-3.5 w-3.5" />
+                GitHub
+              </a>
+            ) : null}
+            <span>{t("footer_tagline", store)}</span>
+          </div>
         </footer>
       </div>
     </div>

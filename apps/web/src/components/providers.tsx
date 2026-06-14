@@ -1,11 +1,12 @@
 "use client";
 
-// 客户端语言 + 主题上下文。初始值由服务端从 cookie 读出并下传,SSR 与首帧一致,无闪烁。
-// 主题 light/dark 通过 <html> 上的 class 控制;system 不加 class,交给 CSS 的 prefers-color-scheme。
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+// 客户端语言 + 主题上下文。初始值由服务端下传,SSR 与首帧一致,无闪烁。
+// 语言由 URL 决定(默认英文在根,其它语言走 /<locale> 前缀),切换语言是整页导航,
+// 因此 locale 在单次页面加载内固定——这里直接用服务端下传的值,不在客户端改写。
+// 主题 light/dark 通过 <html> 上的 class 控制;system 不加 class,交给 prefers-color-scheme。
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import {
   htmlLang,
-  LOCALE_COOKIE,
   THEME_COOKIE,
   translate,
   type Locale,
@@ -15,7 +16,6 @@ import {
 
 interface LocaleCtx {
   locale: Locale;
-  setLocale: (l: Locale) => void;
   t: (key: MsgKey, ...args: unknown[]) => string;
 }
 interface ThemeCtx {
@@ -46,14 +46,12 @@ export function Providers({
   initialLocale: Locale;
   initialTheme: Theme;
 }) {
-  const [locale, setLocaleState] = useState<Locale>(initialLocale);
   const [theme, setThemeState] = useState<Theme>(initialTheme);
 
-  const setLocale = useCallback((l: Locale) => {
-    setLocaleState(l);
-    setCookie(LOCALE_COOKIE, l);
-    document.documentElement.lang = htmlLang(l);
-  }, []);
+  // 软导航时根布局的 <html lang> 不会重渲染;语言切换走整页导航,这里兜底同步一次。
+  useEffect(() => {
+    document.documentElement.lang = htmlLang(initialLocale);
+  }, [initialLocale]);
 
   const setTheme = useCallback((t: Theme) => {
     setThemeState(t);
@@ -63,11 +61,10 @@ export function Providers({
 
   const localeValue = useMemo<LocaleCtx>(
     () => ({
-      locale,
-      setLocale,
-      t: (key, ...args) => translate(locale, key, ...args),
+      locale: initialLocale,
+      t: (key, ...args) => translate(initialLocale, key, ...args),
     }),
-    [locale, setLocale],
+    [initialLocale],
   );
   const themeValue = useMemo<ThemeCtx>(() => ({ theme, setTheme }), [theme, setTheme]);
 

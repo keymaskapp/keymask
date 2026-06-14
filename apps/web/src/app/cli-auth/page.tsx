@@ -2,11 +2,11 @@
 // 状态机:result 回显(approved/denied/error)→ 码无效/过期 → 未登录(引导登录后回跳)→ 待确认。
 // 安全:批准动作走 /api/cli/device/approve 表单 POST,依赖 SameSite=Lax 会话 cookie 防 CSRF;
 // 页面展示 user_code 让用户与终端肉眼核对,防「转发链接钓鱼授权」。
-import { cookies } from "next/headers";
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@keysark/ui";
 import { getCliAuthRequestByUserCode } from "@keysark/db";
 import { normalizeUserCode } from "@/lib/cli-auth";
-import { translate, LOCALE_COOKIE, type Locale, type MsgKey } from "@/lib/i18n";
+import { translate, type MsgKey } from "@/lib/i18n";
+import { getServerLocale } from "@/lib/locale-server";
 import { providerFlags } from "@/lib/providers";
 import { getConnectedStorage } from "@/lib/storage";
 import { testId } from "@/lib/test-id";
@@ -20,7 +20,7 @@ export default async function CliAuthPage({
   searchParams: Promise<{ code?: string; result?: string }>;
 }) {
   const { code: rawCode, result } = await searchParams;
-  const locale = ((await cookies()).get(LOCALE_COOKIE)?.value === "en" ? "en" : "zh") as Locale;
+  const locale = await getServerLocale();
   const t = (key: MsgKey, ...args: unknown[]) => translate(locale, key, ...args);
 
   const code = normalizeUserCode(rawCode ?? "");

@@ -1,13 +1,36 @@
 // 轻量 i18n:中/英双语词典 + 取词函数。
-// locale 与 theme 都用 cookie 持久化,服务端在 layout 里读取以保证 SSR 与客户端一致(无闪烁)。
+// 语言由 URL 决定(默认英文在根路径,其它语言走 /<locale> 前缀,见 proxy.ts);主题仍用 cookie 持久化。
 export type Locale = "zh" | "en";
 export type Theme = "system" | "light" | "dark";
 
-export const LOCALE_COOKIE = "keysark_locale";
 export const THEME_COOKIE = "keysark_theme";
 
-export const LOCALES: Locale[] = ["zh", "en"];
+// 默认英文(根路径无前缀);其它语言放到路由里(如 /zh)。顺序即语言切换器里的展示顺序。
+export const LOCALES: Locale[] = ["en", "zh"];
 export const THEMES: Theme[] = ["system", "light", "dark"];
+
+export const DEFAULT_LOCALE: Locale = "en";
+export const NON_DEFAULT_LOCALES: Locale[] = LOCALES.filter((l) => l !== DEFAULT_LOCALE);
+
+/** 非默认语言加 `/<locale>` 前缀;默认语言(英文)在根路径无前缀。 */
+export function localePrefix(locale: Locale): string {
+  return locale === DEFAULT_LOCALE ? "" : `/${locale}`;
+}
+
+/** 把「默认语言下的应用路径」(如 "/docs")改写成当前语言对应的 URL。 */
+export function localeHref(path: string, locale: Locale): string {
+  const clean = path === "/" ? "" : path;
+  return `${localePrefix(locale)}${clean}` || "/";
+}
+
+/** 从带前缀的 pathname 剥出 { 语言, 去前缀后的基础路径 }。 */
+export function splitLocale(pathname: string): { locale: Locale; basePath: string } {
+  const seg = pathname.split("/")[1] ?? "";
+  if ((NON_DEFAULT_LOCALES as string[]).includes(seg)) {
+    return { locale: seg as Locale, basePath: pathname.slice(seg.length + 1) || "/" };
+  }
+  return { locale: DEFAULT_LOCALE, basePath: pathname || "/" };
+}
 
 type Msg = string | ((...args: never[]) => string);
 
@@ -66,6 +89,32 @@ const zh = {
   feat_3_title: "存在你的网盘",
   feat_3_body: (store: string) =>
     `密文直接存进你自己的${store},用你已有的免费空间——我们不碰你的存储,也不向你收一分钱。`,
+  feat_os_tag: "开源",
+  feat_os_title: "代码全部公开",
+  feat_os_body:
+    "全栈代码公开可审计,端到端加密实现可逐行核对,不留后门;无账号、无订阅,还能自行托管。",
+
+  // 开源介绍
+  nav_repo: "在 GitHub 上查看",
+  os_badge: "开源 · 免费",
+  os_title: "一个开源的密钥保管库",
+  os_body: (store: string) =>
+    `KeysArk 完全开源、永久免费。加密只在你的浏览器里发生,密文存进你自己的${store},代码全部公开可审计——你可以自行托管,也可以用 ark 命令行把 .env、密钥等机密按 GitHub 路径备份再取回。`,
+  os_point_open_title: "开放可审计",
+  os_point_open_body: "全栈代码公开,端到端加密实现可逐行核对,不留后门。",
+  os_point_free_title: "免费无账号",
+  os_point_free_body: "没有订阅、没有付费墙;助记词即身份,无需注册。",
+  os_point_selfhost_title: "可自行托管",
+  os_point_selfhost_body: "整套服务都在仓库里,接上你自己的 OAuth 应用与数据库即可自建。",
+  os_cta_repo: "在 GitHub 上查看",
+  os_cta_selfhost: "自行托管指南",
+
+  // SEO 元信息
+  meta_title: "KeysArk — 开源的端到端加密密码与密钥保管库",
+  meta_description: (store: string) =>
+    `KeysArk 是开源免费的端到端加密保管库。用 BIP39 助记词在浏览器里派生密钥加密,密文存进你自己的${store};服务端只经手密文,可自行托管。`,
+  meta_keywords:
+    "密码管理器, 密钥管理, 开源, 端到端加密, 零知识, BIP39, 助记词, Google Drive, 百度网盘, 自托管, 私钥保管, .env 备份",
 
   // 创建保险库
   create_title: "创建你的保险库",
@@ -441,6 +490,30 @@ const en: typeof zh = {
   feat_3_title: "Stored in your netdisk",
   feat_3_body: (store: string) =>
     `Ciphertext goes straight into your own ${store}, using free space you already have — we never touch your storage or charge you.`,
+  feat_os_tag: "Open source",
+  feat_os_title: "Fully open source",
+  feat_os_body:
+    "The whole stack is public and auditable — verify the end-to-end crypto line by line, no backdoors. No account, no subscription, and self-hostable.",
+
+  nav_repo: "View on GitHub",
+  os_badge: "Open source · Free",
+  os_title: "An open-source key vault",
+  os_body: (store: string) =>
+    `KeysArk is fully open source and free forever. Encryption happens only in your browser, ciphertext is stored in your own ${store}, and every line is public and auditable — self-host it, or use the ark CLI to back up secrets like .env files by their GitHub path and pull them back.`,
+  os_point_open_title: "Open & auditable",
+  os_point_open_body: "The whole stack is public; the end-to-end crypto can be reviewed line by line. No backdoors.",
+  os_point_free_title: "Free, no account",
+  os_point_free_body: "No subscription, no paywall. Your recovery phrase is your identity — nothing to sign up for.",
+  os_point_selfhost_title: "Self-hostable",
+  os_point_selfhost_body: "The entire service lives in the repo. Point it at your own OAuth apps and database and run it yourself.",
+  os_cta_repo: "View on GitHub",
+  os_cta_selfhost: "Self-hosting guide",
+
+  meta_title: "KeysArk — Open-source end-to-end encrypted password & key vault",
+  meta_description: (store: string) =>
+    `KeysArk is a free, open-source, end-to-end encrypted vault. Keys are derived from a BIP39 recovery phrase and encryption happens in your browser; ciphertext is stored in your own ${store}. The server only ever handles ciphertext, and you can self-host.`,
+  meta_keywords:
+    "password manager, key management, open source, end-to-end encryption, zero-knowledge, BIP39, mnemonic, Google Drive, Baidu netdisk, self-hosted, secret storage, .env backup",
 
   create_title: "Create your vault",
   create_desc_a: "KeysArk generates a 24-word recovery phrase as your master key. It is ",

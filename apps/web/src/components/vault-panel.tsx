@@ -70,7 +70,7 @@ import {
 import { Logo, Wordmark } from "./brand";
 import { CliAccessDialog } from "./cli-access-dialog";
 import { ServiceProviderBadge } from "./service-provider";
-import { HeaderControls } from "./controls";
+import { DocsButton, HeaderControls, RepoButton } from "./controls";
 import { UserMenu } from "./user-menu";
 import { useLocale, useT } from "./providers";
 import { Vault, openBrowserVault, itemRelPath, type EntryMeta, type FolderMeta } from "@/lib/vault";
@@ -2293,6 +2293,8 @@ export function VaultPanel({
               <StatusLine status={status} inline />
             </div>
             <div className="flex items-center gap-2.5">
+              <RepoButton />
+              <DocsButton />
               <HeaderControls />
               <UserMenu
                 name={user.name}
@@ -2630,6 +2632,8 @@ function CenteredShell({
       <header {...testId("vault-shell-header")} className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between gap-3 px-6 py-5">
         <Wordmark className="text-lg" />
         <div className="flex items-center gap-3">
+          <RepoButton />
+          <DocsButton />
           <HeaderControls />
           <UserMenu name={user.name} avatar={user.avatar} provider={provider} />
         </div>
