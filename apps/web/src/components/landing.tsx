@@ -15,7 +15,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Fragment } from "react";
-import { GithubMark, Wordmark } from "./brand";
+import { Wordmark } from "./brand";
 import { DocsButton, HeaderControls, RepoButton } from "./controls";
 import { useLocale } from "./providers";
 import { BUILD_REPO, CLI_VERSION } from "@/lib/build-info";
@@ -321,21 +321,18 @@ export function Landing({ error, providers }: { error?: string; providers: Provi
         </section>
 
         {/* 页脚 */}
-        <footer {...testId("landing-footer")} className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-8 text-xs text-[var(--color-muted-foreground)]">
+        <footer {...testId("landing-footer")} className="mx-auto flex w-full max-w-6xl flex-col items-start justify-between gap-4 px-6 py-8 text-xs text-[var(--color-muted-foreground)] sm:flex-row sm:items-center">
           <Wordmark className="text-sm font-medium" />
-          <div className="flex items-center gap-4">
-            {repo ? (
-              <a
-                href={repo}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 transition-colors hover:text-[var(--color-foreground)]"
-              >
-                <GithubMark className="h-3.5 w-3.5" />
-                GitHub
-              </a>
-            ) : null}
-            <span>{t("footer_tagline", store)}</span>
+          <div className="flex flex-wrap items-center gap-4">
+            <a href={localeHref("/about", locale)} className="transition-colors hover:text-[var(--color-foreground)]">
+              {t("nav_about")}
+            </a>
+            <a href={localeHref("/blog", locale)} className="transition-colors hover:text-[var(--color-foreground)]">
+              {t("nav_blog")}
+            </a>
+            <a href={localeHref("/privacy", locale)} className="transition-colors hover:text-[var(--color-foreground)]">
+              {t("nav_privacy")}
+            </a>
           </div>
         </footer>
       </div>

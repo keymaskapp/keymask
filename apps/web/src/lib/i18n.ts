@@ -234,6 +234,14 @@ const zh = {
   cli_auth_denied: "已拒绝该请求。本页可以关闭。",
   cli_auth_error: "操作失败,请重试。",
 
+  // 内容页导航 + 博客
+  nav_about: "关于",
+  nav_privacy: "隐私",
+  nav_blog: "博客",
+  blog_title: "博客",
+  blog_subtitle: "关于加密设计、开源理念,以及 KeysArk 背后的种种思考。",
+  blog_back: "← 返回博客",
+
   // 首页 CLI 区 + 命令行客户端
   nav_docs: "文档",
   cli_home_tag: "命令行",
@@ -630,6 +638,14 @@ const en: typeof zh = {
   cli_auth_approved: "Approved ✓ Return to your terminal — you can close this page.",
   cli_auth_denied: "Request denied. You can close this page.",
   cli_auth_error: "Something went wrong, please retry.",
+
+  // Content nav + blog
+  nav_about: "About",
+  nav_privacy: "Privacy",
+  nav_blog: "Blog",
+  blog_title: "Blog",
+  blog_subtitle: "On encryption design, the case for open source, and the thinking behind KeysArk.",
+  blog_back: "← Back to blog",
 
   // Home CLI section + command-line client
   nav_docs: "Docs",
