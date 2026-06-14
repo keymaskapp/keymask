@@ -11,9 +11,6 @@ import { previewSpecOf } from "@/lib/file-preview";
 import { CodePreview } from "./CodePreview";
 
 const PdfPreview = lazy(() => import("./PdfPreview").then((m) => ({ default: m.PdfPreview })));
-const MarkdownPreview = lazy(() =>
-  import("./MarkdownPreview").then((m) => ({ default: m.MarkdownPreview })),
-);
 
 export function FilePreview({
   entryId,
@@ -64,7 +61,7 @@ export function FilePreview({
   if (!bytes) return notice(t("preview_loading"));
 
   const body =
-    spec.kind === "pdf" || spec.kind === "markdown" ? (
+    spec.kind === "pdf" ? (
       <Suspense
         fallback={
           <div className="px-4 py-3 text-xs text-[var(--color-muted-foreground)]">
@@ -72,7 +69,7 @@ export function FilePreview({
           </div>
         }
       >
-        {spec.kind === "pdf" ? <PdfPreview bytes={bytes} /> : <MarkdownPreview bytes={bytes} />}
+        <PdfPreview bytes={bytes} />
       </Suspense>
     ) : (
       <CodePreview bytes={bytes} lang={spec.lang ?? null} />

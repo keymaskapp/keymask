@@ -2,7 +2,7 @@
 // 判定一律用「文件名后缀」,不用 mimeType —— .env/.toml 上传时 file.type 多为空或
 // application/octet-stream,据此分流会失败(见 proposal 关键决策)。
 
-export type PreviewKind = "pdf" | "markdown" | "code" | "text" | "unsupported";
+export type PreviewKind = "pdf" | "code" | "text" | "unsupported";
 
 // highlight.js 语言 id;code 类必带,text 类为 null(纯文本不高亮)。
 export type HighlightLang = "json" | "yaml" | "ini";
@@ -15,8 +15,9 @@ export interface PreviewSpec {
 // 后缀 → 预览规格。.env/.toml 复用 highlight.js 的 ini grammar(KEY=value / [section])。
 const EXT_MAP: Record<string, PreviewSpec> = {
   pdf: { kind: "pdf" },
-  md: { kind: "markdown" },
-  markdown: { kind: "markdown" },
+  // .md/.markdown 不做 markdown 渲染,按纯文本预览。
+  md: { kind: "text", lang: null },
+  markdown: { kind: "text", lang: null },
   json: { kind: "code", lang: "json" },
   yaml: { kind: "code", lang: "yaml" },
   yml: { kind: "code", lang: "yaml" },
