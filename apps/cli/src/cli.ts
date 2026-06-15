@@ -191,160 +191,10 @@ async function resolveEntryArg(vault: Vault, arg: string): Promise<EntryMeta> {
   fail(`Ambiguous path: ${matches.length} items match (${matches.map((m) => m.id.slice(0, 8)).join(", ")})`);
 }
 
-// ── 文件夹同步(folder sync) ──────────────────────────────────────────────────
-// 在网页上为某个项目文件夹(对应仓库 git origin,如 github.com/owner/repo)配置同步清单
-//(folder.syncPaths,逐项仓库内相对路径)。它只存在加密 index 里,不落任何本地文件,故不与本地文件冲突。
-// `ark save`(无参)按清单把本地文件批量加密上传;`ark get`(无参)按清单批量拉回本地。
-const SYNC_DOCS = "https://keysark.com/docs#folder-sync";
-
 /** 条目按「文件夹 + 标题」直接定位(与 save 的存法一致:标题可含 `/`,不拆成多级文件夹)。 */
 function entryAt(vault: Vault, folderId: string | null | undefined, title: string): EntryMeta | undefined {
   if (folderId === undefined) return undefined;
   return vault.entries.find((e) => e.folderId === folderId && e.title === title);
-}
-
-/** 取当前仓库 origin 对应文件夹的同步配置;未建文件夹 / 未配置清单则返回 null。 */
-function folderSync(vault: Vault, originPath: string): { folderId: string; paths: string[] } | null {
-  const folderId = lookupFolderPath(vault, originPath);
-  if (typeof folderId !== "string") return null;
-  const folder = vault.folders.find((f) => f.id === folderId);
-  const paths = (folder?.syncPaths ?? []).map((p) => p.trim()).filter(Boolean);
-  return paths.length ? { folderId, paths } : null;
-}
-
-/** 提示:未配置文件夹同步,引导去网页配置。 */
-function syncHint(cmd: "save" | "get", originPath: string): void {
-  note(
-    `No folder sync configured for ${bold(originPath)} in your vault.\n` +
-      `Set it up on the web: open your vault → the ${bold(originPath)} folder → ${cyan("Sync settings")},\n` +
-      `and list the files to sync (one repo-relative path per line). After that:\n` +
-      `  ${cyan("ark save")}  ${dim("encrypts & uploads every listed file")}\n` +
-      `  ${cyan("ark get")}   ${dim("pulls them all back down")}\n` +
-      `${dim(SYNC_DOCS)}`,
-    `ark ${cmd}`,
-  );
-}
-
-/** `ark save`(无参):读当前仓库 origin 文件夹的同步清单,把每个本地文件批量加密上传。 */
-async function runSyncSave(args: Args): Promise<void> {
-  const git = gitContext(process.cwd());
-  if (!git) {
-    fail(
-      "Not in a git repo — specify a file to save: `ark save <source> [target]`.\n" +
-        "(Folder sync without arguments only works inside a git repo, whose origin\n" +
-        " selects the matching vault folder.)",
-    );
-  }
-  const { originPath, repoRoot } = git!;
-  const { vault } = await ready(args);
-
-  const sync = folderSync(vault, originPath);
-  if (!sync) {
-    syncHint("save", originPath);
-    return;
-  }
-  const paths = sync.paths;
-
-  let created = 0;
-  let updated = 0;
-  let unchanged = 0;
-  let skipped = 0;
-  let missing = 0;
-  for (const rel of paths) {
-    const abs = join(repoRoot, rel);
-    if (!existsSync(abs) || statSync(abs).isDirectory()) {
-      console.log(`${ERR} ${rel} ${dim("(not found locally)")}`);
-      missing++;
-      continue;
-    }
-    const bytes = readFileSync(abs);
-    if (bytes.includes(0)) {
-      console.log(`${yellow("!")} ${rel} ${dim("(binary; skipped)")}`);
-      skipped++;
-      continue;
-    }
-    const content = bytes.toString("utf8");
-    const target = proposeSaveTarget(abs);
-    target.provider ??= detectSourceProvider(abs);
-    const { folderPath, title, provider } = target;
-    const folderId = folderPath !== undefined ? lookupFolderPath(vault, folderPath) : null;
-    const existing = entryAt(vault, folderId, title);
-    if (
-      existing?.contentHash &&
-      existing.contentHash === (await sha256Hex(new TextEncoder().encode(content)))
-    ) {
-      console.log(`${dim("=")} ${targetDisplay(target)} ${dim("(up to date)")}`);
-      unchanged++;
-      continue;
-    }
-    const resolvedFolder = folderPath !== undefined ? await resolveFolderPath(vault, folderPath) : null;
-    const res = await vault.save({ id: existing?.id, title, content, folderId: resolvedFolder, provider });
-    if (existing) updated++;
-    else created++;
-    console.log(
-      `${OK} ${existing ? "updated" : "created"} ${bold(targetDisplay(target))}${res.synced ? "" : red(" (local; sync failed)")}`,
-    );
-  }
-  console.log(
-    dim(`— ${created} created · ${updated} updated · ${unchanged} up-to-date · ${skipped} skipped · ${missing} missing`),
-  );
-}
-
-/** `ark get`(无参):读当前仓库 origin 文件夹的同步清单,把条目批量拉回本地仓库对应路径。 */
-async function runSyncGet(args: Args): Promise<void> {
-  const git = gitContext(process.cwd());
-  if (!git) {
-    fail(
-      "Not in a git repo — specify a path to get: `ark get <path> [local-file]`.\n" +
-        "(Folder sync without arguments only works inside a git repo, whose origin\n" +
-        " selects the matching vault folder.)",
-    );
-  }
-  const { originPath, repoRoot } = git!;
-  const force = args.flags.force === true || args.flags.force === "true";
-  // get 是敏感读取:整批只解锁一次,强制密码。
-  const { vault } = await ready(args, true, true);
-
-  const sync = folderSync(vault, originPath);
-  if (!sync) {
-    syncHint("get", originPath);
-    return;
-  }
-  const paths = sync.paths;
-  const folderId = sync.folderId;
-  let written = 0;
-  let upToDate = 0;
-  let differ = 0;
-  let missing = 0;
-  for (const rel of paths) {
-    const entry = entryAt(vault, folderId, rel);
-    if (!entry) {
-      console.log(`${ERR} ${rel} ${dim("(not in vault)")}`);
-      missing++;
-      continue;
-    }
-    const doc = await vault.open(entry.id);
-    const dest = join(repoRoot, rel);
-    if (existsSync(dest)) {
-      if (readFileSync(dest).toString("utf8") === doc.content) {
-        console.log(`${dim("=")} ${rel} ${dim("(up to date)")}`);
-        upToDate++;
-        continue;
-      }
-      if (!force) {
-        console.log(`${yellow("!")} ${rel} ${dim("(differs; --force to overwrite)")}`);
-        differ++;
-        continue;
-      }
-    }
-    mkdirSync(dirname(dest), { recursive: true });
-    writeFileSync(dest, doc.content);
-    console.log(`${OK} ${bold(rel)} ${dim(`(${Buffer.byteLength(doc.content)} B)`)}`);
-    written++;
-  }
-  console.log(
-    dim(`— ${written} written · ${upToDate} up-to-date · ${differ} differ (skipped) · ${missing} missing`),
-  );
 }
 
 /** 文件名安全化:去掉路径分隔符与控制字符,空则回退。 */
@@ -502,10 +352,6 @@ Items:
                          With local: write the file — asks before overwriting a
                          different file, skips when identical; a directory keeps
                          the item's filename
-  ark get                Folder sync (pull): inside a git repo, reads the matching vault
-                         folder's sync list (configured on the web) and writes every
-                         listed file into the repo. Skips files that already match;
-                         --force overwrites ones that differ.
   ark new --title T [--content C] [--folder a/b]   Create item (no --content: reads stdin)
   ark set <id> [--title T] [--content C] [--folder a/b]   Update item
                          --folder is a path; missing levels are created; "/" = root
@@ -514,12 +360,7 @@ Items:
                          (e.g. github.com/me/repo/.env) or root + filename —
                          Enter to accept, or type a custom target (q cancels).
                          Existing target → new version; identical content → skipped
-  ark save               Folder sync (push): inside a git repo, reads the matching vault
-                         folder's sync list (configured on the web) and uploads every
-                         listed file, encrypted. Unchanged files are skipped. Set up the
-                         sync list in your vault on the web (folder → Sync settings).
   ark rm <id>            Delete item
-  ark sync               Re-push pending local changes
 
 Local (offline; no login):
   ark local <zip|dir> [--out <dir>]   Decrypt a backup downloaded from your netdisk
@@ -794,11 +635,7 @@ async function main() {
     case "get": {
       const pathArg = args.positionals[0];
       const localArg = args.positionals[1];
-      // 无路径 → 文件夹同步:按当前仓库 origin 文件夹的同步清单把整个项目拉回本地。
-      if (!pathArg) {
-        await runSyncGet(args);
-        return;
-      }
+      if (!pathArg) fail("Specify a path to get: `ark get <path> [local-file]`.");
       // get 是敏感读取:每次都强制输密码,不吃解锁缓存。
       const { vault } = await ready(args, true, true);
 
@@ -880,11 +717,7 @@ async function main() {
     case "save": {
       const fileArg = args.positionals[0];
       const targetArg = args.positionals[1];
-      // 无源文件 → 文件夹同步:按当前仓库 origin 文件夹的同步清单上传整个项目。
-      if (!fileArg) {
-        await runSyncSave(args);
-        return;
-      }
+      if (!fileArg) fail("Specify a file to save: `ark save <source> [target]`.");
       const abs = resolve(fileArg!);
       let bytes: Buffer;
       try {
@@ -999,13 +832,6 @@ async function main() {
       const meta = findEntry(vault, idArg!);
       const res = await vault.remove(meta.id);
       console.log(`${OK} Deleted ${cyan(`[${meta.id.slice(0, 8)}]`)}${res.synced ? dim(", synced") : red(` (local; ${res.syncError})`)}`);
-      return;
-    }
-
-    case "sync": {
-      const { vault } = await ready(args);
-      const { remaining } = await vault.sync();
-      console.log(remaining === 0 ? `${OK} All synced` : yellow(`${remaining} pending`));
       return;
     }
 

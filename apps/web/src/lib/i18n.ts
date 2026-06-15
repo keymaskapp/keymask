@@ -251,19 +251,6 @@ const zh = {
   cli_home_install_hint: "一行安装,跨平台:",
   cli_home_cta: "查看 CLI 文档",
 
-  // 开发者特性:Git 原生批量同步
-  batch_tag: "面向开发者",
-  batch_title: "git 仓库自动同步",
-  batch_body:
-    "在 vault 里给项目文件夹配一份同步清单,逐行写上要同步的文件。之后无需逐个操作——一条命令搞定整个项目。",
-  batch_note:
-    "清单存在 vault 里(加密),只列路径、不含密钥,也不进你的代码仓库。ark save 跳过未改动的文件;ark get 默认不覆盖有差异的本地文件(加 --force 才覆盖)。",
-  batch_synclist_label: "同步清单",
-  batch_file_cmt: "逐行一个要同步的文件",
-  batch_save_cmt: "加密上传全部",
-  batch_get_cmt: "一键拉回本地",
-  batch_sync_label: "加密同步",
-
   // CLI 使用文档页
   docs_nav_back: "返回首页",
   docs_title: "ark CLI 使用文档",
@@ -292,7 +279,6 @@ const zh = {
   docs_cmd_set: "按 ID 更新条目的标题、内容或所在文件夹。",
   docs_cmd_save: "把本地文本文件存进保险库;在 git 仓库里会按 origin 自动推断目标路径。",
   docs_cmd_rm: "按 ID 删除条目。",
-  docs_cmd_sync: "把本地待同步的改动推送到服务端。",
   docs_cmd_logout: "清除本机登录态(保留助记词凭据)。",
   docs_cmd_forget: "删除本机保存的助记词凭据与解锁缓存。",
   docs_options_title: "全局选项",
@@ -304,11 +290,6 @@ const zh = {
   docs_ex_save: "在项目目录里把 .env 存进保险库(自动按 git origin 推断路径):",
   docs_ex_new: "用管道把内容创建成新条目:",
   docs_ex_ci: "在 CI / 脚本里免交互使用(用环境变量提供助记词):",
-  docs_batch_title: "文件夹同步",
-  docs_batch_body:
-    "在网页上给某个项目文件夹(与仓库 git origin 同名,如 github.com/owner/repo)配置一份「同步清单」:打开该文件夹的「同步设置」,逐行写上需要同步的文件(仓库内相对路径)。清单作为该文件夹的属性加密存在 vault 里,不是文件、不进你的代码仓库,也不会与本地文件冲突。之后在仓库目录里:`ark save` 会把清单里的文件全部加密上传,`ark get` 会把它们全部拉回本地。",
-  docs_batch_note:
-    "`ark save`(无参数)会跳过未改动的文件;`ark get`(无参数)在内容不同的本地文件上默认不覆盖,加 --force 才覆盖——非常适合新机器 clone 后一键取回所有 .env。",
   docs_env_title: "环境变量",
   docs_env_server: "服务端地址(等同 --server)。",
   docs_env_mnemonic: "直接提供助记词,跳过本机凭据——适合 CI / 脚本。",
@@ -674,19 +655,6 @@ const en: typeof zh = {
   cli_home_install_hint: "One line, cross-platform:",
   cli_home_cta: "Read the CLI docs",
 
-  // Developer feature: Git-native batch sync
-  batch_tag: "For developers",
-  batch_title: "Automatic sync for git repos",
-  batch_body:
-    "Set a sync list on the project's folder in your vault, listing the files to sync. No more file-by-file — one command syncs the whole project.",
-  batch_note:
-    "The list lives in your vault (encrypted) — only paths, no secrets, and never in your code repo. ark save skips unchanged files; ark get won't overwrite differing local files unless you pass --force.",
-  batch_synclist_label: "Sync list",
-  batch_file_cmt: "one file to sync per line",
-  batch_save_cmt: "push every listed file",
-  batch_get_cmt: "pull them all back",
-  batch_sync_label: "encrypted",
-
   // CLI documentation page
   docs_nav_back: "Back to home",
   docs_title: "ark CLI documentation",
@@ -715,7 +683,6 @@ const en: typeof zh = {
   docs_cmd_set: "Update an item's title, content or folder by ID.",
   docs_cmd_save: "Save a local text file into the vault; infers the target path from git origin inside a repo.",
   docs_cmd_rm: "Delete an item by ID.",
-  docs_cmd_sync: "Push pending local changes to the server.",
   docs_cmd_logout: "Clear the local login (keeps the phrase credential).",
   docs_cmd_forget: "Remove the locally stored phrase credential and unlock cache.",
   docs_options_title: "Global options",
@@ -727,11 +694,6 @@ const en: typeof zh = {
   docs_ex_save: "From a project directory, save .env into the vault (path inferred from git origin):",
   docs_ex_new: "Create a new item by piping content in:",
   docs_ex_ci: "Non-interactive use in CI / scripts (phrase supplied via an env var):",
-  docs_batch_title: "Folder sync",
-  docs_batch_body:
-    "On the web, give a project folder (matching your repo's git origin, e.g. github.com/owner/repo) a sync list: open the folder's Sync settings and list the files to sync, one repo-relative path per line. The list is a property of that folder, stored encrypted in your vault — it's not a file, never goes into your code repo, and can't collide with local files. Then, from inside the repo: `ark save` encrypts and uploads every listed file, and `ark get` pulls them all back.",
-  docs_batch_note:
-    "`ark save` (no args) skips files that haven't changed; `ark get` (no args) won't overwrite local files that differ unless you pass --force — perfect for restoring every .env in one shot on a fresh clone.",
   docs_env_title: "Environment variables",
   docs_env_server: "Server URL (same as --server).",
   docs_env_mnemonic: "Supply the recovery phrase directly, bypassing the local credential — for CI / scripts.",

@@ -6,7 +6,6 @@ import {
   ArrowRight,
   Binary,
   CloudUpload,
-  FileText,
   GitBranch,
   KeyRound,
   LockKeyhole,
@@ -398,71 +397,6 @@ export function Landing({ error, providers }: { error?: string; providers: Provi
                   <p className="mt-3">
                     <span className="text-[var(--color-success)]">$</span> ark get github.com/me/app/.env .env
                   </p>
-                </div>
-              </div>
-            </div>
-
-            {/* 面向开发者:左=文案,右=同步清单 → 命令(同一 Block,无分隔线) */}
-            <div {...testId("landing-batch")} className="mt-16 grid items-center gap-10 lg:grid-cols-2">
-              <div>
-                <span className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)]/80 px-4 py-1.5 text-xs font-medium text-[var(--color-primary)] shadow-sm backdrop-blur">
-                  <GitBranch className="h-3.5 w-3.5" />
-                  {t("batch_tag")}
-                </span>
-                <h2 className="mt-5 text-3xl font-bold tracking-tight sm:text-4xl">{t("batch_title")}</h2>
-                <p className="mt-4 max-w-xl text-[var(--color-muted-foreground)] leading-relaxed">
-                  {t("batch_body")}
-                </p>
-                <p className="mt-4 max-w-xl text-sm text-[var(--color-muted-foreground)] leading-relaxed">
-                  {t("batch_note")}
-                </p>
-              </div>
-
-              {/* 右栏:同步清单 → 加密 → 命令(纵向堆叠) */}
-              <div {...testId("landing-batch-diagram")} className="flex flex-col gap-3">
-                <div
-                  {...testId("landing-batch-manifest")}
-                  className="overflow-hidden rounded-[calc(var(--radius)+0.5rem)] border border-[var(--color-border)] bg-[var(--color-surface-2)]/80 shadow-sm backdrop-blur"
-                >
-                  <div className="flex items-center gap-2 border-b border-[var(--color-border)] px-4 py-3 text-xs font-medium text-[var(--color-muted-foreground)]">
-                    <FileText className="h-3.5 w-3.5 text-[var(--color-primary)]" aria-hidden="true" />
-                    {t("batch_synclist_label")}
-                  </div>
-                  <div className="px-4 py-4 font-mono text-xs leading-relaxed">
-                    <p className="text-[var(--color-muted-foreground)]"># {t("batch_file_cmt")}</p>
-                    <p>.env</p>
-                    <p>.env.production</p>
-                    <p>config/app.secret.json</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center justify-center gap-2">
-                  <span className="rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1 text-xs font-medium text-[var(--color-muted-foreground)]">
-                    {t("batch_sync_label")}
-                  </span>
-                  <ArrowRight className="h-5 w-5 rotate-90 text-[var(--color-muted-foreground)]" aria-hidden="true" />
-                </div>
-
-                <div
-                  {...testId("landing-batch-terminal")}
-                  className="overflow-hidden rounded-[calc(var(--radius)+0.5rem)] border border-[var(--color-border)] bg-[var(--color-surface-2)]/80 shadow-sm backdrop-blur"
-                >
-                  <div className="flex items-center gap-1.5 border-b border-[var(--color-border)] px-4 py-3">
-                    <span className="h-2.5 w-2.5 rounded-full bg-[var(--color-danger)]/60" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-[var(--color-warning,#f59e0b)]/60" />
-                    <span className="h-2.5 w-2.5 rounded-full bg-[var(--color-success)]/60" />
-                    <span className="ml-2 font-mono text-xs text-[var(--color-muted-foreground)]">ark</span>
-                  </div>
-                  <div className="px-4 py-4 font-mono text-xs leading-relaxed">
-                    <p>
-                      <span className="text-[var(--color-success)]">$</span> ark save{" "}
-                      <span className="text-[var(--color-muted-foreground)]"># {t("batch_save_cmt")}</span>
-                    </p>
-                    <p className="mt-2">
-                      <span className="text-[var(--color-success)]">$</span> ark get{" "}
-                      <span className="text-[var(--color-muted-foreground)]"># {t("batch_get_cmt")}</span>
-                    </p>
-                  </div>
                 </div>
               </div>
             </div>

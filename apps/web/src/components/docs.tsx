@@ -25,7 +25,6 @@ const COMMANDS: { cmd: string; desc: MsgKey }[] = [
   { cmd: "ark set <id> [--title <T>] [--content <C>] [--folder <p>]", desc: "docs_cmd_set" },
   { cmd: "ark save <file> [target]", desc: "docs_cmd_save" },
   { cmd: "ark rm <id>", desc: "docs_cmd_rm" },
-  { cmd: "ark sync", desc: "docs_cmd_sync" },
   { cmd: "ark logout", desc: "docs_cmd_logout" },
   { cmd: "ark forget", desc: "docs_cmd_forget" },
 ];
@@ -227,18 +226,6 @@ export function Docs() {
                   <CodeBlock code={ex.code} id={ex.cap} />
                 </div>
               ))}
-            </Section>
-
-            {/* 文件夹同步 */}
-            <Section id="folder-sync" title={t("docs_batch_title")}>
-              <p className="text-[var(--color-muted-foreground)] leading-relaxed">{t("docs_batch_body")}</p>
-              <CodeBlock
-                code={
-                  "# the folder's sync list (set in the web app), one path per line:\n.env\n.env.production\nconfig/app.secret.json\n\n# then, inside the repo, sync the whole project:\nark save     # encrypt & upload every listed file\nark get      # pull them all back (e.g. on a fresh clone)"
-                }
-                id="folder-sync"
-              />
-              <p className="text-sm text-[var(--color-muted-foreground)] leading-relaxed">{t("docs_batch_note")}</p>
             </Section>
 
             {/* 环境变量 */}
