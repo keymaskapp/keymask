@@ -15,9 +15,9 @@ await build({
     // ESM 产物里给 CJS 依赖(如 inquirer 的 mute-stream)补 require(node 内置模块)能力
     js: '#!/usr/bin/env node\nimport { createRequire as __createRequire } from "node:module";\nconst require = __createRequire(import.meta.url);',
   },
-  outfile: "dist/ark.mjs",
+  outfile: "dist/keymask.mjs",
   define: {
     __KEYMASK_VERSION__: JSON.stringify(version),
   },
 });
-console.log(`built dist/ark.mjs (v${version})`);
+console.log(`built dist/keymask.mjs (v${version})`);

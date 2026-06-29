@@ -63,7 +63,7 @@ const fr: Partial<Messages> = {
   os_badge: "Open source · Gratuit",
   os_title: "Un coffre de clés open source",
   os_body: (store: string) =>
-    `KeyMask est entièrement open source et gratuit pour toujours. Le chiffrement n'a lieu que dans votre navigateur, le texte chiffré est stocké dans votre propre ${store}, et chaque ligne est publique et auditable — auto-hébergez-le, ou utilisez la CLI ark pour sauvegarder des secrets comme les fichiers .env par leur chemin GitHub et les récupérer.`,
+    `KeyMask est entièrement open source et gratuit pour toujours. Le chiffrement n'a lieu que dans votre navigateur, le texte chiffré est stocké dans votre propre ${store}, et chaque ligne est publique et auditable — auto-hébergez-le, ou utilisez la CLI keymask pour sauvegarder des secrets comme les fichiers .env par leur chemin GitHub et les récupérer.`,
   os_point_open_title: "Ouvert et auditable",
   os_point_open_body: "Toute la pile est publique ; le chiffrement de bout en bout peut être examiné ligne par ligne. Aucune porte dérobée.",
   os_point_free_title: "Gratuit, sans compte",
@@ -190,7 +190,7 @@ const fr: Partial<Messages> = {
   cli_auth_approve: "Approuver",
   cli_auth_deny: "Refuser",
   cli_auth_login_hint: "Connectez-vous d'abord — vous reviendrez sur cette page pour continuer.",
-  cli_auth_invalid: "Ce lien est invalide ou a expiré. Réexécutez ark login dans votre terminal.",
+  cli_auth_invalid: "Ce lien est invalide ou a expiré. Réexécutez keymask login dans votre terminal.",
   cli_auth_approved: "Approuvé ✓ Revenez à votre terminal — vous pouvez fermer cette page.",
   cli_auth_denied: "Demande refusée. Vous pouvez fermer cette page.",
   cli_auth_error: "Une erreur s'est produite, veuillez réessayer.",
@@ -206,28 +206,28 @@ const fr: Partial<Messages> = {
   // Home CLI section + command-line client
   nav_docs: "Documentation",
   cli_home_tag: "Ligne de commande",
-  cli_home_title: "ark — votre coffre dans le terminal",
+  cli_home_title: "keymask — votre coffre dans le terminal",
   cli_home_body:
-    "ark est le client en ligne de commande de KeyMask. Connectez-vous et importez votre phrase, puis lisez et écrivez dans votre coffre depuis le terminal — récupérez et déposez des fichiers .env, des clés d'API et des configurations. Comme dans l'application web, tout le chiffrement et le déchiffrement ont lieu sur votre appareil ; le cloud ne voit jamais que du texte chiffré. Conçu pour les développeurs et les scripts / CI.",
+    "keymask est le client en ligne de commande de KeyMask. Connectez-vous et importez votre phrase, puis lisez et écrivez dans votre coffre depuis le terminal — récupérez et déposez des fichiers .env, des clés d'API et des configurations. Comme dans l'application web, tout le chiffrement et le déchiffrement ont lieu sur votre appareil ; le cloud ne voit jamais que du texte chiffré. Conçu pour les développeurs et les scripts / CI.",
   cli_home_install_hint: "Une ligne, multiplateforme :",
   cli_home_cta: "Lire la documentation de la CLI",
 
   // CLI documentation page
   docs_nav_back: "Retour à l'accueil",
-  docs_title: "Documentation de la CLI ark",
+  docs_title: "Documentation de la CLI keymask",
   docs_subtitle:
     "Lisez et écrivez dans votre coffre chiffré de bout en bout depuis le terminal. Votre texte en clair et votre phrase restent locaux — seul le texte chiffré quitte l'appareil.",
   docs_intro_title: "Qu'est-ce que c'est",
   docs_intro_body:
-    "ark est le client en ligne de commande officiel de KeyMask. Il apporte le coffre web dans votre terminal : lister les éléments, lire par chemin, enregistrer des fichiers locaux, créer et mettre à jour des entrées. Tout le chiffrement et le déchiffrement ont lieu localement avec votre phrase de récupération — le serveur et le backend cloud ne manipulent jamais que du texte chiffré opaque.",
+    "keymask est le client en ligne de commande officiel de KeyMask. Il apporte le coffre web dans votre terminal : lister les éléments, lire par chemin, enregistrer des fichiers locaux, créer et mettre à jour des entrées. Tout le chiffrement et le déchiffrement ont lieu localement avec votre phrase de récupération — le serveur et le backend cloud ne manipulent jamais que du texte chiffré opaque.",
   docs_install_title: "Installation",
-  docs_install_note: "Nécessite Node.js 18+. Installe la commande ark (avec l'alias keymask).",
+  docs_install_note: "Nécessite Node.js 18+. Installe la commande keymask.",
   docs_setup_title: "Configuration initiale",
   docs_setup_body: "Deux étapes : autorisez cet appareil, puis importez votre phrase.",
   docs_setup_login_note:
-    "ark login utilise l'autorisation par code d'appareil : le terminal affiche un lien et un code ; ouvrez-le dans votre navigateur, vérifiez que le code correspond et approuvez. L'autorisation équivaut à une session de navigateur — elle ne peut que déplacer du texte chiffré, jamais votre phrase ni votre texte en clair.",
+    "keymask login utilise l'autorisation par code d'appareil : le terminal affiche un lien et un code ; ouvrez-le dans votre navigateur, vérifiez que le code correspond et approuvez. L'autorisation équivaut à une session de navigateur — elle ne peut que déplacer du texte chiffré, jamais votre phrase ni votre texte en clair.",
   docs_setup_import_note:
-    "ark import demande votre phrase de récupération et définit un mot de passe de déverrouillage local. La phrase est chiffrée avec une clé dérivée avec Argon2id et stockée localement (~/.keymask) — jamais téléversée. Le déverrouillage reste en cache jusqu'à 5 minutes d'inactivité afin que vous n'ayez pas à retaper le mot de passe.",
+    "keymask import demande votre phrase de récupération et définit un mot de passe de déverrouillage local. La phrase est chiffrée avec une clé dérivée avec Argon2id et stockée localement (~/.keymask) — jamais téléversée. Le déverrouillage reste en cache jusqu'à 5 minutes d'inactivité afin que vous n'ayez pas à retaper le mot de passe.",
   docs_commands_title: "Référence des commandes",
   docs_cmd_login: "Autorise cet appareil via un code d'appareil (ouvre le navigateur pour confirmer).",
   docs_cmd_import: "Importe une phrase de récupération et définit un mot de passe de déverrouillage local.",
@@ -256,7 +256,7 @@ const fr: Partial<Messages> = {
   docs_env_no_browser: "Lorsqu'elle est définie, la connexion n'ouvre pas automatiquement le navigateur.",
   docs_security_title: "Sécurité",
   docs_security_body:
-    "Votre phrase, votre clé maîtresse dérivée et votre texte en clair ne quittent jamais votre appareil : ark chiffre et déchiffre localement et n'envoie que du texte chiffré au serveur et au cloud. L'autorisation de l'appareil ne peut que déplacer du texte chiffré — même en cas de fuite, elle ne révèle rien du contenu de votre coffre.",
+    "Votre phrase, votre clé maîtresse dérivée et votre texte en clair ne quittent jamais votre appareil : keymask chiffre et déchiffre localement et n'envoie que du texte chiffré au serveur et au cloud. L'autorisation de l'appareil ne peut que déplacer du texte chiffré — même en cas de fuite, elle ne révèle rien du contenu de votre coffre.",
 
   // Change password / idle auto-lock
   pw_change_title: "Changer le mot de passe",
@@ -317,8 +317,8 @@ const fr: Partial<Messages> = {
   content_reveal: "Cliquez pour afficher",
   content_hide: "Masquer le contenu",
   cli_access: "Obtenir via la CLI",
-  cli_dialog_title: "Télécharger cet élément avec la CLI ark",
-  cli_dialog_desc: "ark est le client en ligne de commande de KeyMask. Après la connexion + l'import de la phrase mnémonique, vous pouvez lire et écrire dans votre coffre depuis le terminal — le déchiffrement a toujours lieu uniquement sur votre appareil.",
+  cli_dialog_title: "Télécharger cet élément avec la CLI keymask",
+  cli_dialog_desc: "keymask est le client en ligne de commande de KeyMask. Après la connexion + l'import de la phrase mnémonique, vous pouvez lire et écrire dans votre coffre depuis le terminal — le déchiffrement a toujours lieu uniquement sur votre appareil.",
   cli_step_install: "Installer",
   cli_step_setup: "Configuration initiale (connexion + import de la phrase mnémonique)",
   cli_step_download: "Télécharger cet élément",

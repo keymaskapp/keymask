@@ -121,7 +121,7 @@ export const POSTS: BlogPost[] = [
         {
           k: "ul",
           items: [
-            "The ark CLI version, and the source repository + commit hash.",
+            "The keymask CLI version, and the source repository + commit hash.",
             "The build time and the Node.js version.",
             "The exact crypto library versions (`hash-wasm`, `@scure/bip39`, `@noble/hashes`).",
             "The full crypto spec: BIP39 24-word phrase, seed → HKDF-SHA256 → AES-256-GCM, and the Argon2id parameters.",
@@ -165,7 +165,7 @@ export const POSTS: BlogPost[] = [
         {
           k: "ul",
           items: [
-            "ark CLI 的版本,以及源码仓库地址 + 提交哈希。",
+            "keymask CLI 的版本,以及源码仓库地址 + 提交哈希。",
             "构建时间与 Node.js 版本。",
             "确切的加密库版本(`hash-wasm`、`@scure/bip39`、`@noble/hashes`)。",
             "完整的加密规格:BIP39 24 词助记词,seed → HKDF-SHA256 → AES-256-GCM,以及 Argon2id 参数。",
@@ -222,7 +222,7 @@ export const POSTS: BlogPost[] = [
         { k: "h2", t: "Unlocking on your machine" },
         {
           k: "p",
-          t: "When you store your phrase locally (in the web app or the ark CLI), it is wrapped with an unlock password using `Argon2id` (512 MB, t=4, p=1) — a deliberately memory-hard function that makes brute-forcing the password expensive. The parameters travel with the credential, so they can be raised over time.",
+          t: "When you store your phrase locally (in the web app or the keymask CLI), it is wrapped with an unlock password using `Argon2id` (512 MB, t=4, p=1) — a deliberately memory-hard function that makes brute-forcing the password expensive. The parameters travel with the credential, so they can be raised over time.",
         },
         { k: "h2", t: "The trade-off we accept" },
         {
@@ -267,7 +267,7 @@ export const POSTS: BlogPost[] = [
         { k: "h2", t: "在你的机器上解锁" },
         {
           k: "p",
-          t: "当你把助记词存在本地(网页端或 ark 命令行),它会用一个解锁口令包裹,采用 `Argon2id`(512 MB,t=4,p=1)——一个刻意「内存困难」的函数,让暴力破解口令变得昂贵。参数随凭据一起保存,因此可以逐步调高。",
+          t: "当你把助记词存在本地(网页端或 keymask 命令行),它会用一个解锁口令包裹,采用 `Argon2id`(512 MB,t=4,p=1)——一个刻意「内存困难」的函数,让暴力破解口令变得昂贵。参数随凭据一起保存,因此可以逐步调高。",
         },
         { k: "h2", t: "我们接受的取舍" },
         {

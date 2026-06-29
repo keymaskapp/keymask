@@ -6,7 +6,7 @@ import { cliAuthRequest, cliToken } from "./schema";
 
 export type CliAuthStatus = "pending" | "approved" | "consumed" | "denied";
 
-/** CLI 令牌默认有效期:90 天。到期后强制重新 `ark login`。 */
+/** CLI 令牌默认有效期:90 天。到期后强制重新 `keymask login`。 */
 export const CLI_TOKEN_TTL_MS = 90 * 24 * 60 * 60 * 1000;
 
 export interface CliAuthRequestRecord {

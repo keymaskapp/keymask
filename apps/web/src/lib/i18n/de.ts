@@ -63,7 +63,7 @@ const de: Partial<Messages> = {
   os_badge: "Open Source · Kostenlos",
   os_title: "Ein quelloffener Schlüsseltresor",
   os_body: (store: string) =>
-    `KeyMask ist vollständig Open Source und für immer kostenlos. Verschlüsselung passiert nur in deinem Browser, der Chiffretext wird in deinem eigenen ${store} gespeichert und jede Zeile ist öffentlich und prüfbar — hoste es selbst oder nutze das ark CLI, um Geheimnisse wie .env-Dateien anhand ihres GitHub-Pfads zu sichern und zurückzuholen.`,
+    `KeyMask ist vollständig Open Source und für immer kostenlos. Verschlüsselung passiert nur in deinem Browser, der Chiffretext wird in deinem eigenen ${store} gespeichert und jede Zeile ist öffentlich und prüfbar — hoste es selbst oder nutze das keymask CLI, um Geheimnisse wie .env-Dateien anhand ihres GitHub-Pfads zu sichern und zurückzuholen.`,
   os_point_open_title: "Offen & prüfbar",
   os_point_open_body: "Der gesamte Stack ist öffentlich; die Ende-zu-Ende-Verschlüsselung kann Zeile für Zeile geprüft werden. Keine Hintertüren.",
   os_point_free_title: "Kostenlos, kein Konto",
@@ -190,7 +190,7 @@ const de: Partial<Messages> = {
   cli_auth_approve: "Genehmigen",
   cli_auth_deny: "Ablehnen",
   cli_auth_login_hint: "Melde dich zuerst an — du kehrst dann zu dieser Seite zurück, um fortzufahren.",
-  cli_auth_invalid: "Dieser Link ist ungültig oder abgelaufen. Führe ark login in deinem Terminal erneut aus.",
+  cli_auth_invalid: "Dieser Link ist ungültig oder abgelaufen. Führe keymask login in deinem Terminal erneut aus.",
   cli_auth_approved: "Genehmigt ✓ Kehre zu deinem Terminal zurück — du kannst diese Seite schließen.",
   cli_auth_denied: "Anfrage abgelehnt. Du kannst diese Seite schließen.",
   cli_auth_error: "Etwas ist schiefgelaufen, bitte erneut versuchen.",
@@ -206,28 +206,28 @@ const de: Partial<Messages> = {
   // Home CLI section + command-line client
   nav_docs: "Doku",
   cli_home_tag: "Befehlszeile",
-  cli_home_title: "ark — dein Tresor im Terminal",
+  cli_home_title: "keymask — dein Tresor im Terminal",
   cli_home_body:
-    "ark ist der KeyMask-Befehlszeilenclient. Melde dich an und importiere deine Phrase, dann lies und schreib deinen Tresor vom Terminal aus — hol .env-Dateien, API-Schlüssel und Konfigurationen rein und raus. Genau wie in der Web-App erfolgen alle Ver- und Entschlüsselungen auf deinem Gerät; die Cloud sieht immer nur Chiffretext. Gebaut für Entwickler und Skripte / CI.",
+    "keymask ist der KeyMask-Befehlszeilenclient. Melde dich an und importiere deine Phrase, dann lies und schreib deinen Tresor vom Terminal aus — hol .env-Dateien, API-Schlüssel und Konfigurationen rein und raus. Genau wie in der Web-App erfolgen alle Ver- und Entschlüsselungen auf deinem Gerät; die Cloud sieht immer nur Chiffretext. Gebaut für Entwickler und Skripte / CI.",
   cli_home_install_hint: "Eine Zeile, plattformübergreifend:",
   cli_home_cta: "CLI-Doku lesen",
 
   // CLI documentation page
   docs_nav_back: "Zurück zur Startseite",
-  docs_title: "ark CLI-Dokumentation",
+  docs_title: "keymask CLI-Dokumentation",
   docs_subtitle:
     "Lies und schreib deinen Ende-zu-Ende-verschlüsselten Tresor vom Terminal aus. Dein Klartext und deine Phrase bleiben lokal — nur Chiffretext verlässt jemals das Gerät.",
   docs_intro_title: "Was ist das",
   docs_intro_body:
-    "ark ist der offizielle KeyMask-Befehlszeilenclient. Er bringt den Web-Tresor in dein Terminal: Einträge auflisten, nach Pfad lesen, lokale Dateien speichern, Einträge erstellen und aktualisieren. Alle Ver- und Entschlüsselungen erfolgen lokal mit deiner Wiederherstellungsphrase — der Server und das Cloud-Backend verarbeiten immer nur undurchsichtigen Chiffretext.",
+    "keymask ist der offizielle KeyMask-Befehlszeilenclient. Er bringt den Web-Tresor in dein Terminal: Einträge auflisten, nach Pfad lesen, lokale Dateien speichern, Einträge erstellen und aktualisieren. Alle Ver- und Entschlüsselungen erfolgen lokal mit deiner Wiederherstellungsphrase — der Server und das Cloud-Backend verarbeiten immer nur undurchsichtigen Chiffretext.",
   docs_install_title: "Installation",
-  docs_install_note: "Erfordert Node.js 18+. Installiert den Befehl ark (mit Alias keymask).",
+  docs_install_note: "Erfordert Node.js 18+. Installiert den Befehl keymask.",
   docs_setup_title: "Ersteinrichtung",
   docs_setup_body: "Zwei Schritte: dieses Gerät autorisieren, dann deine Phrase importieren.",
   docs_setup_login_note:
-    "ark login verwendet Geräte-Code-Autorisierung: das Terminal zeigt einen Link und einen Code; öffne ihn in deinem Browser, bestätige, dass der Code übereinstimmt, und genehmige. Die Berechtigung entspricht einer Browser-Sitzung — sie kann nur Chiffretext bewegen, niemals deine Phrase oder deinen Klartext.",
+    "keymask login verwendet Geräte-Code-Autorisierung: das Terminal zeigt einen Link und einen Code; öffne ihn in deinem Browser, bestätige, dass der Code übereinstimmt, und genehmige. Die Berechtigung entspricht einer Browser-Sitzung — sie kann nur Chiffretext bewegen, niemals deine Phrase oder deinen Klartext.",
   docs_setup_import_note:
-    "ark import fragt nach deiner Wiederherstellungsphrase und legt ein lokales Entsperr-Passwort fest. Die Phrase wird mit einem Argon2id-abgeleiteten Schlüssel verschlüsselt und lokal gespeichert (~/.keymask) — niemals hochgeladen. Die Entsperrung bleibt bis zu 5 Minuten Inaktivität zwischengespeichert, sodass du das Passwort nicht erneut eingeben musst.",
+    "keymask import fragt nach deiner Wiederherstellungsphrase und legt ein lokales Entsperr-Passwort fest. Die Phrase wird mit einem Argon2id-abgeleiteten Schlüssel verschlüsselt und lokal gespeichert (~/.keymask) — niemals hochgeladen. Die Entsperrung bleibt bis zu 5 Minuten Inaktivität zwischengespeichert, sodass du das Passwort nicht erneut eingeben musst.",
   docs_commands_title: "Befehlsreferenz",
   docs_cmd_login: "Autorisiere dieses Gerät per Geräte-Code (öffnet den Browser zur Bestätigung).",
   docs_cmd_import: "Importiere eine Wiederherstellungsphrase und lege ein lokales Entsperr-Passwort fest.",
@@ -256,7 +256,7 @@ const de: Partial<Messages> = {
   docs_env_no_browser: "Wenn gesetzt, öffnet die Anmeldung den Browser nicht automatisch.",
   docs_security_title: "Sicherheit",
   docs_security_body:
-    "Deine Phrase, der abgeleitete Hauptschlüssel und der Klartext verlassen niemals dein Gerät: ark ver- und entschlüsselt lokal und sendet nur Chiffretext an Server und Cloud. Die Geräteberechtigung kann nur Chiffretext bewegen — selbst wenn sie geleakt wird, enthüllt sie nichts in deinem Tresor.",
+    "Deine Phrase, der abgeleitete Hauptschlüssel und der Klartext verlassen niemals dein Gerät: keymask ver- und entschlüsselt lokal und sendet nur Chiffretext an Server und Cloud. Die Geräteberechtigung kann nur Chiffretext bewegen — selbst wenn sie geleakt wird, enthüllt sie nichts in deinem Tresor.",
 
   // Change password / idle auto-lock
   pw_change_title: "Passwort ändern",
@@ -317,8 +317,8 @@ const de: Partial<Messages> = {
   content_reveal: "Zum Anzeigen klicken",
   content_hide: "Inhalt verbergen",
   cli_access: "Per CLI abrufen",
-  cli_dialog_title: "Diesen Eintrag mit dem ark CLI herunterladen",
-  cli_dialog_desc: "ark ist der KeyMask-Befehlszeilenclient. Nach Anmeldung + Mnemonic-Import kannst du deinen Tresor vom Terminal aus lesen und schreiben — die Entschlüsselung erfolgt weiterhin nur auf deinem Gerät.",
+  cli_dialog_title: "Diesen Eintrag mit dem keymask CLI herunterladen",
+  cli_dialog_desc: "keymask ist der KeyMask-Befehlszeilenclient. Nach Anmeldung + Mnemonic-Import kannst du deinen Tresor vom Terminal aus lesen und schreiben — die Entschlüsselung erfolgt weiterhin nur auf deinem Gerät.",
   cli_step_install: "Installieren",
   cli_step_setup: "Einmalige Einrichtung (Anmeldung + Mnemonic importieren)",
   cli_step_download: "Diesen Eintrag herunterladen",

@@ -59,7 +59,7 @@ const fr: Record<string, PostLocale> = {
       {
         k: "ul",
         items: [
-          "La version du CLI ark, ainsi que le dépôt source + le hash du commit.",
+          "La version du CLI keymask, ainsi que le dépôt source + le hash du commit.",
           "L'heure de build et la version de Node.js.",
           "Les versions exactes des bibliothèques de chiffrement (`hash-wasm`, `@scure/bip39`, `@noble/hashes`).",
           "La spécification cryptographique complète : phrase BIP39 de 24 mots, seed → HKDF-SHA256 → AES-256-GCM, et les paramètres Argon2id.",
@@ -112,7 +112,7 @@ const fr: Record<string, PostLocale> = {
       { k: "h2", t: "Déverrouiller sur votre machine" },
       {
         k: "p",
-        t: "Lorsque vous stockez votre phrase localement (dans l'application web ou le CLI ark), elle est enveloppée avec un mot de passe de déverrouillage à l'aide d'`Argon2id` (512 Mo, t=4, p=1) — une fonction délibérément gourmande en mémoire qui rend coûteuse la force brute sur le mot de passe. Les paramètres voyagent avec l'identifiant, ce qui permet de les relever au fil du temps.",
+        t: "Lorsque vous stockez votre phrase localement (dans l'application web ou le CLI keymask), elle est enveloppée avec un mot de passe de déverrouillage à l'aide d'`Argon2id` (512 Mo, t=4, p=1) — une fonction délibérément gourmande en mémoire qui rend coûteuse la force brute sur le mot de passe. Les paramètres voyagent avec l'identifiant, ce qui permet de les relever au fil du temps.",
       },
       { k: "h2", t: "Le compromis que nous acceptons" },
       {

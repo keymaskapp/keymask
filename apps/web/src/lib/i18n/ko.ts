@@ -63,7 +63,7 @@ const ko: Partial<Messages> = {
   os_badge: "오픈 소스 · 무료",
   os_title: "오픈 소스 키 보관함",
   os_body: (store: string) =>
-    `KeyMask는 완전한 오픈 소스이며 영원히 무료입니다. 암호화는 오직 브라우저에서만 이루어지고, 암호문은 당신의 ${store}에 저장되며, 모든 코드 줄이 공개되어 감사 가능합니다 — 직접 자체 호스팅하거나, ark CLI로 .env 같은 비밀을 GitHub 경로 기준으로 백업하고 다시 가져올 수 있습니다.`,
+    `KeyMask는 완전한 오픈 소스이며 영원히 무료입니다. 암호화는 오직 브라우저에서만 이루어지고, 암호문은 당신의 ${store}에 저장되며, 모든 코드 줄이 공개되어 감사 가능합니다 — 직접 자체 호스팅하거나, keymask CLI로 .env 같은 비밀을 GitHub 경로 기준으로 백업하고 다시 가져올 수 있습니다.`,
   os_point_open_title: "공개 및 감사 가능",
   os_point_open_body: "전체 스택이 공개되어 있으며 종단 간 암호화를 한 줄씩 검토할 수 있습니다. 백도어는 없습니다.",
   os_point_free_title: "무료, 계정 불필요",
@@ -190,7 +190,7 @@ const ko: Partial<Messages> = {
   cli_auth_approve: "승인",
   cli_auth_deny: "거부",
   cli_auth_login_hint: "먼저 로그인하세요 — 이 페이지로 돌아와 계속하게 됩니다.",
-  cli_auth_invalid: "이 링크가 유효하지 않거나 만료되었습니다. 터미널에서 ark login을 다시 실행하세요.",
+  cli_auth_invalid: "이 링크가 유효하지 않거나 만료되었습니다. 터미널에서 keymask login을 다시 실행하세요.",
   cli_auth_approved: "승인됨 ✓ 터미널로 돌아가세요 — 이 페이지는 닫아도 됩니다.",
   cli_auth_denied: "요청이 거부되었습니다. 이 페이지는 닫아도 됩니다.",
   cli_auth_error: "문제가 발생했습니다. 다시 시도하세요.",
@@ -206,28 +206,28 @@ const ko: Partial<Messages> = {
   // Home CLI section + command-line client
   nav_docs: "문서",
   cli_home_tag: "명령줄",
-  cli_home_title: "ark — 터미널 속 보관함",
+  cli_home_title: "keymask — 터미널 속 보관함",
   cli_home_body:
-    "ark는 KeyMask의 명령줄 클라이언트입니다. 로그인하고 문구를 가져오면 터미널에서 보관함을 읽고 쓸 수 있습니다 — .env 파일, API 키, 설정을 넣고 꺼내세요. 웹 앱과 마찬가지로 모든 암호화·복호화는 당신의 기기에서 이루어지며 클라우드는 오직 암호문만 봅니다. 개발자와 스크립트 / CI를 위해 만들어졌습니다.",
+    "keymask는 KeyMask의 명령줄 클라이언트입니다. 로그인하고 문구를 가져오면 터미널에서 보관함을 읽고 쓸 수 있습니다 — .env 파일, API 키, 설정을 넣고 꺼내세요. 웹 앱과 마찬가지로 모든 암호화·복호화는 당신의 기기에서 이루어지며 클라우드는 오직 암호문만 봅니다. 개발자와 스크립트 / CI를 위해 만들어졌습니다.",
   cli_home_install_hint: "한 줄, 크로스 플랫폼:",
   cli_home_cta: "CLI 문서 읽기",
 
   // CLI documentation page
   docs_nav_back: "홈으로 돌아가기",
-  docs_title: "ark CLI 문서",
+  docs_title: "keymask CLI 문서",
   docs_subtitle:
     "터미널에서 종단 간 암호화된 보관함을 읽고 씁니다. 평문과 문구는 로컬에 남고 — 기기를 떠나는 것은 오직 암호문뿐입니다.",
   docs_intro_title: "이것은 무엇인가요",
   docs_intro_body:
-    "ark는 KeyMask의 공식 명령줄 클라이언트입니다. 웹 보관함을 터미널로 가져옵니다: 항목 나열, 경로별 읽기, 로컬 파일 저장, 항목 생성 및 업데이트. 모든 암호화·복호화는 복구 문구로 로컬에서 이루어지며 — 서버와 클라우드 백엔드는 오직 불투명한 암호문만 처리합니다.",
+    "keymask는 KeyMask의 공식 명령줄 클라이언트입니다. 웹 보관함을 터미널로 가져옵니다: 항목 나열, 경로별 읽기, 로컬 파일 저장, 항목 생성 및 업데이트. 모든 암호화·복호화는 복구 문구로 로컬에서 이루어지며 — 서버와 클라우드 백엔드는 오직 불투명한 암호문만 처리합니다.",
   docs_install_title: "설치",
-  docs_install_note: "Node.js 18+ 가 필요합니다. ark 명령(별칭 keymask)을 설치합니다.",
+  docs_install_note: "Node.js 18+ 가 필요합니다. keymask 명령을 설치합니다.",
   docs_setup_title: "최초 설정",
   docs_setup_body: "두 단계: 이 기기를 승인한 다음 문구를 가져옵니다.",
   docs_setup_login_note:
-    "ark login은 기기 코드 인증을 사용합니다: 터미널이 링크와 코드를 보여줍니다. 브라우저에서 열고 코드가 일치하는지 확인한 후 승인하세요. 이 권한은 브라우저 세션과 동등합니다 — 오직 암호문만 옮길 수 있으며 문구나 평문은 절대 접근하지 못합니다.",
+    "keymask login은 기기 코드 인증을 사용합니다: 터미널이 링크와 코드를 보여줍니다. 브라우저에서 열고 코드가 일치하는지 확인한 후 승인하세요. 이 권한은 브라우저 세션과 동등합니다 — 오직 암호문만 옮길 수 있으며 문구나 평문은 절대 접근하지 못합니다.",
   docs_setup_import_note:
-    "ark import는 복구 문구를 입력받고 로컬 잠금 해제 비밀번호를 설정합니다. 문구는 Argon2id로 파생한 키로 암호화되어 로컬(~/.keymask)에 저장되며 — 절대 업로드되지 않습니다. 잠금 해제는 5분간 비활동 시까지 캐시되므로 비밀번호를 다시 입력할 필요가 없습니다.",
+    "keymask import는 복구 문구를 입력받고 로컬 잠금 해제 비밀번호를 설정합니다. 문구는 Argon2id로 파생한 키로 암호화되어 로컬(~/.keymask)에 저장되며 — 절대 업로드되지 않습니다. 잠금 해제는 5분간 비활동 시까지 캐시되므로 비밀번호를 다시 입력할 필요가 없습니다.",
   docs_commands_title: "명령 참조",
   docs_cmd_login: "기기 코드로 이 기기를 승인합니다 (확인을 위해 브라우저를 엽니다).",
   docs_cmd_import: "복구 문구를 가져오고 로컬 잠금 해제 비밀번호를 설정합니다.",
@@ -256,7 +256,7 @@ const ko: Partial<Messages> = {
   docs_env_no_browser: "설정하면 로그인 시 브라우저를 자동으로 열지 않습니다.",
   docs_security_title: "보안",
   docs_security_body:
-    "문구, 파생된 마스터 키, 평문은 절대 기기를 떠나지 않습니다: ark는 로컬에서 암호화·복호화하고 서버와 클라우드에는 오직 암호문만 보냅니다. 기기 권한은 오직 암호문만 옮길 수 있으며 — 유출되더라도 보관함 안의 어떤 내용도 드러나지 않습니다.",
+    "문구, 파생된 마스터 키, 평문은 절대 기기를 떠나지 않습니다: keymask는 로컬에서 암호화·복호화하고 서버와 클라우드에는 오직 암호문만 보냅니다. 기기 권한은 오직 암호문만 옮길 수 있으며 — 유출되더라도 보관함 안의 어떤 내용도 드러나지 않습니다.",
 
   // Change password / idle auto-lock
   pw_change_title: "비밀번호 변경",
@@ -317,8 +317,8 @@ const ko: Partial<Messages> = {
   content_reveal: "클릭하여 표시",
   content_hide: "내용 가리기",
   cli_access: "CLI로 가져오기",
-  cli_dialog_title: "ark CLI로 이 항목 다운로드",
-  cli_dialog_desc: "ark는 KeyMask의 명령줄 클라이언트입니다. 로그인 + 문구 가져오기 후에는 터미널에서 보관함을 읽고 쓸 수 있으며 — 복호화는 여전히 오직 당신의 기기에서만 이루어집니다.",
+  cli_dialog_title: "keymask CLI로 이 항목 다운로드",
+  cli_dialog_desc: "keymask는 KeyMask의 명령줄 클라이언트입니다. 로그인 + 문구 가져오기 후에는 터미널에서 보관함을 읽고 쓸 수 있으며 — 복호화는 여전히 오직 당신의 기기에서만 이루어집니다.",
   cli_step_install: "설치",
   cli_step_setup: "최초 설정 (로그인 + 문구 가져오기)",
   cli_step_download: "이 항목 다운로드",

@@ -1,5 +1,5 @@
 // 把解密后的保险库渲染成一个自包含、可离线打开的静态 HTML(零网络请求、无外部资源)。
-// 注意:这个文件里出现的全是已解密的明文 —— 它只会被 `ark local` 写到用户本机指定的输出目录,
+// 注意:这个文件里出现的全是已解密的明文 —— 它只会被 `keymask local` 写到用户本机指定的输出目录,
 // 绝不上传、绝不经过任何服务端。生成方(CLI)和产物(HTML)都只在用户机器上。
 
 export interface ExportItem {
@@ -23,7 +23,7 @@ export interface ExportData {
   vaultId: string;
   source: string; // 备份来源路径(展示用)
   exportedAt: number;
-  version: string; // 生成该页的 ark CLI 版本(溯源用)
+  version: string; // 生成该页的 keymask CLI 版本(溯源用)
   items: ExportItem[];
 }
 

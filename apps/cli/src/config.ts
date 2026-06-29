@@ -1,4 +1,4 @@
-// 云端连接信息:~/.keymask/cloud.json(`ark login` 设备码授权写出 { token, provider, issuer })。
+// 云端连接信息:~/.keymask/cloud.json(`keymask login` 设备码授权写出 { token, provider, issuer })。
 // server 仍按 --server / KEYMASK_SERVER / 内置默认解析,但 token 绑定 issuer(颁发它的 server):
 // 解析出的 server 与 issuer 不一致时拒绝发 token,防止把令牌发往错误/恶意服务端。
 import { readFileSync, rmSync } from "node:fs";
@@ -39,7 +39,7 @@ export interface CloudConn {
   issuer?: string;
 }
 
-/** 读云端登录态(`ark login` 写出 token/provider/issuer;server 由 env/flag/默认解析)。 */
+/** 读云端登录态(`keymask login` 写出 token/provider/issuer;server 由 env/flag/默认解析)。 */
 export function loadCloud(): CloudConn | null {
   try {
     const cfg = JSON.parse(readFileSync(cloudConfigPath(), "utf8")) as Partial<CloudConn>;

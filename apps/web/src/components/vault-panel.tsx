@@ -1726,7 +1726,7 @@ export function VaultPanel({
   })();
 
   // 条目的文件夹路径面包屑(根 → "全部条目")。
-  /** 条目在 CLI 里的文件路径:文件夹链(/ 分隔)+ 标题,供 `ark get <path>` 使用。 */
+  /** 条目在 CLI 里的文件路径:文件夹链(/ 分隔)+ 标题,供 `keymask get <path>` 使用。 */
   function cliPathOf(e: EntryMeta): string {
     const byId = new Map(folders.map((f) => [f.id, f]));
     const parts: string[] = [];
@@ -2677,7 +2677,7 @@ export function VaultPanel({
                       </span>
                     </span>
                     <span className="flex shrink-0 items-center gap-3">
-                      {/* 文本与二进制(文件)条目都支持:CLI 的 ark get 现在能写回原始字节。 */}
+                      {/* 文本与二进制(文件)条目都支持:CLI 的 keymask get 现在能写回原始字节。 */}
                       <button
                         type="button"
                         {...testId("vault-item-cli-access")}

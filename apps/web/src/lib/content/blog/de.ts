@@ -59,7 +59,7 @@ const de: Record<string, PostLocale> = {
       {
         k: "ul",
         items: [
-          "Die ark CLI-Version sowie das Quell-Repository + Commit-Hash.",
+          "Die keymask CLI-Version sowie das Quell-Repository + Commit-Hash.",
           "Die Build-Zeit und die Node.js-Version.",
           "Die exakten Krypto-Bibliotheksversionen (`hash-wasm`, `@scure/bip39`, `@noble/hashes`).",
           "Die vollständige Krypto-Spezifikation: BIP39 24-Wort-Phrase, seed → HKDF-SHA256 → AES-256-GCM und die Argon2id-Parameter.",
@@ -112,7 +112,7 @@ const de: Record<string, PostLocale> = {
       { k: "h2", t: "Entsperren auf deinem Rechner" },
       {
         k: "p",
-        t: "Wenn du deine Phrase lokal speicherst (in der Web-App oder der ark CLI), wird sie mit einem Entsperrpasswort umhüllt, das `Argon2id` (512 MB, t=4, p=1) verwendet — eine bewusst speicherharte Funktion, die das Brute-Forcing des Passworts teuer macht. Die Parameter reisen mit dem Anmeldenachweis mit, sodass sie mit der Zeit erhöht werden können.",
+        t: "Wenn du deine Phrase lokal speicherst (in der Web-App oder der keymask CLI), wird sie mit einem Entsperrpasswort umhüllt, das `Argon2id` (512 MB, t=4, p=1) verwendet — eine bewusst speicherharte Funktion, die das Brute-Forcing des Passworts teuer macht. Die Parameter reisen mit dem Anmeldenachweis mit, sodass sie mit der Zeit erhöht werden können.",
       },
       { k: "h2", t: "Der Kompromiss, den wir eingehen" },
       {

@@ -8,7 +8,7 @@ import { DEFAULT_ARGON2ID_PARAMS } from "@keymask/crypto";
 import { pickLocale, type Locale } from "@/lib/i18n";
 
 export const BUILD_VERSION = process.env.NEXT_PUBLIC_KEYMASK_VERSION ?? "0.0.0";
-/** ark CLI(@keymask/cli)版本;构建期从 apps/cli/package.json 注入,展示在文档/落地页。 */
+/** keymask CLI(@keymask/cli)版本;构建期从 apps/cli/package.json 注入,展示在文档/落地页。 */
 export const CLI_VERSION = process.env.NEXT_PUBLIC_KEYMASK_CLI_VERSION ?? "0.0.0";
 export const BUILD_COMMIT = process.env.NEXT_PUBLIC_KEYMASK_COMMIT ?? "unknown";
 export const BUILD_REPO = process.env.NEXT_PUBLIC_KEYMASK_REPO ?? "";
@@ -27,11 +27,11 @@ const BUILD: BuildManifest = (() => {
   }
 })();
 
-/** 形如 "https://github.com/org/keymask @ a1b2c3d · ark v1.0.3";无仓库地址时省略前段。
- *  版本统一用 ark CLI 版本(对外的产品版本号);web 自身的 package.json 版本不对外展示。 */
+/** 形如 "https://github.com/org/keymask @ a1b2c3d · keymask v1.0.3";无仓库地址时省略前段。
+ *  版本统一用 keymask CLI 版本(对外的产品版本号);web 自身的 package.json 版本不对外展示。 */
 export function sourceLabel(): string {
   const left = BUILD_REPO ? `${BUILD_REPO}@${BUILD_COMMIT}` : BUILD_COMMIT;
-  return `${left} · ark v${CLI_VERSION}`;
+  return `${left} · keymask v${CLI_VERSION}`;
 }
 
 /** 指向具体提交的链接(仅当仓库地址是 http(s) 且提交已知时);否则返回 null。 */
@@ -148,7 +148,7 @@ interface LabelSet {
 const LABELS: Partial<Record<Locale, LabelSet>> = {
   zh: {
     title: "构建环境上下文",
-    cliVersion: "ark CLI 版本",
+    cliVersion: "keymask CLI 版本",
     source: "源码",
     built: "构建时间",
     node: "构建运行时",
@@ -167,7 +167,7 @@ const LABELS: Partial<Record<Locale, LabelSet>> = {
   },
   en: {
     title: "Build environment context",
-    cliVersion: "ark CLI version",
+    cliVersion: "keymask CLI version",
     source: "Source",
     built: "Built",
     node: "Build runtime",
@@ -205,7 +205,7 @@ export function provenanceRows(locale: Locale): { title: string; rows: Provenanc
     : "n/a";
 
   const rows: ProvenanceRow[] = [
-    { label: L.cliVersion, value: `ark v${p.app.cliVersion}` },
+    { label: L.cliVersion, value: `keymask v${p.app.cliVersion}` },
     { label: L.source, value: p.app.source },
     { label: L.built, value: builtLocal },
     { label: L.node, value: `Node ${p.build.node || "n/a"}` },

@@ -121,7 +121,7 @@ const zh = {
   os_badge: "开源 · 免费",
   os_title: "一个开源的密钥保管库",
   os_body: (store: string) =>
-    `KeyMask 完全开源、永久免费。加密只在你的浏览器里发生,密文存进你自己的${store},代码全部公开可审计——你可以自行托管,也可以用 ark 命令行把 .env、密钥等机密按 GitHub 路径备份再取回。`,
+    `KeyMask 完全开源、永久免费。加密只在你的浏览器里发生,密文存进你自己的${store},代码全部公开可审计——你可以自行托管,也可以用 keymask 命令行把 .env、密钥等机密按 GitHub 路径备份再取回。`,
   os_point_open_title: "开放可审计",
   os_point_open_body: "全栈代码公开,端到端加密实现可逐行核对,不留后门。",
   os_point_free_title: "免费无账号",
@@ -260,7 +260,7 @@ const zh = {
   cli_auth_approve: "授权",
   cli_auth_deny: "拒绝",
   cli_auth_login_hint: "请先登录,登录后会自动回到本页继续授权。",
-  cli_auth_invalid: "链接无效或已过期。请回到终端重新执行 ark login。",
+  cli_auth_invalid: "链接无效或已过期。请回到终端重新执行 keymask login。",
   cli_auth_approved: "已授权 ✓ 回到终端继续,本页可以关闭。",
   cli_auth_denied: "已拒绝该请求。本页可以关闭。",
   cli_auth_error: "操作失败,请重试。",
@@ -276,28 +276,28 @@ const zh = {
   // 首页 CLI 区 + 命令行客户端
   nav_docs: "文档",
   cli_home_tag: "命令行",
-  cli_home_title: "ark —— 终端里的保险库",
+  cli_home_title: "keymask —— 终端里的保险库",
   cli_home_body:
-    "ark 是 KeyMask 的命令行客户端:在终端登录、导入助记词后即可读写保险库——把 .env、API 密钥、配置直接存取。和网页端一样,加解密只在你的设备上完成,云端只见密文。最适合开发者与脚本 / CI。",
+    "keymask 是 KeyMask 的命令行客户端:在终端登录、导入助记词后即可读写保险库——把 .env、API 密钥、配置直接存取。和网页端一样,加解密只在你的设备上完成,云端只见密文。最适合开发者与脚本 / CI。",
   cli_home_install_hint: "一行安装,跨平台:",
   cli_home_cta: "查看 CLI 文档",
 
   // CLI 使用文档页
   docs_nav_back: "返回首页",
-  docs_title: "ark CLI 使用文档",
+  docs_title: "keymask CLI 使用文档",
   docs_subtitle:
     "在终端里读写你的端到端加密保险库。明文与助记词只留在本地,离开设备的永远只有密文。",
   docs_intro_title: "这是什么",
   docs_intro_body:
-    "ark 是 KeyMask 的官方命令行客户端,把网页保险库的能力带到终端:列出条目、按路径读取、保存本地文件、创建与更新条目。所有加解密都在本地用你的助记词完成——服务端与网盘后端全程只经手不透明密文。",
+    "keymask 是 KeyMask 的官方命令行客户端,把网页保险库的能力带到终端:列出条目、按路径读取、保存本地文件、创建与更新条目。所有加解密都在本地用你的助记词完成——服务端与网盘后端全程只经手不透明密文。",
   docs_install_title: "安装",
-  docs_install_note: "需要 Node.js 18+。安装后即可使用 ark(以及别名 keymask)命令。",
+  docs_install_note: "需要 Node.js 18+。安装后即可使用 keymask 命令。",
   docs_setup_title: "首次配置",
   docs_setup_body: "两步:授权这台设备,再导入你的助记词。",
   docs_setup_login_note:
-    "ark login 走设备码授权:终端给出一个链接与代码,在浏览器里核对代码并确认。授权态等同一次浏览器登录,只能搬运密文,拿不到你的助记词或明文。",
+    "keymask login 走设备码授权:终端给出一个链接与代码,在浏览器里核对代码并确认。授权态等同一次浏览器登录,只能搬运密文,拿不到你的助记词或明文。",
   docs_setup_import_note:
-    "ark import 让你输入助记词,并为本机设置一个解锁密码。助记词经 Argon2id 派生密钥加密后存在本地(~/.keymask),绝不上传;解锁缓存连续 5 分钟无操作即失效,期间无需重复输入密码。",
+    "keymask import 让你输入助记词,并为本机设置一个解锁密码。助记词经 Argon2id 派生密钥加密后存在本地(~/.keymask),绝不上传;解锁缓存连续 5 分钟无操作即失效,期间无需重复输入密码。",
   docs_commands_title: "命令一览",
   docs_cmd_login: "设备码授权这台设备(会打开浏览器核对)。",
   docs_cmd_import: "导入助记词并设置本机解锁密码。",
@@ -326,7 +326,7 @@ const zh = {
   docs_env_no_browser: "设置后登录时不自动打开浏览器。",
   docs_security_title: "安全说明",
   docs_security_body:
-    "助记词、派生主密钥与明文永远不离开你的设备:ark 在本地加解密,只把密文发往服务端与网盘。设备授权态只能搬运密文;即便被泄露,也读不到你保险库里的任何内容。",
+    "助记词、派生主密钥与明文永远不离开你的设备:keymask 在本地加解密,只把密文发往服务端与网盘。设备授权态只能搬运密文;即便被泄露,也读不到你保险库里的任何内容。",
 
   // 修改密码 / 闲置自动锁定
   pw_change_title: "修改密码",
@@ -388,8 +388,8 @@ const zh = {
   content_reveal: "点击显示内容",
   content_hide: "重新遮住",
   cli_access: "通过 CLI 下载",
-  cli_dialog_title: "用 ark CLI 下载此条目",
-  cli_dialog_desc: "ark 是 KeyMask 的命令行客户端:登录 + 导入助记词后即可在终端读写保险库,解密同样只在你的设备上进行。",
+  cli_dialog_title: "用 keymask CLI 下载此条目",
+  cli_dialog_desc: "keymask 是 KeyMask 的命令行客户端:登录 + 导入助记词后即可在终端读写保险库,解密同样只在你的设备上进行。",
   cli_step_install: "安装",
   cli_step_setup: "首次配置(登录 + 导入助记词)",
   cli_step_download: "下载本条目",
@@ -538,7 +538,7 @@ const en: typeof zh = {
   os_badge: "Open source · Free",
   os_title: "An open-source key vault",
   os_body: (store: string) =>
-    `KeyMask is fully open source and free forever. Encryption happens only in your browser, ciphertext is stored in your own ${store}, and every line is public and auditable — self-host it, or use the ark CLI to back up secrets like .env files by their GitHub path and pull them back.`,
+    `KeyMask is fully open source and free forever. Encryption happens only in your browser, ciphertext is stored in your own ${store}, and every line is public and auditable — self-host it, or use the keymask CLI to back up secrets like .env files by their GitHub path and pull them back.`,
   os_point_open_title: "Open & auditable",
   os_point_open_body: "The whole stack is public; the end-to-end crypto can be reviewed line by line. No backdoors.",
   os_point_free_title: "Free, no account",
@@ -674,7 +674,7 @@ const en: typeof zh = {
   cli_auth_approve: "Approve",
   cli_auth_deny: "Deny",
   cli_auth_login_hint: "Sign in first — you'll return to this page to continue.",
-  cli_auth_invalid: "This link is invalid or expired. Re-run ark login in your terminal.",
+  cli_auth_invalid: "This link is invalid or expired. Re-run keymask login in your terminal.",
   cli_auth_approved: "Approved ✓ Return to your terminal — you can close this page.",
   cli_auth_denied: "Request denied. You can close this page.",
   cli_auth_error: "Something went wrong, please retry.",
@@ -690,28 +690,28 @@ const en: typeof zh = {
   // Home CLI section + command-line client
   nav_docs: "Docs",
   cli_home_tag: "Command line",
-  cli_home_title: "ark — your vault in the terminal",
+  cli_home_title: "keymask — your vault in the terminal",
   cli_home_body:
-    "ark is the KeyMask command-line client. Log in and import your phrase, then read and write your vault from the terminal — pull .env files, API keys and configs in and out. Just like the web app, all encryption and decryption happen on your device; the cloud only ever sees ciphertext. Built for developers and scripts / CI.",
+    "keymask is the KeyMask command-line client. Log in and import your phrase, then read and write your vault from the terminal — pull .env files, API keys and configs in and out. Just like the web app, all encryption and decryption happen on your device; the cloud only ever sees ciphertext. Built for developers and scripts / CI.",
   cli_home_install_hint: "One line, cross-platform:",
   cli_home_cta: "Read the CLI docs",
 
   // CLI documentation page
   docs_nav_back: "Back to home",
-  docs_title: "ark CLI documentation",
+  docs_title: "keymask CLI documentation",
   docs_subtitle:
     "Read and write your end-to-end encrypted vault from the terminal. Your plaintext and phrase stay local — only ciphertext ever leaves the device.",
   docs_intro_title: "What is it",
   docs_intro_body:
-    "ark is the official KeyMask command-line client. It brings the web vault to your terminal: list items, read by path, save local files, create and update entries. All encryption and decryption happen locally with your recovery phrase — the server and cloud backend only ever handle opaque ciphertext.",
+    "keymask is the official KeyMask command-line client. It brings the web vault to your terminal: list items, read by path, save local files, create and update entries. All encryption and decryption happen locally with your recovery phrase — the server and cloud backend only ever handle opaque ciphertext.",
   docs_install_title: "Install",
-  docs_install_note: "Requires Node.js 18+. Installs the ark command (aliased as keymask).",
+  docs_install_note: "Requires Node.js 18+. Installs the keymask command.",
   docs_setup_title: "First-time setup",
   docs_setup_body: "Two steps: authorize this device, then import your phrase.",
   docs_setup_login_note:
-    "ark login uses device-code authorization: the terminal shows a link and a code; open it in your browser, confirm the code matches, and approve. The grant is equivalent to a browser session — it can only move ciphertext, never your phrase or plaintext.",
+    "keymask login uses device-code authorization: the terminal shows a link and a code; open it in your browser, confirm the code matches, and approve. The grant is equivalent to a browser session — it can only move ciphertext, never your phrase or plaintext.",
   docs_setup_import_note:
-    "ark import asks for your recovery phrase and sets a local unlock password. The phrase is encrypted with an Argon2id-derived key and stored locally (~/.keymask) — never uploaded. The unlock stays cached until 5 minutes of inactivity so you needn't retype the password.",
+    "keymask import asks for your recovery phrase and sets a local unlock password. The phrase is encrypted with an Argon2id-derived key and stored locally (~/.keymask) — never uploaded. The unlock stays cached until 5 minutes of inactivity so you needn't retype the password.",
   docs_commands_title: "Command reference",
   docs_cmd_login: "Authorize this device via device code (opens the browser to confirm).",
   docs_cmd_import: "Import a recovery phrase and set a local unlock password.",
@@ -740,7 +740,7 @@ const en: typeof zh = {
   docs_env_no_browser: "When set, login won't auto-open the browser.",
   docs_security_title: "Security",
   docs_security_body:
-    "Your phrase, derived master key and plaintext never leave your device: ark encrypts and decrypts locally and only sends ciphertext to the server and cloud. The device grant can only move ciphertext — even if leaked, it reveals nothing inside your vault.",
+    "Your phrase, derived master key and plaintext never leave your device: keymask encrypts and decrypts locally and only sends ciphertext to the server and cloud. The device grant can only move ciphertext — even if leaked, it reveals nothing inside your vault.",
 
   // Change password / idle auto-lock
   pw_change_title: "Change password",
@@ -801,8 +801,8 @@ const en: typeof zh = {
   content_reveal: "Click to reveal",
   content_hide: "Hide content",
   cli_access: "Get via CLI",
-  cli_dialog_title: "Download this item with the ark CLI",
-  cli_dialog_desc: "ark is the KeyMask command-line client. After login + mnemonic import you can read and write your vault from the terminal — decryption still happens only on your device.",
+  cli_dialog_title: "Download this item with the keymask CLI",
+  cli_dialog_desc: "keymask is the KeyMask command-line client. After login + mnemonic import you can read and write your vault from the terminal — decryption still happens only on your device.",
   cli_step_install: "Install",
   cli_step_setup: "One-time setup (login + import mnemonic)",
   cli_step_download: "Download this item",

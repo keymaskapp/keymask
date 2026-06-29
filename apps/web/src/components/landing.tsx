@@ -385,7 +385,7 @@ export function Landing({ error, providers }: { error?: string; providers: Provi
                   <span className="h-2.5 w-2.5 rounded-full bg-[var(--color-warning,#f59e0b)]/60" />
                   <span className="h-2.5 w-2.5 rounded-full bg-[var(--color-success)]/60" />
                   <span className="ml-2 font-mono text-xs text-[var(--color-muted-foreground)]">
-                    ark
+                    keymask
                   </span>
                 </div>
                 <div className="px-4 py-4 font-mono text-xs leading-relaxed">
@@ -394,13 +394,13 @@ export function Landing({ error, providers }: { error?: string; providers: Provi
                     <span className="text-[var(--color-success)]">$</span> npm install -g @keymask/cli
                   </p>
                   <p className="mt-3">
-                    <span className="text-[var(--color-success)]">$</span> ark login
+                    <span className="text-[var(--color-success)]">$</span> keymask login
                   </p>
                   <p>
-                    <span className="text-[var(--color-success)]">$</span> ark import
+                    <span className="text-[var(--color-success)]">$</span> keymask import
                   </p>
                   <p className="mt-3">
-                    <span className="text-[var(--color-success)]">$</span> ark get github.com/me/app/.env .env
+                    <span className="text-[var(--color-success)]">$</span> keymask get github.com/me/app/.env .env
                   </p>
                 </div>
               </div>

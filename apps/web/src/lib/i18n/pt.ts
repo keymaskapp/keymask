@@ -63,7 +63,7 @@ const pt: Partial<Messages> = {
   os_badge: "Código aberto · Grátis",
   os_title: "Um cofre de chaves de código aberto",
   os_body: (store: string) =>
-    `O KeyMask é totalmente de código aberto e gratuito para sempre. A criptografia acontece apenas no seu navegador, o texto cifrado é armazenado no seu próprio ${store}, e cada linha é pública e auditável — hospede você mesmo, ou use a CLI ark para fazer backup de segredos como arquivos .env pelo caminho do GitHub e recuperá-los.`,
+    `O KeyMask é totalmente de código aberto e gratuito para sempre. A criptografia acontece apenas no seu navegador, o texto cifrado é armazenado no seu próprio ${store}, e cada linha é pública e auditável — hospede você mesmo, ou use a CLI keymask para fazer backup de segredos como arquivos .env pelo caminho do GitHub e recuperá-los.`,
   os_point_open_title: "Aberto e auditável",
   os_point_open_body: "Toda a stack é pública; a criptografia de ponta a ponta pode ser revisada linha por linha. Sem backdoors.",
   os_point_free_title: "Grátis, sem conta",
@@ -190,7 +190,7 @@ const pt: Partial<Messages> = {
   cli_auth_approve: "Aprovar",
   cli_auth_deny: "Negar",
   cli_auth_login_hint: "Faça login primeiro — você voltará a esta página para continuar.",
-  cli_auth_invalid: "Este link é inválido ou expirou. Execute ark login novamente no seu terminal.",
+  cli_auth_invalid: "Este link é inválido ou expirou. Execute keymask login novamente no seu terminal.",
   cli_auth_approved: "Aprovado ✓ Volte ao seu terminal — você pode fechar esta página.",
   cli_auth_denied: "Solicitação negada. Você pode fechar esta página.",
   cli_auth_error: "Algo deu errado, tente novamente.",
@@ -206,28 +206,28 @@ const pt: Partial<Messages> = {
   // Home CLI section + command-line client
   nav_docs: "Documentação",
   cli_home_tag: "Linha de comando",
-  cli_home_title: "ark — seu cofre no terminal",
+  cli_home_title: "keymask — seu cofre no terminal",
   cli_home_body:
-    "ark é o cliente de linha de comando do KeyMask. Faça login e importe sua frase, depois leia e escreva no seu cofre pelo terminal — entre e saia com arquivos .env, chaves de API e configurações. Assim como no app web, toda a criptografia e descriptografia acontece no seu dispositivo; a nuvem só vê texto cifrado. Feito para desenvolvedores e scripts / CI.",
+    "keymask é o cliente de linha de comando do KeyMask. Faça login e importe sua frase, depois leia e escreva no seu cofre pelo terminal — entre e saia com arquivos .env, chaves de API e configurações. Assim como no app web, toda a criptografia e descriptografia acontece no seu dispositivo; a nuvem só vê texto cifrado. Feito para desenvolvedores e scripts / CI.",
   cli_home_install_hint: "Uma linha, multiplataforma:",
   cli_home_cta: "Ler a documentação da CLI",
 
   // CLI documentation page
   docs_nav_back: "Voltar ao início",
-  docs_title: "Documentação da CLI ark",
+  docs_title: "Documentação da CLI keymask",
   docs_subtitle:
     "Leia e escreva no seu cofre com criptografia de ponta a ponta pelo terminal. Seu texto não cifrado e sua frase permanecem locais — só o texto cifrado sai do dispositivo.",
   docs_intro_title: "O que é",
   docs_intro_body:
-    "ark é o cliente de linha de comando oficial do KeyMask. Ele traz o cofre web para o seu terminal: lista itens, lê por caminho, salva arquivos locais, cria e atualiza entradas. Toda a criptografia e descriptografia acontece localmente com sua frase de recuperação — o servidor e o backend na nuvem só lidam com texto cifrado opaco.",
+    "keymask é o cliente de linha de comando oficial do KeyMask. Ele traz o cofre web para o seu terminal: lista itens, lê por caminho, salva arquivos locais, cria e atualiza entradas. Toda a criptografia e descriptografia acontece localmente com sua frase de recuperação — o servidor e o backend na nuvem só lidam com texto cifrado opaco.",
   docs_install_title: "Instalação",
-  docs_install_note: "Requer Node.js 18+. Instala o comando ark (com alias keymask).",
+  docs_install_note: "Requer Node.js 18+. Instala o comando keymask.",
   docs_setup_title: "Configuração inicial",
   docs_setup_body: "Dois passos: autorize este dispositivo e depois importe sua frase.",
   docs_setup_login_note:
-    "ark login usa autorização por código de dispositivo: o terminal mostra um link e um código; abra-o no navegador, confirme que o código corresponde e aprove. A concessão equivale a uma sessão de navegador — só pode mover texto cifrado, nunca sua frase ou texto não cifrado.",
+    "keymask login usa autorização por código de dispositivo: o terminal mostra um link e um código; abra-o no navegador, confirme que o código corresponde e aprove. A concessão equivale a uma sessão de navegador — só pode mover texto cifrado, nunca sua frase ou texto não cifrado.",
   docs_setup_import_note:
-    "ark import pede sua frase de recuperação e define uma senha de desbloqueio local. A frase é criptografada com uma chave derivada por Argon2id e armazenada localmente (~/.keymask) — nunca enviada. O desbloqueio fica em cache até 5 minutos de inatividade, para você não ter que redigitar a senha.",
+    "keymask import pede sua frase de recuperação e define uma senha de desbloqueio local. A frase é criptografada com uma chave derivada por Argon2id e armazenada localmente (~/.keymask) — nunca enviada. O desbloqueio fica em cache até 5 minutos de inatividade, para você não ter que redigitar a senha.",
   docs_commands_title: "Referência de comandos",
   docs_cmd_login: "Autoriza este dispositivo via código de dispositivo (abre o navegador para confirmar).",
   docs_cmd_import: "Importa uma frase de recuperação e define uma senha de desbloqueio local.",
@@ -256,7 +256,7 @@ const pt: Partial<Messages> = {
   docs_env_no_browser: "Quando definida, o login não abre o navegador automaticamente.",
   docs_security_title: "Segurança",
   docs_security_body:
-    "Sua frase, a chave mestra derivada e o texto não cifrado nunca saem do seu dispositivo: ark criptografa e descriptografa localmente e só envia texto cifrado ao servidor e à nuvem. A concessão do dispositivo só pode mover texto cifrado — mesmo se vazada, não revela nada dentro do seu cofre.",
+    "Sua frase, a chave mestra derivada e o texto não cifrado nunca saem do seu dispositivo: keymask criptografa e descriptografa localmente e só envia texto cifrado ao servidor e à nuvem. A concessão do dispositivo só pode mover texto cifrado — mesmo se vazada, não revela nada dentro do seu cofre.",
 
   // Change password / idle auto-lock
   pw_change_title: "Alterar senha",
@@ -317,8 +317,8 @@ const pt: Partial<Messages> = {
   content_reveal: "Clique para mostrar",
   content_hide: "Ocultar conteúdo",
   cli_access: "Obter via CLI",
-  cli_dialog_title: "Baixe este item com a CLI ark",
-  cli_dialog_desc: "ark é o cliente de linha de comando do KeyMask. Após o login + importar a frase mnemônica, você pode ler e escrever no seu cofre pelo terminal — a descriptografia continua acontecendo apenas no seu dispositivo.",
+  cli_dialog_title: "Baixe este item com a CLI keymask",
+  cli_dialog_desc: "keymask é o cliente de linha de comando do KeyMask. Após o login + importar a frase mnemônica, você pode ler e escrever no seu cofre pelo terminal — a descriptografia continua acontecendo apenas no seu dispositivo.",
   cli_step_install: "Instalar",
   cli_step_setup: "Configuração inicial (login + importar frase mnemônica)",
   cli_step_download: "Baixar este item",

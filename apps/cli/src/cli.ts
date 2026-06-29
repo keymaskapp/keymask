@@ -1,4 +1,4 @@
-// ark(KeyMask CLI)—— 完全独立的命令行客户端:设备码授权登录云端 web 接口,
+// keymask(KeyMask CLI)—— 完全独立的命令行客户端:设备码授权登录云端 web 接口,
 // 本地派生主密钥、本地加解密,只把 envelope 密文经云端中转。
 // 明文/助记词/主密钥/解锁密码绝不出 CLI 进程。
 import { spawn } from "node:child_process";
@@ -35,7 +35,7 @@ interface Args {
 }
 
 function parseArgs(argv: string[]): Args {
-  // flag 位置无关:`ark --server <url> ls` 与 `ark ls --server <url>` 等价;
+  // flag 位置无关:`keymask --server <url> ls` 与 `keymask ls --server <url>` 等价;
   // 第一个非 flag 的 token 即子命令。
   const positionals: string[] = [];
   const flags: Record<string, string | boolean> = {};
@@ -70,18 +70,18 @@ function fail(msg: string): never {
 
 function transportFrom(args: Args): StorageTransport {
   const conn = resolveConn(flagStr(args.flags, "server"));
-  if (!conn.token) fail(`Not logged in to ${conn.baseUrl}. Run \`ark login\`.`);
+  if (!conn.token) fail(`Not logged in to ${conn.baseUrl}. Run \`keymask login\`.`);
   // token 绑定 issuer:不把它发往别的 server(防发到错误/恶意服务端)。
   if (!conn.tokenUsableHere) {
     if (!conn.issuer) {
       fail(
         `Saved login is from an older KeyMask CLI and is not bound to a server. ` +
-          `Re-run \`ark login\` for ${conn.baseUrl}.`,
+          `Re-run \`keymask login\` for ${conn.baseUrl}.`,
       );
     }
     fail(
       `Token was issued for ${conn.issuer}, not ${conn.baseUrl}. ` +
-        `Re-run \`ark login\` for ${conn.baseUrl}, or target the original server.`,
+        `Re-run \`keymask login\` for ${conn.baseUrl}, or target the original server.`,
     );
   }
   return httpTransport(conn.baseUrl, conn.token!);
@@ -118,7 +118,7 @@ async function ready(
     fail(
       hasCredential()
         ? "Locked (wrong password or non-interactive). Or set KEYMASK_MNEMONIC."
-        : "No mnemonic on this machine. Run `ark import` or set KEYMASK_MNEMONIC.",
+        : "No mnemonic on this machine. Run `keymask import` or set KEYMASK_MNEMONIC.",
     );
   }
   if (!validateMnemonic(mnemonic!)) fail("Invalid mnemonic (check the words).");
@@ -129,7 +129,7 @@ async function ready(
   if (!descriptor) fail("Mnemonic does not match any vault.");
   const vault = openVault(key, descriptor!, transport);
   // 回滚检测:只读命令(readOnly)降级为警告并照常载入回退后的远端 index;写命令硬拦,
-  // 给出可操作提示(确属本人重置 → `ark reset-anchor`),避免在回退基线上写而丢数据。
+  // 给出可操作提示(确属本人重置 → `keymask reset-anchor`),避免在回退基线上写而丢数据。
   try {
     await vault.load(readOnly ? { onRollback: warnRollback } : undefined);
   } catch (e) {
@@ -144,7 +144,7 @@ function warnRollback(e: VaultRollbackError): void {
   console.error(
     yellow(
       `! vault index rolled back (remote rev ${e.remoteRev} < last accepted ${e.localRev}); showing remote contents anyway.\n` +
-        `  If you didn't reset this vault, investigate. If you did, run \`ark reset-anchor\` to clear the stale guard.`,
+        `  If you didn't reset this vault, investigate. If you did, run \`keymask reset-anchor\` to clear the stale guard.`,
     ),
   );
 }
@@ -157,7 +157,7 @@ function rollbackWriteHint(vaultId: string, e: VaultRollbackError): string {
     "likely reset/restored, or (rarely) tampered with. Writes are blocked to avoid\n" +
     "clobbering newer remote data (reads still work, with a warning).\n" +
     `If you intentionally reset this vault, clear the stale anchor and retry:\n` +
-    `  ${cyan(`ark reset-anchor --vault ${vaultId.slice(0, 8)}`)}`
+    `  ${cyan(`keymask reset-anchor --vault ${vaultId.slice(0, 8)}`)}`
   );
 }
 
@@ -213,7 +213,7 @@ function entryAt(vault: Vault, folderId: string | null | undefined, title: strin
   return vault.entries.find((e) => e.folderId === folderId && e.title === title);
 }
 
-// ── 双向同步(ark sync) ───────────────────────────────────────────────────────
+// ── 双向同步(keymask sync) ───────────────────────────────────────────────────────
 // 把某个 vault 文件夹与本地目录按「修改时间」双向同步:逐个比内容,内容不同则较新的一方
 // 覆盖较旧的一方(本地新→推上去,线上新→拉下来)。条目标题即仓库内相对路径,保持原样。
 // 文件集合 = 该文件夹的直接条目(文本与二进制文件条目都处理);执行前展示方向并请用户确认。
@@ -227,7 +227,7 @@ type SyncRow = {
   note?: string;
 };
 
-/** `ark sync [folder]`:vault 文件夹 ↔ 本地目录,按 mtime 双向同步(保持相对路径)。 */
+/** `keymask sync [folder]`:vault 文件夹 ↔ 本地目录,按 mtime 双向同步(保持相对路径)。 */
 async function runSync(args: Args): Promise<void> {
   const explicit = args.positionals[0];
   const git = gitContext(process.cwd());
@@ -235,7 +235,7 @@ async function runSync(args: Args): Promise<void> {
   const vaultPath = explicit ?? git?.originPath;
   if (!vaultPath) {
     fail(
-      "Specify a folder to sync: `ark sync <folder>` (e.g. github.com/me/repo),\n" +
+      "Specify a folder to sync: `keymask sync <folder>` (e.g. github.com/me/repo),\n" +
         "or run inside a git repo whose origin selects the matching vault folder.",
     );
   }
@@ -247,7 +247,7 @@ async function runSync(args: Args): Promise<void> {
 
   const folderId = lookupFolderPath(vault, vaultPath!);
   if (folderId === undefined) {
-    fail(`No vault folder matches "${vaultPath}" — create it on the web (or via \`ark save\`) first.`);
+    fail(`No vault folder matches "${vaultPath}" — create it on the web (or via \`keymask save\`) first.`);
   }
   const entries = vault.entries.filter((e) => e.folderId === folderId);
 
@@ -255,7 +255,7 @@ async function runSync(args: Args): Promise<void> {
     `${dim("vault folder")}  ${bold(vaultPath!)}\n` +
       `${dim("local dir")}     ${bold(localBase)}\n` +
       `${dim("files")}         ${entries.length}`,
-    "ark sync",
+    "keymask sync",
   );
   if (entries.length === 0) {
     console.log(dim("Folder has no items to sync."));
@@ -414,7 +414,7 @@ async function runLocal(srcArg: string, args: Args): Promise<void> {
       `${dim("backup")}  ${src} ${dim(`(${kind})`)}\n${dim("vaults")}  ${vaults!
         .map((v) => `${v.label || "(default)"} [${v.id.slice(0, 8)}]`)
         .join(", ")}`,
-      "ark local",
+      "keymask local",
     );
     mnemonic = (
       await askSecretText("Enter the vault's recovery phrase (mnemonic)", (v) =>
@@ -508,22 +508,22 @@ async function runLocal(srcArg: string, args: Args): Promise<void> {
   }
 }
 
-const HELP = `ark — KeyMask end-to-end encrypted vault CLI
+const HELP = `keymask — KeyMask end-to-end encrypted vault CLI
 
 Account:
-  ark login              Device-code login via browser
-  ark logout             Revoke token, clear local login (mnemonic credential kept)
-  ark status             Show login and mnemonic status
-  ark info               Show version, server (and its source), config dir
+  keymask login              Device-code login via browser
+  keymask logout             Revoke token, clear local login (mnemonic credential kept)
+  keymask status             Show login and mnemonic status
+  keymask info               Show version, server (and its source), config dir
 
 Mnemonic (import only; create one on the web):
-  ark import             Import recovery phrase (mnemonic) and set an unlock password
-  ark forget             Remove local mnemonic credential and unlock cache
+  keymask import             Import recovery phrase (mnemonic) and set an unlock password
+  keymask forget             Remove local mnemonic credential and unlock cache
 
 Items:
-  ark vaults             List vaults and key match
-  ark ls                 List items
-  ark get <path> [local]   Decrypt an item by path (a/b/title; id prefix also works).
+  keymask vaults             List vaults and key match
+  keymask ls                 List items
+  keymask get <path> [local]   Decrypt an item by path (a/b/title; id prefix also works).
                          Always prompts for the unlock password (ignores the 5-min
                          cache); KEYMASK_MNEMONIC still bypasses for scripts.
                          No local: prints to stdout. But when the path belongs to the
@@ -534,24 +534,24 @@ Items:
                          different file, skips when identical; a directory keeps
                          the item's filename. Binary (file) items are written as
                          raw bytes.
-  ark save <source> [target]   Upload a file (text or binary; binary is stored as an
+  keymask save <source> [target]   Upload a file (text or binary; binary is stored as an
                          encrypted file item). target = a/b/title; trailing "/"
                          keeps the filename. Without target: detected from git origin
                          (e.g. github.com/me/repo/.env) or root + filename —
                          Enter to accept, or type a custom target (q cancels).
                          Existing target → new version; identical content → skipped
-  ark sync [folder]      Two-way sync a vault folder with a local directory by mtime.
+  keymask sync [folder]      Two-way sync a vault folder with a local directory by mtime.
                          Omit folder inside a git repo (origin selects it). Per file the
                          newer side wins (↑ local→vault, ↓ vault→local); missing-local
                          files are pulled. Shows the plan and asks before applying
                          (--yes to skip the prompt). Relative paths are preserved.
-  ark reset-anchor [vault]   Clear the rollback guard for a vault (id/label, or --vault).
+  keymask reset-anchor [vault]   Clear the rollback guard for a vault (id/label, or --vault).
                          Use only when you intentionally reset/restored a vault and reads
                          warn / writes are blocked by "index rollback detected". Next
                          load re-anchors to the current remote version.
 
 Local (offline; no login):
-  ark local <zip|dir> [--out <dir>]   Decrypt a backup downloaded from your netdisk
+  keymask local <zip|dir> [--out <dir>]   Decrypt a backup downloaded from your netdisk
                          (a .zip of the KeyMask folder, or its extracted directory).
                          Prompts for the vault's recovery phrase, then writes one
                          JSON per item plus a self-contained index.html. Everything
@@ -572,14 +572,14 @@ Env:
 /** 打印帮助:节标题加粗,命令、选项与环境变量名上色(HELP 文本本身保持纯文本)。 */
 function printHelp(): void {
   for (const line of HELP.split("\n")) {
-    if (line.startsWith("ark — ")) {
-      console.log(bold("ark") + line.slice(3));
+    if (line.startsWith("keymask — ")) {
+      console.log(bold("keymask") + line.slice("keymask".length));
     } else if (/^\S.*:$/.test(line)) {
       console.log(bold(line));
     } else {
       console.log(
         line
-          .replace(/^(  ark(?: \S+)+?)(  )/, (_m, a: string, sp: string) => cyan(a) + sp)
+          .replace(/^(  keymask(?: \S+)+?)(  )/, (_m, a: string, sp: string) => cyan(a) + sp)
           .replace(/^(  (?:--\S+|KEYMASK_\S+))/, (_m, a: string) => cyan(a)),
       );
     }
@@ -659,8 +659,8 @@ async function main() {
 
     case "status": {
       const cloud = loadCloud();
-      console.log(cloud ? `Login: ${OK} ${dim(`(${cloud.provider ?? "?"})`)}` : `Login: ${ERR} ${dim("(run `ark login`)")}`);
-      console.log(hasCredential() ? `Mnemonic: ${OK} ${dim("imported (encrypted)")}` : `Mnemonic: ${ERR} ${dim("(run `ark import`)")}`);
+      console.log(cloud ? `Login: ${OK} ${dim(`(${cloud.provider ?? "?"})`)}` : `Login: ${ERR} ${dim("(run `keymask login`)")}`);
+      console.log(hasCredential() ? `Mnemonic: ${OK} ${dim("imported (encrypted)")}` : `Mnemonic: ${ERR} ${dim("(run `keymask import`)")}`);
       return;
     }
 
@@ -680,7 +680,7 @@ async function main() {
           : yellow(`(issued by ${conn.issuer}; not usable for ${conn.baseUrl} — re-login)`);
         console.log(`Login: ${OK} ${bind}`);
       } else {
-        console.log(`Login: ${ERR} ${dim("(run `ark login`)")}`);
+        console.log(`Login: ${ERR} ${dim("(run `keymask login`)")}`);
       }
       console.log(`${dim("Config dir:")} ${keymaskDir()}`);
       return;
@@ -748,15 +748,15 @@ async function main() {
         if (pd.status === "approved" && pd.token) {
           saveCloud({ token: pd.token, provider: pd.provider, issuer: server });
           stop(`${OK} Logged in: ${server} ${dim(`(${pd.provider ?? "?"})`)}`);
-          if (!hasCredential()) console.log(dim("  Next: ark import"));
+          if (!hasCredential()) console.log(dim("  Next: keymask import"));
           return;
         }
         stop("");
         if (pd.status === "denied") fail("Authorization denied.");
-        fail("Authorization expired. Run `ark login` again.");
+        fail("Authorization expired. Run `keymask login` again.");
       }
       stop("");
-      fail("Timed out. Run `ark login` again.");
+      fail("Timed out. Run `keymask login` again.");
       return;
     }
 
@@ -786,7 +786,7 @@ async function main() {
       } catch {
         console.log(dim(`Could not reach ${revokeAt}; token not revoked (will expire on its own).`));
       }
-      if (hasCredential()) console.log(dim("  Mnemonic credential kept; run `ark forget` to remove."));
+      if (hasCredential()) console.log(dim("  Mnemonic credential kept; run `keymask forget` to remove."));
       return;
     }
 
@@ -822,7 +822,7 @@ async function main() {
     case "get": {
       const pathArg = args.positionals[0];
       const localArg = args.positionals[1];
-      if (!pathArg) fail("Specify a path to get: `ark get <path> [local-file]`.");
+      if (!pathArg) fail("Specify a path to get: `keymask get <path> [local-file]`.");
       // get 是敏感读取:每次都强制输密码,不吃解锁缓存;只读 → 回滚降级为警告。
       const { vault } = await ready(args, true, true, true);
 
@@ -895,7 +895,7 @@ async function main() {
     case "save": {
       const fileArg = args.positionals[0];
       const targetArg = args.positionals[1];
-      if (!fileArg) fail("Specify a file to save: `ark save <source> [target]`.");
+      if (!fileArg) fail("Specify a file to save: `keymask save <source> [target]`.");
       const abs = resolve(fileArg!);
       let bytes: Buffer;
       try {
@@ -926,7 +926,7 @@ async function main() {
         // 醒目的目标确认:框出 源 → 目标,单选采用 / 改 / 取消。
         note(
           `${dim("source")}  ${abs}\n${dim("target")}  ${bold(targetDisplay(target!))}${providerTag}${target!.note ? dim(`  ${target!.note}`) : ""}`,
-          "ark save",
+          "keymask save",
         );
         const choice = await askSelect("Save to this target?", [
           {
@@ -1009,7 +1009,7 @@ async function main() {
       const transport = transportFrom(args);
       const mnemonic = await acquireMnemonic(true);
       if (!mnemonic || !validateMnemonic(mnemonic)) {
-        fail("No usable mnemonic. Run `ark import` or set KEYMASK_MNEMONIC.");
+        fail("No usable mnemonic. Run `keymask import` or set KEYMASK_MNEMONIC.");
       }
       const key = await deriveKey(mnemonic!);
       const vaults = await fetchVaults(transport);
@@ -1038,13 +1038,13 @@ async function main() {
 
     case "local": {
       const src = args.positionals[0];
-      if (!src) fail("usage: ark local <zip-or-dir> [--out <dir>]");
+      if (!src) fail("usage: keymask local <zip-or-dir> [--out <dir>]");
       await runLocal(src!, args);
       return;
     }
 
     default:
-      fail(`Unknown command: ${args.cmd}. See \`ark help\`.`);
+      fail(`Unknown command: ${args.cmd}. See \`keymask help\`.`);
   }
 }
 

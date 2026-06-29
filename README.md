@@ -6,7 +6,7 @@
 
 Your secrets are encrypted in your browser with a key derived from a **BIP39 recovery phrase**. Only ciphertext ever leaves your device. The server and your cloud drive never see your plaintext, your phrase, or your master key.
 
-[Website](https://keymask.com) · [CLI (`ark`)](#cli-ark) · [Self-hosting](#self-hosting) · [Security model](#security-model)
+[Website](https://keymask.com) · [CLI (`keymask`)](#cli-keymask) · [Self-hosting](#self-hosting) · [Security model](#security-model)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![End-to-end encrypted](https://img.shields.io/badge/encryption-AES--256--GCM-success.svg)](#security-model)
@@ -23,7 +23,7 @@ KeyMask is a **zero-knowledge password and secret-key manager**. Instead of trus
 - 🔓 **Open source & free** — no accounts to buy, no subscription, no premium tier. Use the hosted app or run your own.
 - 🔑 **Your recovery phrase is your master key** — a standard 24-word BIP39 mnemonic derives the encryption key. Nothing to download, no key files to babysit. Importable into MetaMask and other BIP39 wallets.
 - ☁️ **Stored in your own cloud drive** — ciphertext lands in *your* Google Drive / Baidu netdisk, using free space you already have. We never touch your storage and never charge you.
-- 🧰 **GitHub-friendly backup workflow** — back up the secret files your repos need (`.env`, keys, tokens) and pull them back by their GitHub path with the `ark` CLI.
+- 🧰 **GitHub-friendly backup workflow** — back up the secret files your repos need (`.env`, keys, tokens) and pull them back by their GitHub path with the `keymask` CLI.
 - 🏠 **Self-hostable** — the whole stack is in this repo. Clone it, point it at your own OAuth apps and database, and host it yourself.
 
 ## Why KeyMask
@@ -70,20 +70,20 @@ KeyMask talks to one storage backend at a time via a single abstraction; the app
 
 Switching the Google folder setting changes the OAuth scope, so it requires re-authorizing.
 
-## CLI (`ark`)
+## CLI (`keymask`)
 
 A companion command-line client lets you read and write vault items from your terminal — ideal for pulling `.env` files and secrets into projects and CI.
 
 ```bash
 npm install -g @keymask/cli
 
-ark login                 # device-code login via the browser
-ark import                # import your recovery phrase, set an unlock password
-ark get github.com/me/app/.env .env   # decrypt a secret to a local file
-ark save .env             # encrypt & upload a file (target auto-detected from git origin)
+keymask login                 # device-code login via the browser
+keymask import                # import your recovery phrase, set an unlock password
+keymask get github.com/me/app/.env .env   # decrypt a secret to a local file
+keymask save .env             # encrypt & upload a file (target auto-detected from git origin)
 ```
 
-The CLI mirrors the web app's security model: your mnemonic is stored locally, wrapped with an unlock password using **Argon2id** (512 MB / t=4 / p=1). Plaintext and the master key never leave your machine, and `KEYMASK_MNEMONIC` lets scripts/CI run non-interactively. Run `ark help` for the full command list (`login`, `logout`, `status`, `info`, `import`, `forget`, `vaults`, `ls`, `get`, `new`, `set`, `save`, `rm`, `sync`, `local`).
+The CLI mirrors the web app's security model: your mnemonic is stored locally, wrapped with an unlock password using **Argon2id** (512 MB / t=4 / p=1). Plaintext and the master key never leave your machine, and `KEYMASK_MNEMONIC` lets scripts/CI run non-interactively. Run `keymask help` for the full command list (`login`, `logout`, `status`, `info`, `import`, `forget`, `vaults`, `ls`, `get`, `new`, `set`, `save`, `rm`, `sync`, `local`).
 
 ### Folder sync
 
@@ -100,19 +100,19 @@ config/app.secret.json
 Then sync the whole project from the repo, with no per-file arguments:
 
 ```bash
-ark save   # encrypt & upload every file in the folder's sync list
-ark get    # pull them all back (e.g. on a fresh clone)
+keymask save   # encrypt & upload every file in the folder's sync list
+keymask get    # pull them all back (e.g. on a fresh clone)
 ```
 
-Inside a git repo, the matching vault folder is selected from your git origin (`github.com/owner/repo`), so individual files are terse too — `ark get github.com/owner/repo/.env` restores `.env` to its place, no second argument needed (pipes/redirects still stream to stdout). `ark save` skips unchanged files; `ark get` won't overwrite local files that differ unless you pass `--force`.
+Inside a git repo, the matching vault folder is selected from your git origin (`github.com/owner/repo`), so individual files are terse too — `keymask get github.com/owner/repo/.env` restores `.env` to its place, no second argument needed (pipes/redirects still stream to stdout). `keymask save` skips unchanged files; `keymask get` won't overwrite local files that differ unless you pass `--force`.
 
 ### Offline / local decryption
 
 ```bash
-ark local ./keymask-backup.zip   # decrypt a backup downloaded from your netdisk
+keymask local ./keymask-backup.zip   # decrypt a backup downloaded from your netdisk
 ```
 
-Point `ark local` at a `.zip` of your KeyMask folder (or its extracted directory). It prompts for the vault's recovery phrase, then writes one JSON per item plus a self-contained `index.html`. Nothing is uploaded — everything stays on your machine.
+Point `keymask local` at a `.zip` of your KeyMask folder (or its extracted directory). It prompts for the vault's recovery phrase, then writes one JSON per item plus a self-contained `index.html`. Nothing is uploaded — everything stays on your machine.
 
 ## Security model
 
@@ -131,7 +131,7 @@ A pnpm monorepo (`apps/*`, `packages/*`):
 | Package | What it is |
 |---|---|
 | `apps/web` | Next.js app — OAuth login, unified byte-file API, browser-side encrypt/decrypt vault UI. |
-| `apps/cli` | The `ark` command-line client. |
+| `apps/cli` | The `keymask` command-line client. |
 | `packages/crypto` | Browser-only E2E crypto (BIP39 mnemonic → AES-256-GCM). |
 | `packages/vault` | Vault domain logic shared by web and CLI. |
 | `packages/baidupan` | Baidu netdisk client (OAuth + sandboxed file I/O, bytes in/out). |

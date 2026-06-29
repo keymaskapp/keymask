@@ -8,7 +8,7 @@ export function httpTransport(baseUrl: string, token: string | null): StorageTra
   async function jsonOrThrow(res: Response, what: string): Promise<unknown> {
     if (res.status === 401) {
       throw new Error(
-        `401 unauthorized; token may be revoked or expired. Run \`ark login\`. (${what})`,
+        `401 unauthorized; token may be revoked or expired. Run \`keymask login\`. (${what})`,
       );
     }
     if (!res.ok) {

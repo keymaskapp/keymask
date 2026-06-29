@@ -35,7 +35,7 @@ export function extOf(filename: string): string {
 }
 
 export function previewSpecOf(filename: string): PreviewSpec {
-  // 条目标题可能是带路径的(ark save 存仓库相对路径,如 apps/web/.env.local),按末段判定。
+  // 条目标题可能是带路径的(keymask save 存仓库相对路径,如 apps/web/.env.local),按末段判定。
   const base = filename.toLowerCase().split("/").pop() ?? "";
   // .env 家族:.env / .env.local / .env.production / foo.env / env.local —— 任一点分段为 env 即命中
   if (base.split(".").filter(Boolean).includes("env")) {

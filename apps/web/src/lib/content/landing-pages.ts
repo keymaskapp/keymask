@@ -50,7 +50,7 @@ export const LANDING_PAGES: LandingPage[] = [
               "Free and open source — no paid tier gating your own data.",
               "End-to-end encrypted with AES-256-GCM; the key is derived from a BIP39 phrase in your browser.",
               "Your ciphertext lives in your own Google Drive or Baidu netdisk — you can self-host the app.",
-              "A command-line client (ark) for reading and writing your vault from the terminal.",
+              "A command-line client (keymask) for reading and writing your vault from the terminal.",
             ],
           },
         ],
@@ -98,7 +98,7 @@ export const LANDING_PAGES: LandingPage[] = [
               "免费且开源——不用付费才能用自己的数据。",
               "端到端 AES-256-GCM 加密;密钥由 BIP39 助记词在浏览器里派生。",
               "密文存进你自己的 Google Drive 或百度网盘——应用可自托管。",
-              "命令行客户端(ark),在终端读写你的保险库。",
+              "命令行客户端(keymask),在终端读写你的保险库。",
             ],
           },
         ],
@@ -163,7 +163,7 @@ export const LANDING_PAGES: LandingPage[] = [
           },
           {
             q: "Can I use it from the command line / CI?",
-            a: "Yes. The ark CLI reads and writes your vault from the terminal, with the mnemonic supplied via an environment variable for scripts and CI.",
+            a: "Yes. The keymask CLI reads and writes your vault from the terminal, with the mnemonic supplied via an environment variable for scripts and CI.",
           },
           {
             q: "What happens if I lose my recovery phrase?",
@@ -207,7 +207,7 @@ export const LANDING_PAGES: LandingPage[] = [
           },
           {
             q: "能在命令行 / CI 里用吗?",
-            a: "能。ark 命令行在终端读写你的保险库,脚本与 CI 可用环境变量提供助记词。",
+            a: "能。keymask 命令行在终端读写你的保险库,脚本与 CI 可用环境变量提供助记词。",
           },
           {
             q: "弄丢助记词会怎样?",
@@ -224,7 +224,7 @@ export const LANDING_PAGES: LandingPage[] = [
       en: {
         title: "Encrypt & back up your .env files securely",
         description:
-          "Back up .env files and developer secrets encrypted end-to-end. The ark CLI saves and restores them straight from your git repo; the server only handles ciphertext.",
+          "Back up .env files and developer secrets encrypted end-to-end. The keymask CLI saves and restores them straight from your git repo; the server only handles ciphertext.",
         h1: "Encrypt and back up your .env files",
         lead: [
           {
@@ -233,14 +233,14 @@ export const LANDING_PAGES: LandingPage[] = [
           },
           {
             k: "p",
-            t: "The ark CLI is git-aware: run it inside a repo and it derives the target path from your git origin, so a single command backs up or restores the right .env without you spelling out where it goes.",
+            t: "The keymask CLI is git-aware: run it inside a repo and it derives the target path from your git origin, so a single command backs up or restores the right .env without you spelling out where it goes.",
           },
           { k: "h2", t: "How developers use it" },
           {
             k: "ul",
             items: [
-              "`ark save .env` from a project directory — encrypted and stored under your repo's path.",
-              "`ark get github.com/me/app/.env .env` to restore it on a new machine.",
+              "`keymask save .env` from a project directory — encrypted and stored under your repo's path.",
+              "`keymask get github.com/me/app/.env .env` to restore it on a new machine.",
               "Supply the mnemonic via an environment variable for non-interactive CI use.",
               "Binary secrets (keystores, .p12) are stored as encrypted file items too.",
             ],
@@ -253,11 +253,11 @@ export const LANDING_PAGES: LandingPage[] = [
           },
           {
             q: "Can I restore a .env on a new machine?",
-            a: "Yes. With your recovery phrase, `ark get` decrypts and writes the file back to the right path — even years later, offline from a backup.",
+            a: "Yes. With your recovery phrase, `keymask get` decrypts and writes the file back to the right path — even years later, offline from a backup.",
           },
           {
             q: "Does this work in CI?",
-            a: "Yes. Provide the mnemonic through an environment variable and the ark CLI runs non-interactively to fetch secrets during a build.",
+            a: "Yes. Provide the mnemonic through an environment variable and the keymask CLI runs non-interactively to fetch secrets during a build.",
           },
           {
             q: "Is it free?",
@@ -268,7 +268,7 @@ export const LANDING_PAGES: LandingPage[] = [
       zh: {
         title: "安全加密备份你的 .env 文件",
         description:
-          "把 .env 文件与开发密钥端到端加密备份。ark 命令行直接在 git 仓库里保存与还原,服务端只经手密文。",
+          "把 .env 文件与开发密钥端到端加密备份。keymask 命令行直接在 git 仓库里保存与还原,服务端只经手密文。",
         h1: "加密备份你的 .env 文件",
         lead: [
           {
@@ -277,14 +277,14 @@ export const LANDING_PAGES: LandingPage[] = [
           },
           {
             k: "p",
-            t: "ark 命令行懂 git:在仓库里运行,它会按 git origin 推断目标路径,一条命令就备份或还原对应的 .env,无需你手写它放在哪。",
+            t: "keymask 命令行懂 git:在仓库里运行,它会按 git origin 推断目标路径,一条命令就备份或还原对应的 .env,无需你手写它放在哪。",
           },
           { k: "h2", t: "开发者怎么用" },
           {
             k: "ul",
             items: [
-              "在项目目录里 `ark save .env`——加密后存到仓库对应路径下。",
-              "`ark get github.com/me/app/.env .env` 在新机器上还原。",
+              "在项目目录里 `keymask save .env`——加密后存到仓库对应路径下。",
+              "`keymask get github.com/me/app/.env .env` 在新机器上还原。",
               "非交互 CI 场景用环境变量提供助记词。",
               "二进制密钥(keystore、.p12)也以加密文件条目存储。",
             ],
@@ -297,11 +297,11 @@ export const LANDING_PAGES: LandingPage[] = [
           },
           {
             q: "能在新机器上还原 .env 吗?",
-            a: "能。有助记词,`ark get` 就能解密并写回正确路径——哪怕多年以后、离线从备份还原。",
+            a: "能。有助记词,`keymask get` 就能解密并写回正确路径——哪怕多年以后、离线从备份还原。",
           },
           {
             q: "在 CI 里能用吗?",
-            a: "能。用环境变量提供助记词,ark 命令行就能在构建时非交互地拉取密钥。",
+            a: "能。用环境变量提供助记词,keymask 命令行就能在构建时非交互地拉取密钥。",
           },
           {
             q: "免费吗?",

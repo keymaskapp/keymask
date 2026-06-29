@@ -11,7 +11,7 @@ const pkg = JSON.parse(readFileSync(join(process.cwd(), "package.json"), "utf8")
   repository?: string | { url?: string };
 };
 
-/** ark CLI(@keymask/cli)的版本号:从同仓库的 apps/cli/package.json 读取,展示在文档/落地页。 */
+/** keymask CLI(@keymask/cli)的版本号:从同仓库的 apps/cli/package.json 读取,展示在文档/落地页。 */
 function cliVersion(): string {
   try {
     const j = JSON.parse(

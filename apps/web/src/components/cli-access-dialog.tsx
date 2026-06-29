@@ -1,6 +1,6 @@
 "use client";
 
-// 「通过 CLI 下载」对话框:展示 ark CLI 的安装、首次配置与下载当前条目的命令。
+// 「通过 CLI 下载」对话框:展示 keymask CLI 的安装、首次配置与下载当前条目的命令。
 // 命令是纯文本展示 + 复制,不涉及任何密钥/明文;解密仍只发生在用户本地。
 import { useState } from "react";
 import {
@@ -41,7 +41,7 @@ export function CliAccessDialog({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** 条目的完整路径(文件夹路径/标题),ark get 用 */
+  /** 条目的完整路径(文件夹路径/标题),keymask get 用 */
   itemPath: string;
   title: string;
 }) {
@@ -59,9 +59,9 @@ export function CliAccessDialog({
   const origin = typeof window === "undefined" ? "https://keymask.com" : window.location.origin;
   const filename = title.split("/").filter(Boolean).pop() || "item.txt";
   const installCmd = "npm install -g @keymask/cli";
-  const setupCmd = `ark login --server ${origin}\nark import`;
+  const setupCmd = `keymask login --server ${origin}\nkeymask import`;
   // 写到本地文件:已存在且内容不同时 CLI 会要求确认,内容一致则跳过
-  const downloadCmd = `ark get '${itemPath}' '${filename}'`;
+  const downloadCmd = `keymask get '${itemPath}' '${filename}'`;
 
   const section = "text-xs font-medium text-[var(--color-muted-foreground)]";
   return (

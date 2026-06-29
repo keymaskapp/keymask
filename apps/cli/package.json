@@ -3,8 +3,7 @@
   "version": "1.0.9",
   "type": "module",
   "bin": {
-    "ark": "./dist/ark.mjs",
-    "keymask": "./dist/ark.mjs"
+    "keymask": "./dist/keymask.mjs"
   },
   "files": [
     "dist"

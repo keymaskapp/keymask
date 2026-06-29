@@ -11,18 +11,18 @@ import { testId } from "@/lib/test-id";
 
 // 命令一览(命令字面量不翻译,描述走 i18n)
 const COMMANDS: { cmd: string; desc: MsgKey }[] = [
-  { cmd: "ark login", desc: "docs_cmd_login" },
-  { cmd: "ark import", desc: "docs_cmd_import" },
-  { cmd: "ark status", desc: "docs_cmd_status" },
-  { cmd: "ark info", desc: "docs_cmd_info" },
-  { cmd: "ark vaults", desc: "docs_cmd_vaults" },
-  { cmd: "ark ls", desc: "docs_cmd_ls" },
-  { cmd: "ark get <path|id> [file]", desc: "docs_cmd_get" },
-  { cmd: "ark save <file> [target]", desc: "docs_cmd_save" },
-  { cmd: "ark sync [folder]", desc: "docs_cmd_sync" },
-  { cmd: "ark reset-anchor [vault]", desc: "docs_cmd_reset_anchor" },
-  { cmd: "ark logout", desc: "docs_cmd_logout" },
-  { cmd: "ark forget", desc: "docs_cmd_forget" },
+  { cmd: "keymask login", desc: "docs_cmd_login" },
+  { cmd: "keymask import", desc: "docs_cmd_import" },
+  { cmd: "keymask status", desc: "docs_cmd_status" },
+  { cmd: "keymask info", desc: "docs_cmd_info" },
+  { cmd: "keymask vaults", desc: "docs_cmd_vaults" },
+  { cmd: "keymask ls", desc: "docs_cmd_ls" },
+  { cmd: "keymask get <path|id> [file]", desc: "docs_cmd_get" },
+  { cmd: "keymask save <file> [target]", desc: "docs_cmd_save" },
+  { cmd: "keymask sync [folder]", desc: "docs_cmd_sync" },
+  { cmd: "keymask reset-anchor [vault]", desc: "docs_cmd_reset_anchor" },
+  { cmd: "keymask logout", desc: "docs_cmd_logout" },
+  { cmd: "keymask forget", desc: "docs_cmd_forget" },
 ];
 
 const OPTIONS: { flag: string; desc: MsgKey }[] = [
@@ -40,11 +40,11 @@ const ENV_VARS: { name: string; desc: MsgKey }[] = [
 
 // 示例:每条一段说明 + 一段命令(命令字面量不翻译)
 const EXAMPLES: { cap: MsgKey; code: string }[] = [
-  { cap: "docs_ex_get", code: "ark get github.com/me/app/.env .env" },
-  { cap: "docs_ex_save", code: "cd ~/my-project\nark save .env" },
+  { cap: "docs_ex_get", code: "keymask get github.com/me/app/.env .env" },
+  { cap: "docs_ex_save", code: "cd ~/my-project\nkeymask save .env" },
   {
     cap: "docs_ex_ci",
-    code: 'export KEYMASK_MNEMONIC="word1 word2 … word12"\nark get secure/api-key > key.txt',
+    code: 'export KEYMASK_MNEMONIC="word1 word2 … word12"\nkeymask get secure/api-key > key.txt',
   },
 ];
 
@@ -108,7 +108,7 @@ export function Docs({ locale }: { locale: Locale }) {
           <div {...testId("docs-hero")} className="mb-14">
             <span className="inline-flex items-center gap-2 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)]/80 px-4 py-1.5 text-xs font-medium text-[var(--color-muted-foreground)] shadow-sm backdrop-blur">
               <Terminal className="h-3.5 w-3.5 text-[var(--color-primary)]" />
-              ark CLI
+              keymask CLI
             </span>
             <h1 className="mt-5 text-balance text-4xl font-bold leading-tight tracking-tight sm:text-5xl">
               {t("docs_title")}
@@ -143,11 +143,11 @@ export function Docs({ locale }: { locale: Locale }) {
             <Section id="setup" title={t("docs_setup_title")}>
               <p className="text-[var(--color-muted-foreground)] leading-relaxed">{t("docs_setup_body")}</p>
               <div className="space-y-1.5">
-                <CodeBlock code="ark login" id="login" />
+                <CodeBlock code="keymask login" id="login" />
                 <p className="text-sm text-[var(--color-muted-foreground)]">{t("docs_setup_login_note")}</p>
               </div>
               <div className="space-y-1.5">
-                <CodeBlock code="ark import" id="import" />
+                <CodeBlock code="keymask import" id="import" />
                 <p className="text-sm text-[var(--color-muted-foreground)]">{t("docs_setup_import_note")}</p>
               </div>
             </Section>
