@@ -24,7 +24,7 @@ export async function generateMetadata({
   const locale = await getServerLocale();
   const c = getPostContent(post, locale);
   return {
-    title: `${c.title} — KeysArk`,
+    title: `${c.title} — KeyMask`,
     description: c.description,
     alternates: {
       canonical: localeHref(`/blog/${slug}`, locale),
@@ -64,7 +64,7 @@ export default async function BlogPostPage({
             urlPath,
           }),
           breadcrumbLd([
-            { name: "KeysArk", path: localeHref("/", locale) },
+            { name: "KeyMask", path: localeHref("/", locale) },
             { name: translate(locale, "nav_blog"), path: localeHref("/blog", locale) },
             { name: c.title, path: urlPath },
           ]),

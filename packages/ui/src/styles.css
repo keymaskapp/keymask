@@ -3,7 +3,7 @@
 @source "./**/*.{ts,tsx}";
 
 /*
- * KeysArk design tokens. 1Password-inspired visual language:
+ * KeyMask design tokens. 1Password-inspired visual language:
  * neutral cool-gray surfaces, a single confident blue accent.
  * @theme emits each token as a :root custom property AND a Tailwind
  * utility (bg-surface, text-muted-foreground, border-border …).
@@ -92,7 +92,7 @@
 }
 
 /*
- * Original KeysArk hero backdrop — pure CSS, no external/raster assets.
+ * Original KeyMask hero backdrop — pure CSS, no external/raster assets.
  * Theme-aware aurora glows (slow parallax drift) + a faint downward-panning
  * grid + a periodic scan beam. All motion is GPU-friendly (opacity/transform)
  * and disabled under prefers-reduced-motion.

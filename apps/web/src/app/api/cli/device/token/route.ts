@@ -3,7 +3,7 @@ import {
   consumeCliAuthRequest,
   createCliToken,
   getCliAuthRequestByDeviceHash,
-} from "@keysark/db";
+} from "@keymask/db";
 import { generateCliToken, sha256Hex } from "@/lib/cli-auth";
 import { enforceRateLimit } from "@/lib/rate-limit";
 import {

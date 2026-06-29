@@ -1,5 +1,5 @@
 {
-  "name": "@keysark/vault",
+  "name": "@keymask/vault",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@keysark/crypto": "workspace:*",
-    "@keysark/db": "workspace:*"
+    "@keymask/crypto": "workspace:*",
+    "@keymask/db": "workspace:*"
   }
 }

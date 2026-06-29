@@ -11,7 +11,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@keysark/ui";
+} from "@keymask/ui";
 import { Check, Copy } from "lucide-react";
 import { useT } from "./providers";
 import { testId } from "@/lib/test-id";
@@ -56,9 +56,9 @@ export function CliAccessDialog({
     });
   }
 
-  const origin = typeof window === "undefined" ? "https://keysark.com" : window.location.origin;
+  const origin = typeof window === "undefined" ? "https://keymask.com" : window.location.origin;
   const filename = title.split("/").filter(Boolean).pop() || "item.txt";
-  const installCmd = "npm install -g @keysark/cli";
+  const installCmd = "npm install -g @keymask/cli";
   const setupCmd = `ark login --server ${origin}\nark import`;
   // 写到本地文件:已存在且内容不同时 CLI 会要求确认,内容一致则跳过
   const downloadCmd = `ark get '${itemPath}' '${filename}'`;

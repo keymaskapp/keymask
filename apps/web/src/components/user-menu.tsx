@@ -11,7 +11,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@keysark/ui";
+} from "@keymask/ui";
 import { useT } from "./providers";
 import type { StorageProvider } from "@/lib/storage";
 import { AnalyticsEvent, trackEvent } from "@/lib/analytics";

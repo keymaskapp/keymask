@@ -1,4 +1,4 @@
-# keysark
+# keymask
 
 pnpm monorepo. Workspaces: `apps/*`, `packages/*`。
 
@@ -7,7 +7,7 @@ pnpm monorepo. Workspaces: `apps/*`, `packages/*`。
 - 百度:OAuth + 沙盒目录 `/apps/Keyper/`。
 - Google:OAuth + Drive,存放位置由环境变量 `GOOGLE_DRIVE_FOLDER` 决定(二选一,均只碰本应用文件):
   - **留空(默认)**:**appDataFolder**(应用专属隐藏文件夹,scope `drive.appdata`,用户在 Drive 里看不到)。
-  - **设为文件夹名(如 `KeysArk`)**:My Drive 根目录下的**可见文件夹**,scope `drive.file`(应用只能访问自己创建/打开的文件)。
+  - **设为文件夹名(如 `KeyMask`)**:My Drive 根目录下的**可见文件夹**,scope `drive.file`(应用只能访问自己创建/打开的文件)。
   - 切换该变量需重新登录授权(scope 变化)。
 - 上层(`apps/web` 的 page / `/api/files*`)只依赖统一抽象 `@/lib/storage`(`getConnectedStorage()`),与具体后端无关。
 
@@ -15,17 +15,17 @@ pnpm monorepo. Workspaces: `apps/*`, `packages/*`。
 
 ### 1. shadcn/ui 只能经由 `packages/ui` 暴露
 
-- shadcn/ui 组件只能存在于 `packages/ui` 内。`apps/*` 或其他 `packages/*` 一律 `import { X } from "@keysark/ui"`,不得直接 `pnpm add @radix-ui/*` 或在自己包里 `shadcn add`。
+- shadcn/ui 组件只能存在于 `packages/ui` 内。`apps/*` 或其他 `packages/*` 一律 `import { X } from "@keymask/ui"`,不得直接 `pnpm add @radix-ui/*` 或在自己包里 `shadcn add`。
 - 新增/升级:`packages/ui` 内 `pnpm dlx shadcn@latest add <name>` → `src/index.ts` 导出 → 使用方 import。
 
 ### 2. UUID 一律 uuid v7,统一走 `uuidv7`
 
-- 全仓库禁止 `crypto.randomUUID()` (v4) / `uuid` 包 v1/v3/v4/v5 / 自造 ID。唯一入口 `newId()`(`@keysark/db`)。
+- 全仓库禁止 `crypto.randomUUID()` (v4) / `uuid` 包 v1/v3/v4/v5 / 自造 ID。唯一入口 `newId()`(`@keymask/db`)。
 
 ### 3. 端到端加密:主密钥与明文禁止触达服务端
 
-- 加密/解密只在浏览器,只在 `@keysark/crypto` + client component。**主密钥(助记词派生)、助记词本身、明文内容**禁止出现在任何服务端代码、API 请求/响应体、URL、cookie、日志、DB。
-- 服务端 API 只搬运**不透明 base64 密文**;`@keysark/baidupan` 与 `@keysark/googledrive` 字节进字节出,内容无关。
+- 加密/解密只在浏览器,只在 `@keymask/crypto` + client component。**主密钥(助记词派生)、助记词本身、明文内容**禁止出现在任何服务端代码、API 请求/响应体、URL、cookie、日志、DB。
+- 服务端 API 只搬运**不透明 base64 密文**;`@keymask/baidupan` 与 `@keymask/googledrive` 字节进字节出,内容无关。
 - 助记词 = BIP39 **24 词 + 英文词表**(256-bit 熵,标准 BIP39,可导入 MetaMask)。历史库的 12 词助记词继续被接受(`validateMnemonic` / `deriveKey` 不做长度限制),无需迁移;只有**新建库**生成 24 词。AES-256-GCM,IV 每次随机 96-bit、绝不复用。
 - 本机解锁密码包裹助记词:Argon2id **512MB / t=4 / p=1**(`DEFAULT_ARGON2ID_PARAMS`)。参数随凭据存储,调高仅影响新封装。
 
@@ -55,6 +55,6 @@ pnpm monorepo. Workspaces: `apps/*`, `packages/*`。
 ## 常用命令
 
 - `pnpm install` / `pnpm -r typecheck` / `pnpm -r build`
-- `pnpm --filter @keysark/web dev` — 启动 Next.js (端口 6134)
-- `pnpm --filter @keysark/db db:push` — 应用 schema (dev)
+- `pnpm --filter @keymask/web dev` — 启动 Next.js (端口 6134)
+- `pnpm --filter @keymask/db db:push` — 应用 schema (dev)
 - `pnpm dev` — panes 编排 (web)

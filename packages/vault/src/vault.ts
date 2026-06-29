@@ -4,7 +4,7 @@
 //   - <dir>/index.json                   ← 加密信封,明文为 { v, entries, folders },做检索。
 //   - <dir>/items/<id>/<ts>.json         ← 条目某版本快照(加密信封,明文 EntryDoc),不可变。
 //   - <dir>/items/<id>/<ts>.bin          ← 文件条目某版本正文(二进制信封),不可变。
-//   - keysark.json(沙盒根)              ← 保险库注册表(明文元数据 + 密文校验块)。
+//   - keymask.json(沙盒根)              ← 保险库注册表(明文元数据 + 密文校验块)。
 //
 // 版本:每次内容保存写一份时间戳命名的新快照,旧快照永不覆盖/删除 → 历史自然累积。
 //   当前版由 EntryMeta.updatedAt 直接指向(即当前版快照文件名)。目录列表自描述
@@ -15,14 +15,14 @@
 // 同步失败不影响本地副本,失败项标记 pending,可手动重试。
 //
 // E2E:主密钥只在内存;落本地/上网盘的都是不透明密文信封。transport 只搬运密文。
-import { newId } from "@keysark/db/id";
+import { newId } from "@keymask/db/id";
 import {
   decryptBytesFromBlob,
   decryptFromEnvelope,
   encryptBytesToBlob,
   encryptToEnvelope,
   sha256Hex,
-} from "@keysark/crypto";
+} from "@keymask/crypto";
 import {
   INDEX_NAME,
   ITEMS_DIR,

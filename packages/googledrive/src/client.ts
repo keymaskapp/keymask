@@ -19,7 +19,7 @@ export interface DriveFile {
 /**
  * 存储位置模式:
  * - appdata:写入应用专属隐藏文件夹 appDataFolder(scope drive.appdata),用户在 Drive 里看不到。
- * - folder :写入 My Drive 根目录下一个可见文件夹(scope drive.file),folderName 为其名字(如 "KeysArk")。
+ * - folder :写入 My Drive 根目录下一个可见文件夹(scope drive.file),folderName 为其名字(如 "KeyMask")。
  */
 export interface DriveOptions {
   mode: "appdata" | "folder";
@@ -238,7 +238,7 @@ export class GoogleDriveClient {
 
   /** 新建文件(multipart/related:元数据 + 内容),返回新文件 id。 */
   private async createFile(folderId: string, name: string, data: Uint8Array): Promise<string> {
-    const boundary = `keysark-${Date.now()}`;
+    const boundary = `keymask-${Date.now()}`;
     const meta = JSON.stringify({ name, parents: [folderId] });
     const enc = new TextEncoder();
     const head = enc.encode(

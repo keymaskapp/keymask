@@ -2,7 +2,7 @@
 
 // 端到端加密保险库面板(支持多保险库)。助记词与派生密钥只在浏览器,绝不发服务端。
 // 登录流:0 个库 → 创建;1 个库 → 直接解锁;≥2 个库 → 先选库,再输入该库助记词。
-// 数据模型:keysark.json 注册表(明文元数据 + 密文校验块)+ 每个库各自的 index/items(见 @/lib/vault、@/lib/registry)。
+// 数据模型:keymask.json 注册表(明文元数据 + 密文校验块)+ 每个库各自的 index/items(见 @/lib/vault、@/lib/registry)。
 // UI 参照 1Password:选择/解锁/创建为居中卡片,已解锁为「条目列 + 详情」两栏工作台。
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -28,7 +28,7 @@ import {
   Input,
   Textarea,
   Tooltip,
-} from "@keysark/ui";
+} from "@keymask/ui";
 import {
   checkVerifier,
   deriveKey,
@@ -37,8 +37,8 @@ import {
   scorePassword,
   validateMnemonic,
   type StrengthReason,
-} from "@keysark/crypto";
-import { newId } from "@keysark/db/id";
+} from "@keymask/crypto";
+import { newId } from "@keymask/db/id";
 import {
   ArrowDownUp,
   ArrowLeft,
@@ -124,11 +124,11 @@ interface SortSpec {
   dir: SortDir;
 }
 const DEFAULT_SORT: SortSpec = { key: "updated", dir: "desc" };
-const VIEW_KEY = "keysark.vault.viewMode";
-const SORT_KEY = "keysark.vault.sort";
+const VIEW_KEY = "keymask.vault.viewMode";
+const SORT_KEY = "keymask.vault.sort";
 
 // 侧边栏宽度(px):拖右缘调整,双击恢复默认;持久化 localStorage。
-const NAV_WIDTH_KEY = "keysark.vault.navWidth";
+const NAV_WIDTH_KEY = "keymask.vault.navWidth";
 const NAV_WIDTH_DEFAULT = 320; // = 原 20rem
 const NAV_WIDTH_MIN = 220;
 const NAV_WIDTH_MAX = 560;
@@ -424,7 +424,7 @@ export function VaultPanel({
   // 跨 tab 锁定:任一 tab 锁定(手动/闲置)→ 广播 → 所有 tab 清内存,避免别的 tab 仍能读明文。
   useEffect(() => {
     if (typeof BroadcastChannel === "undefined") return;
-    const ch = new BroadcastChannel("keysark-lock");
+    const ch = new BroadcastChannel("keymask-lock");
     ch.onmessage = (ev) => {
       if (ev.data === "lock") lockAllRef.current(); // 收到广播只清本地,不再回播(防循环)
     };

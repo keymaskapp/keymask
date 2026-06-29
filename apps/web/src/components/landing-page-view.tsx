@@ -27,7 +27,7 @@ export function LandingPageView({ slug, locale }: { slug: string; locale: Locale
         data={[
           faqLd(c.faqs),
           breadcrumbLd([
-            { name: "KeysArk", path: localeHref("/", locale) },
+            { name: "KeyMask", path: localeHref("/", locale) },
             { name: c.h1, path: urlPath },
           ]),
         ]}

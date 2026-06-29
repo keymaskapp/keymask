@@ -6,7 +6,7 @@ import { getServerLocale } from "@/lib/locale-server";
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getServerLocale();
   return {
-    title: `${translate(locale, "docs_title")} — KeysArk`,
+    title: `${translate(locale, "docs_title")} — KeyMask`,
     description: translate(locale, "docs_subtitle"),
     alternates: {
       canonical: localeHref("/docs", locale),

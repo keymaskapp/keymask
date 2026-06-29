@@ -39,7 +39,7 @@
 - `src/app/docs/page.tsx`:删静态 `metadata`,改 `generateMetadata`(title/description 走 i18n,canonical=`localeHref("/docs")`,hreflang 用 `buildLanguageAlternates`);页面 `await getServerLocale()` 后 `<Docs locale={locale} />`。
 
 ### 验收核对
-- [x] `/docs` HTML 直接含每个 `ark` 命令名与示例文本(无需 JS)—— grep 到 ark get/login/reset-anchor/save/sync、`npm install -g @keysark/cli`、`ark get github.com/me/app/.env`
+- [x] `/docs` HTML 直接含每个 `ark` 命令名与示例文本(无需 JS)—— grep 到 ark get/login/reset-anchor/save/sync、`npm install -g @keymask/cli`、`ark get github.com/me/app/.env`
 - [x] `/zh/docs` 含命令与中文说明,canonical=`/zh/docs`
 - [x] `/docs` canonical=`/docs` + 10 条 hreflang(9 语言 + x-default)
 - [x] 复制按钮(client 岛屿)仍在 —— `aria-label="copy install/login"`

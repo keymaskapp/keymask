@@ -25,12 +25,12 @@ const inter = Inter({
 });
 
 // SITE_URL 统一来自 @/lib/seo(含生产期未配置告警),用于把 OG / favicon / canonical 解析成绝对 URL。
-const OG_BANNER = "/keysark-og-banner.png";
+const OG_BANNER = "/keymask-og-banner.png";
 
 const ICONS: Metadata["icons"] = {
   icon: [
     { url: "/favicon.ico", sizes: "any" },
-    { url: "/keysark-favicon.svg", type: "image/svg+xml" },
+    { url: "/keymask-favicon.svg", type: "image/svg+xml" },
     { url: "/favicon-32.png", type: "image/png", sizes: "32x32" },
     { url: "/favicon-16.png", type: "image/png", sizes: "16x16" },
   ],
@@ -53,7 +53,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title,
     description,
     keywords: t("meta_keywords"),
-    applicationName: "KeysArk",
+    applicationName: "KeyMask",
     manifest: "/site.webmanifest",
     icons: ICONS,
     // 站点根级 hreflang(覆盖全部语言),与各页面级 alternates 自洽。
@@ -62,7 +62,7 @@ export async function generateMetadata(): Promise<Metadata> {
     verification: { google: process.env.GOOGLE_SITE_VERIFICATION },
     openGraph: {
       type: "website",
-      siteName: "KeysArk",
+      siteName: "KeyMask",
       locale: htmlLang(locale),
       url: localeHref("/", locale),
       title,

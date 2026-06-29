@@ -76,7 +76,7 @@ const AlertDialogDescription = React.forwardRef<
 ));
 AlertDialogDescription.displayName = AlertDialogPrimitive.Description.displayName;
 
-// 确认/取消按钮:复用 @keysark/ui 的 Button(默认 default/outline,可经 variant 改成 danger 等)。
+// 确认/取消按钮:复用 @keymask/ui 的 Button(默认 default/outline,可经 variant 改成 danger 等)。
 const AlertDialogAction = React.forwardRef<
   React.ElementRef<typeof AlertDialogPrimitive.Action>,
   React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action> &

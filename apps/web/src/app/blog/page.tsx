@@ -11,7 +11,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = await getServerLocale();
   const t = (key: Parameters<typeof translate>[1]) => translate(locale, key);
   return {
-    title: `${t("blog_title")} — KeysArk`,
+    title: `${t("blog_title")} — KeyMask`,
     description: t("blog_subtitle"),
     alternates: {
       canonical: localeHref("/blog", locale),
@@ -27,7 +27,7 @@ export default async function BlogIndexPage() {
     <ContentShell locale={locale} scope="blog">
       <JsonLd
         data={breadcrumbLd([
-          { name: "KeysArk", path: localeHref("/", locale) },
+          { name: "KeyMask", path: localeHref("/", locale) },
           { name: t("blog_title"), path: localeHref("/blog", locale) },
         ])}
       />

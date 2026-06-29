@@ -12,7 +12,7 @@ import ru from "./i18n/ru";
 export type Locale = "en" | "zh" | "es" | "fr" | "de" | "ja" | "ko" | "pt" | "ru";
 export type Theme = "system" | "light" | "dark";
 
-export const THEME_COOKIE = "keysark_theme";
+export const THEME_COOKIE = "keymask_theme";
 
 // 默认英文(根路径无前缀);其它语言放到路由里(如 /zh、/es)。顺序即语言切换器里的展示顺序。
 export const LOCALES: Locale[] = ["en", "zh", "es", "fr", "de", "ja", "ko", "pt", "ru"];
@@ -78,7 +78,7 @@ const zh = {
   hero_title_1: "你的秘密,",
   hero_title_2: "只有你能打开。",
   hero_subtitle: (store: string) =>
-    `KeysArk 是端到端加密的文本保管库。用一组助记词守护一切,密文存进你自己的${store}——除了你,没有人能读到里面的内容。`,
+    `KeyMask 是端到端加密的文本保管库。用一组助记词守护一切,密文存进你自己的${store}——除了你,没有人能读到里面的内容。`,
   cta_primary: "连接百度网盘,免费开始",
   cta_secondary: "了解工作原理",
   // 工作原理示意图
@@ -121,7 +121,7 @@ const zh = {
   os_badge: "开源 · 免费",
   os_title: "一个开源的密钥保管库",
   os_body: (store: string) =>
-    `KeysArk 完全开源、永久免费。加密只在你的浏览器里发生,密文存进你自己的${store},代码全部公开可审计——你可以自行托管,也可以用 ark 命令行把 .env、密钥等机密按 GitHub 路径备份再取回。`,
+    `KeyMask 完全开源、永久免费。加密只在你的浏览器里发生,密文存进你自己的${store},代码全部公开可审计——你可以自行托管,也可以用 ark 命令行把 .env、密钥等机密按 GitHub 路径备份再取回。`,
   os_point_open_title: "开放可审计",
   os_point_open_body: "全栈代码公开,端到端加密实现可逐行核对,不留后门。",
   os_point_free_title: "免费无账号",
@@ -132,9 +132,9 @@ const zh = {
   os_cta_selfhost: "自行托管指南",
 
   // SEO 元信息
-  meta_title: "KeysArk — 开源的端到端加密密码与密钥保管库",
+  meta_title: "KeyMask — 开源的端到端加密密码与密钥保管库",
   meta_description: (store: string) =>
-    `KeysArk 是开源免费的端到端加密保管库。用 BIP39 助记词在浏览器里派生密钥加密,密文存进你自己的${store};服务端只经手密文,可自行托管。`,
+    `KeyMask 是开源免费的端到端加密保管库。用 BIP39 助记词在浏览器里派生密钥加密,密文存进你自己的${store};服务端只经手密文,可自行托管。`,
   meta_keywords:
     "密码管理器, 密钥管理, 开源, 端到端加密, 零知识, BIP39, 助记词, Google Drive, 百度网盘, 自托管, 私钥保管, .env 备份",
 
@@ -149,7 +149,7 @@ const zh = {
 
   // 创建保险库
   create_title: "创建你的保险库",
-  create_desc_a: "KeysArk 会生成 24 词助记词作为主密钥。它",
+  create_desc_a: "KeyMask 会生成 24 词助记词作为主密钥。它",
   create_desc_strong: "只显示一次、只存在你这里",
   create_desc_b: "。",
   create_warn_a: "请准备好纸笔。生成后请抄写并妥善保管——",
@@ -190,7 +190,7 @@ const zh = {
   backup_html_warn: "丢失备份密码 = 此备份作废,没有任何人(包括我们)能找回。",
   btn_download_html: "加密并下载",
   st_html_export_fail: (e: string) => `加密备份生成失败: ${e}`,
-  bk_title: "KeysArk 加密备份",
+  bk_title: "KeyMask 加密备份",
   bk_prompt: "输入备份密码以解密助记词:",
   bk_btn: "解密",
   bk_decrypting: "解密中 …(约 1 秒)",
@@ -270,7 +270,7 @@ const zh = {
   nav_privacy: "隐私",
   nav_blog: "博客",
   blog_title: "博客",
-  blog_subtitle: "关于加密设计、开源理念,以及 KeysArk 背后的种种思考。",
+  blog_subtitle: "关于加密设计、开源理念,以及 KeyMask 背后的种种思考。",
   blog_back: "← 返回博客",
 
   // 首页 CLI 区 + 命令行客户端
@@ -278,7 +278,7 @@ const zh = {
   cli_home_tag: "命令行",
   cli_home_title: "ark —— 终端里的保险库",
   cli_home_body:
-    "ark 是 KeysArk 的命令行客户端:在终端登录、导入助记词后即可读写保险库——把 .env、API 密钥、配置直接存取。和网页端一样,加解密只在你的设备上完成,云端只见密文。最适合开发者与脚本 / CI。",
+    "ark 是 KeyMask 的命令行客户端:在终端登录、导入助记词后即可读写保险库——把 .env、API 密钥、配置直接存取。和网页端一样,加解密只在你的设备上完成,云端只见密文。最适合开发者与脚本 / CI。",
   cli_home_install_hint: "一行安装,跨平台:",
   cli_home_cta: "查看 CLI 文档",
 
@@ -289,15 +289,15 @@ const zh = {
     "在终端里读写你的端到端加密保险库。明文与助记词只留在本地,离开设备的永远只有密文。",
   docs_intro_title: "这是什么",
   docs_intro_body:
-    "ark 是 KeysArk 的官方命令行客户端,把网页保险库的能力带到终端:列出条目、按路径读取、保存本地文件、创建与更新条目。所有加解密都在本地用你的助记词完成——服务端与网盘后端全程只经手不透明密文。",
+    "ark 是 KeyMask 的官方命令行客户端,把网页保险库的能力带到终端:列出条目、按路径读取、保存本地文件、创建与更新条目。所有加解密都在本地用你的助记词完成——服务端与网盘后端全程只经手不透明密文。",
   docs_install_title: "安装",
-  docs_install_note: "需要 Node.js 18+。安装后即可使用 ark(以及别名 keysark)命令。",
+  docs_install_note: "需要 Node.js 18+。安装后即可使用 ark(以及别名 keymask)命令。",
   docs_setup_title: "首次配置",
   docs_setup_body: "两步:授权这台设备,再导入你的助记词。",
   docs_setup_login_note:
     "ark login 走设备码授权:终端给出一个链接与代码,在浏览器里核对代码并确认。授权态等同一次浏览器登录,只能搬运密文,拿不到你的助记词或明文。",
   docs_setup_import_note:
-    "ark import 让你输入助记词,并为本机设置一个解锁密码。助记词经 Argon2id 派生密钥加密后存在本地(~/.keysark),绝不上传;解锁缓存连续 5 分钟无操作即失效,期间无需重复输入密码。",
+    "ark import 让你输入助记词,并为本机设置一个解锁密码。助记词经 Argon2id 派生密钥加密后存在本地(~/.keymask),绝不上传;解锁缓存连续 5 分钟无操作即失效,期间无需重复输入密码。",
   docs_commands_title: "命令一览",
   docs_cmd_login: "设备码授权这台设备(会打开浏览器核对)。",
   docs_cmd_import: "导入助记词并设置本机解锁密码。",
@@ -312,7 +312,7 @@ const zh = {
   docs_cmd_logout: "清除本机登录态(保留助记词凭据)。",
   docs_cmd_forget: "删除本机保存的助记词凭据与解锁缓存。",
   docs_options_title: "全局选项",
-  docs_opt_server: "覆盖服务端地址(默认 https://keysark.com)。",
+  docs_opt_server: "覆盖服务端地址(默认 https://keymask.com)。",
   docs_opt_vault: "按 ID 或名称选择保险库(默认取第一个匹配助记词的库)。",
   docs_opt_no_browser: "登录时不自动打开浏览器。",
   docs_examples_title: "常用示例",
@@ -322,7 +322,7 @@ const zh = {
   docs_env_title: "环境变量",
   docs_env_server: "服务端地址(等同 --server)。",
   docs_env_mnemonic: "直接提供助记词,跳过本机凭据——适合 CI / 脚本。",
-  docs_env_home: "配置目录,默认 ~/.keysark。",
+  docs_env_home: "配置目录,默认 ~/.keymask。",
   docs_env_no_browser: "设置后登录时不自动打开浏览器。",
   docs_security_title: "安全说明",
   docs_security_body:
@@ -389,7 +389,7 @@ const zh = {
   content_hide: "重新遮住",
   cli_access: "通过 CLI 下载",
   cli_dialog_title: "用 ark CLI 下载此条目",
-  cli_dialog_desc: "ark 是 KeysArk 的命令行客户端:登录 + 导入助记词后即可在终端读写保险库,解密同样只在你的设备上进行。",
+  cli_dialog_desc: "ark 是 KeyMask 的命令行客户端:登录 + 导入助记词后即可在终端读写保险库,解密同样只在你的设备上进行。",
   cli_step_install: "安装",
   cli_step_setup: "首次配置(登录 + 导入助记词)",
   cli_step_download: "下载本条目",
@@ -496,7 +496,7 @@ const en: typeof zh = {
   hero_title_1: "Your secrets,",
   hero_title_2: "openable only by you.",
   hero_subtitle: (store: string) =>
-    `KeysArk is an end-to-end encrypted text vault. Guard everything with one recovery phrase, with ciphertext stored in your own ${store} — no one but you can read what's inside.`,
+    `KeyMask is an end-to-end encrypted text vault. Guard everything with one recovery phrase, with ciphertext stored in your own ${store} — no one but you can read what's inside.`,
   cta_primary: "Connect Baidu — start free",
   cta_secondary: "How it works",
   how_title: "How it works",
@@ -538,7 +538,7 @@ const en: typeof zh = {
   os_badge: "Open source · Free",
   os_title: "An open-source key vault",
   os_body: (store: string) =>
-    `KeysArk is fully open source and free forever. Encryption happens only in your browser, ciphertext is stored in your own ${store}, and every line is public and auditable — self-host it, or use the ark CLI to back up secrets like .env files by their GitHub path and pull them back.`,
+    `KeyMask is fully open source and free forever. Encryption happens only in your browser, ciphertext is stored in your own ${store}, and every line is public and auditable — self-host it, or use the ark CLI to back up secrets like .env files by their GitHub path and pull them back.`,
   os_point_open_title: "Open & auditable",
   os_point_open_body: "The whole stack is public; the end-to-end crypto can be reviewed line by line. No backdoors.",
   os_point_free_title: "Free, no account",
@@ -548,9 +548,9 @@ const en: typeof zh = {
   os_cta_repo: "View on GitHub",
   os_cta_selfhost: "Self-hosting guide",
 
-  meta_title: "KeysArk — Open-source end-to-end encrypted password & key vault",
+  meta_title: "KeyMask — Open-source end-to-end encrypted password & key vault",
   meta_description: (store: string) =>
-    `KeysArk is a free, open-source, end-to-end encrypted vault. Keys are derived from a BIP39 recovery phrase and encryption happens in your browser; ciphertext is stored in your own ${store}. The server only ever handles ciphertext, and you can self-host.`,
+    `KeyMask is a free, open-source, end-to-end encrypted vault. Keys are derived from a BIP39 recovery phrase and encryption happens in your browser; ciphertext is stored in your own ${store}. The server only ever handles ciphertext, and you can self-host.`,
   meta_keywords:
     "password manager, key management, open source, end-to-end encryption, zero-knowledge, BIP39, mnemonic, Google Drive, Baidu netdisk, self-hosted, secret storage, .env backup",
 
@@ -564,7 +564,7 @@ const en: typeof zh = {
   lp_link_bip39: "BIP39 backup",
 
   create_title: "Create your vault",
-  create_desc_a: "KeysArk generates a 24-word recovery phrase as your master key. It is ",
+  create_desc_a: "KeyMask generates a 24-word recovery phrase as your master key. It is ",
   create_desc_strong: "shown once and lives only with you",
   create_desc_b: ".",
   create_warn_a: "Have pen and paper ready. After generating, write it down and store it safely — ",
@@ -607,7 +607,7 @@ const en: typeof zh = {
   backup_html_warn: "Lose the backup password and this backup is useless — no one (including us) can recover it.",
   btn_download_html: "Encrypt & download",
   st_html_export_fail: (e: string) => `encrypted backup failed: ${e}`,
-  bk_title: "KeysArk Encrypted Backup",
+  bk_title: "KeyMask Encrypted Backup",
   bk_prompt: "Enter the backup password to decrypt your phrase:",
   bk_btn: "Decrypt",
   bk_decrypting: "Decrypting… (~1 second)",
@@ -684,7 +684,7 @@ const en: typeof zh = {
   nav_privacy: "Privacy",
   nav_blog: "Blog",
   blog_title: "Blog",
-  blog_subtitle: "On encryption design, the case for open source, and the thinking behind KeysArk.",
+  blog_subtitle: "On encryption design, the case for open source, and the thinking behind KeyMask.",
   blog_back: "← Back to blog",
 
   // Home CLI section + command-line client
@@ -692,7 +692,7 @@ const en: typeof zh = {
   cli_home_tag: "Command line",
   cli_home_title: "ark — your vault in the terminal",
   cli_home_body:
-    "ark is the KeysArk command-line client. Log in and import your phrase, then read and write your vault from the terminal — pull .env files, API keys and configs in and out. Just like the web app, all encryption and decryption happen on your device; the cloud only ever sees ciphertext. Built for developers and scripts / CI.",
+    "ark is the KeyMask command-line client. Log in and import your phrase, then read and write your vault from the terminal — pull .env files, API keys and configs in and out. Just like the web app, all encryption and decryption happen on your device; the cloud only ever sees ciphertext. Built for developers and scripts / CI.",
   cli_home_install_hint: "One line, cross-platform:",
   cli_home_cta: "Read the CLI docs",
 
@@ -703,15 +703,15 @@ const en: typeof zh = {
     "Read and write your end-to-end encrypted vault from the terminal. Your plaintext and phrase stay local — only ciphertext ever leaves the device.",
   docs_intro_title: "What is it",
   docs_intro_body:
-    "ark is the official KeysArk command-line client. It brings the web vault to your terminal: list items, read by path, save local files, create and update entries. All encryption and decryption happen locally with your recovery phrase — the server and cloud backend only ever handle opaque ciphertext.",
+    "ark is the official KeyMask command-line client. It brings the web vault to your terminal: list items, read by path, save local files, create and update entries. All encryption and decryption happen locally with your recovery phrase — the server and cloud backend only ever handle opaque ciphertext.",
   docs_install_title: "Install",
-  docs_install_note: "Requires Node.js 18+. Installs the ark command (aliased as keysark).",
+  docs_install_note: "Requires Node.js 18+. Installs the ark command (aliased as keymask).",
   docs_setup_title: "First-time setup",
   docs_setup_body: "Two steps: authorize this device, then import your phrase.",
   docs_setup_login_note:
     "ark login uses device-code authorization: the terminal shows a link and a code; open it in your browser, confirm the code matches, and approve. The grant is equivalent to a browser session — it can only move ciphertext, never your phrase or plaintext.",
   docs_setup_import_note:
-    "ark import asks for your recovery phrase and sets a local unlock password. The phrase is encrypted with an Argon2id-derived key and stored locally (~/.keysark) — never uploaded. The unlock stays cached until 5 minutes of inactivity so you needn't retype the password.",
+    "ark import asks for your recovery phrase and sets a local unlock password. The phrase is encrypted with an Argon2id-derived key and stored locally (~/.keymask) — never uploaded. The unlock stays cached until 5 minutes of inactivity so you needn't retype the password.",
   docs_commands_title: "Command reference",
   docs_cmd_login: "Authorize this device via device code (opens the browser to confirm).",
   docs_cmd_import: "Import a recovery phrase and set a local unlock password.",
@@ -726,7 +726,7 @@ const en: typeof zh = {
   docs_cmd_logout: "Clear the local login (keeps the phrase credential).",
   docs_cmd_forget: "Remove the locally stored phrase credential and unlock cache.",
   docs_options_title: "Global options",
-  docs_opt_server: "Override the server URL (default https://keysark.com).",
+  docs_opt_server: "Override the server URL (default https://keymask.com).",
   docs_opt_vault: "Select a vault by ID or label (defaults to the first one matching your phrase).",
   docs_opt_no_browser: "Don't auto-open the browser during login.",
   docs_examples_title: "Common examples",
@@ -736,7 +736,7 @@ const en: typeof zh = {
   docs_env_title: "Environment variables",
   docs_env_server: "Server URL (same as --server).",
   docs_env_mnemonic: "Supply the recovery phrase directly, bypassing the local credential — for CI / scripts.",
-  docs_env_home: "Config directory, defaults to ~/.keysark.",
+  docs_env_home: "Config directory, defaults to ~/.keymask.",
   docs_env_no_browser: "When set, login won't auto-open the browser.",
   docs_security_title: "Security",
   docs_security_body:
@@ -802,7 +802,7 @@ const en: typeof zh = {
   content_hide: "Hide content",
   cli_access: "Get via CLI",
   cli_dialog_title: "Download this item with the ark CLI",
-  cli_dialog_desc: "ark is the KeysArk command-line client. After login + mnemonic import you can read and write your vault from the terminal — decryption still happens only on your device.",
+  cli_dialog_desc: "ark is the KeyMask command-line client. After login + mnemonic import you can read and write your vault from the terminal — decryption still happens only on your device.",
   cli_step_install: "Install",
   cli_step_setup: "One-time setup (login + import mnemonic)",
   cli_step_download: "Download this item",

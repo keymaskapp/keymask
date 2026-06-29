@@ -9,16 +9,16 @@ import { formatPostDate, getPost } from "@/lib/content/blog";
 
 export const SIZE = { width: 1200, height: 630 };
 export const CONTENT_TYPE = "image/png";
-export const ALT = "KeysArk — end-to-end encrypted vault";
+export const ALT = "KeyMask — end-to-end encrypted vault";
 
 // 卡片标题统一用英文(Latin 字体子集即可,无需打包庞大的 CJK 字体)。
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://keysark.com";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://keymask.com";
 const DOMAIN = (() => {
   try {
     const host = new URL(SITE_URL).host;
-    return host.includes("localhost") ? "keysark.com" : host;
+    return host.includes("localhost") ? "keymask.com" : host;
   } catch {
-    return "keysark.com";
+    return "keymask.com";
   }
 })();
 
@@ -80,7 +80,7 @@ export async function renderCard(slug: string): Promise<ImageResponse> {
               backgroundColor: AMBER,
             }}
           />
-          <div style={{ fontSize: 32, fontWeight: 700, letterSpacing: -0.5 }}>KeysArk</div>
+          <div style={{ fontSize: 32, fontWeight: 700, letterSpacing: -0.5 }}>KeyMask</div>
         </div>
 
         {/* 文章标题 */}

@@ -39,7 +39,7 @@
 - OG 卡片:按 proposal 默认决策 ②,标题对所有语言用 `post.en.title`(零字体成本,避免引入 CJK/西里尔大字体),`_card/render.tsx` 无需改动。
 
 ### 验收核对
-- [x] 各语言 `/<locale>/blog/<slug>` 返回本地化标题与正文 —— `/es` 正文 "cifrado"、`/ja` 标题「KeysArk という名前の由来」、`/ru` 列表「Откуда взялось название KeysArk」
+- [x] 各语言 `/<locale>/blog/<slug>` 返回本地化标题与正文 —— `/es` 正文 "cifrado"、`/ja` 标题「KeyMask という名前の由来」、`/ru` 列表「Откуда взялось название KeyMask」
 - [x] blog 列表各语言本地化标题 —— `/ru/blog` 验证
 - [x] `code` 块未被翻译 —— `/de/blog/encryption-design` 仍含 `PBKDF2-HMAC-SHA512`、`AES-256-GCM`
 - [x] OG 路由各 slug 返回 1200×630 PNG —— `200 image/png`(标题 en,决策 ②)

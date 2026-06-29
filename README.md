@@ -1,12 +1,12 @@
 <div align="center">
 
-# KeysArk
+# KeyMask
 
 **Open-source, free, end-to-end encrypted vault for your passwords, keys, and secret text — stored in your own cloud drive.**
 
 Your secrets are encrypted in your browser with a key derived from a **BIP39 recovery phrase**. Only ciphertext ever leaves your device. The server and your cloud drive never see your plaintext, your phrase, or your master key.
 
-[Website](https://keysark.com) · [CLI (`ark`)](#cli-ark) · [Self-hosting](#self-hosting) · [Security model](#security-model)
+[Website](https://keymask.com) · [CLI (`ark`)](#cli-ark) · [Self-hosting](#self-hosting) · [Security model](#security-model)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![End-to-end encrypted](https://img.shields.io/badge/encryption-AES--256--GCM-success.svg)](#security-model)
@@ -16,9 +16,9 @@ Your secrets are encrypted in your browser with a key derived from a **BIP39 rec
 
 ---
 
-## What is KeysArk?
+## What is KeyMask?
 
-KeysArk is a **zero-knowledge password and secret-key manager**. Instead of trusting a vendor's database with your secrets, KeysArk encrypts everything **in your browser** and stores the resulting ciphertext in **a cloud drive you already own** — Google Drive or Baidu netdisk. We never run a secret store; we only move opaque ciphertext between your browser and your drive.
+KeyMask is a **zero-knowledge password and secret-key manager**. Instead of trusting a vendor's database with your secrets, KeyMask encrypts everything **in your browser** and stores the resulting ciphertext in **a cloud drive you already own** — Google Drive or Baidu netdisk. We never run a secret store; we only move opaque ciphertext between your browser and your drive.
 
 - 🔓 **Open source & free** — no accounts to buy, no subscription, no premium tier. Use the hosted app or run your own.
 - 🔑 **Your recovery phrase is your master key** — a standard 24-word BIP39 mnemonic derives the encryption key. Nothing to download, no key files to babysit. Importable into MetaMask and other BIP39 wallets.
@@ -26,9 +26,9 @@ KeysArk is a **zero-knowledge password and secret-key manager**. Instead of trus
 - 🧰 **GitHub-friendly backup workflow** — back up the secret files your repos need (`.env`, keys, tokens) and pull them back by their GitHub path with the `ark` CLI.
 - 🏠 **Self-hostable** — the whole stack is in this repo. Clone it, point it at your own OAuth apps and database, and host it yourself.
 
-## Why KeysArk
+## Why KeyMask
 
-| | Typical password manager | KeysArk |
+| | Typical password manager | KeyMask |
 |---|---|---|
 | Where secrets live | Vendor's servers | **Your** Google Drive / Baidu netdisk |
 | Who can decrypt | Vendor holds the keys (in principle) | **Only you** — key never leaves your browser |
@@ -61,11 +61,11 @@ KeysArk is a **zero-knowledge password and secret-key manager**. Instead of trus
 
 ## Storage backends
 
-KeysArk talks to one storage backend at a time via a single abstraction; the app code is backend-agnostic.
+KeyMask talks to one storage backend at a time via a single abstraction; the app code is backend-agnostic.
 
 - **Google Drive** — OAuth login. Location is chosen by the `GOOGLE_DRIVE_FOLDER` env var:
   - *empty (default)* → **appDataFolder**: a hidden, app-private folder (`drive.appdata` scope) you won't even see in Drive.
-  - *a folder name (e.g. `KeysArk`)* → a **visible folder** in *My Drive* (`drive.file` scope — the app can only touch files it created).
+  - *a folder name (e.g. `KeyMask`)* → a **visible folder** in *My Drive* (`drive.file` scope — the app can only touch files it created).
 - **Baidu netdisk** — OAuth login, sandboxed under `/apps/Keyper/`.
 
 Switching the Google folder setting changes the OAuth scope, so it requires re-authorizing.
@@ -75,7 +75,7 @@ Switching the Google folder setting changes the OAuth scope, so it requires re-a
 A companion command-line client lets you read and write vault items from your terminal — ideal for pulling `.env` files and secrets into projects and CI.
 
 ```bash
-npm install -g @keysark/cli
+npm install -g @keymask/cli
 
 ark login                 # device-code login via the browser
 ark import                # import your recovery phrase, set an unlock password
@@ -83,7 +83,7 @@ ark get github.com/me/app/.env .env   # decrypt a secret to a local file
 ark save .env             # encrypt & upload a file (target auto-detected from git origin)
 ```
 
-The CLI mirrors the web app's security model: your mnemonic is stored locally, wrapped with an unlock password using **Argon2id** (512 MB / t=4 / p=1). Plaintext and the master key never leave your machine, and `KEYSARK_MNEMONIC` lets scripts/CI run non-interactively. Run `ark help` for the full command list (`login`, `logout`, `status`, `info`, `import`, `forget`, `vaults`, `ls`, `get`, `new`, `set`, `save`, `rm`, `sync`, `local`).
+The CLI mirrors the web app's security model: your mnemonic is stored locally, wrapped with an unlock password using **Argon2id** (512 MB / t=4 / p=1). Plaintext and the master key never leave your machine, and `KEYMASK_MNEMONIC` lets scripts/CI run non-interactively. Run `ark help` for the full command list (`login`, `logout`, `status`, `info`, `import`, `forget`, `vaults`, `ls`, `get`, `new`, `set`, `save`, `rm`, `sync`, `local`).
 
 ### Folder sync
 
@@ -109,20 +109,20 @@ Inside a git repo, the matching vault folder is selected from your git origin (`
 ### Offline / local decryption
 
 ```bash
-ark local ./keysark-backup.zip   # decrypt a backup downloaded from your netdisk
+ark local ./keymask-backup.zip   # decrypt a backup downloaded from your netdisk
 ```
 
-Point `ark local` at a `.zip` of your KeysArk folder (or its extracted directory). It prompts for the vault's recovery phrase, then writes one JSON per item plus a self-contained `index.html`. Nothing is uploaded — everything stays on your machine.
+Point `ark local` at a `.zip` of your KeyMask folder (or its extracted directory). It prompts for the vault's recovery phrase, then writes one JSON per item plus a self-contained `index.html`. Nothing is uploaded — everything stays on your machine.
 
 ## Security model
 
-- **End-to-end encryption.** Encryption and decryption happen **only in the browser**, only in `@keysark/crypto`. The master key (derived from the mnemonic), the mnemonic itself, and any plaintext are forbidden from appearing in any server code, API request/response, URL, cookie, log, or database.
-- **The server is a dumb pipe.** APIs move only opaque base64 ciphertext; `@keysark/baidupan` and `@keysark/googledrive` are bytes-in / bytes-out and content-agnostic.
+- **End-to-end encryption.** Encryption and decryption happen **only in the browser**, only in `@keymask/crypto`. The master key (derived from the mnemonic), the mnemonic itself, and any plaintext are forbidden from appearing in any server code, API request/response, URL, cookie, log, or database.
+- **The server is a dumb pipe.** APIs move only opaque base64 ciphertext; `@keymask/baidupan` and `@keymask/googledrive` are bytes-in / bytes-out and content-agnostic.
 - **Keys.** BIP39 — **24 words, English wordlist** (256-bit entropy, standard BIP39, importable into MetaMask) for newly created vaults. Legacy 12-word phrases are still accepted. AES-256-GCM with a fresh random 96-bit IV per encryption; IVs are never reused.
 - **Local unlock.** The CLI and web app wrap your mnemonic with an unlock password using **Argon2id (512 MB / t=4 / p=1)**. Parameters are stored alongside the credential; raising them only affects newly wrapped secrets.
 - **Auditable backups.** Exported mnemonic backups (PDF/HTML) record the exact source commit, build environment, and crypto dependency versions, so anyone can check out the precise code that produced a backup and verify the encryption.
 
-> KeysArk is built so that a full compromise of our servers or your cloud provider reveals **nothing but ciphertext**. The trade-off is the usual one for true E2E: **if you lose your recovery phrase, no one — including us — can recover your data.**
+> KeyMask is built so that a full compromise of our servers or your cloud provider reveals **nothing but ciphertext**. The trade-off is the usual one for true E2E: **if you lose your recovery phrase, no one — including us — can recover your data.**
 
 ## Repository layout
 
@@ -141,7 +141,7 @@ A pnpm monorepo (`apps/*`, `packages/*`):
 
 ## Self-hosting
 
-Everything you need to run KeysArk yourself is in this repository.
+Everything you need to run KeyMask yourself is in this repository.
 
 ### Prerequisites
 
@@ -159,20 +159,20 @@ pnpm install
 # configure environment (see apps/web/.env for the full list)
 #   DATABASE_URL=postgres://...
 #   GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET
-#   GOOGLE_DRIVE_FOLDER=          # empty = hidden appDataFolder; or e.g. "KeysArk"
+#   GOOGLE_DRIVE_FOLDER=          # empty = hidden appDataFolder; or e.g. "KeyMask"
 #   BAIDU_APP_KEY / BAIDU_SECRET_KEY   # optional, if using Baidu
 #   NEXT_PUBLIC_SITE_URL=https://your.domain
-#   KEYSARK_REPO=https://github.com/your/fork   # shown as the repo button & in backups
+#   KEYMASK_REPO=https://github.com/your/fork   # shown as the repo button & in backups
 
-pnpm --filter @keysark/db db:push     # apply the schema
-pnpm --filter @keysark/web dev        # start Next.js on port 6134
+pnpm --filter @keymask/db db:push     # apply the schema
+pnpm --filter @keymask/web dev        # start Next.js on port 6134
 ```
 
 Common commands:
 
 - `pnpm -r typecheck` / `pnpm -r build`
-- `pnpm --filter @keysark/web dev` — start the web app (port 6134)
-- `pnpm --filter @keysark/db db:push` — apply the schema in development
+- `pnpm --filter @keymask/web dev` — start the web app (port 6134)
+- `pnpm --filter @keymask/db db:push` — apply the schema in development
 
 ## Internationalization
 
@@ -180,8 +180,8 @@ The web app ships in **English by default**. Other languages are served under a 
 
 ## Contributing
 
-Issues and pull requests are welcome. KeysArk is open source — fork it, audit the crypto, run your own instance, and send improvements back.
+Issues and pull requests are welcome. KeyMask is open source — fork it, audit the crypto, run your own instance, and send improvements back.
 
 ## License
 
-[MIT](./LICENSE) © KeysArk contributors
+[MIT](./LICENSE) © KeyMask contributors

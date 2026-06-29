@@ -14,13 +14,13 @@ import {
   type DriveCache,
   type DriveOptions,
   type GoogleConfig,
-} from "@keysark/googledrive";
+} from "@keymask/googledrive";
 import {
   getStorageAccount,
   newId,
   updateStorageTokens,
   upsertStorageAccount,
-} from "@keysark/db";
+} from "@keymask/db";
 
 // Google 存储后端;provider 列固定 "google",accountKey = Google 用户 sub。
 const PROVIDER = "google";

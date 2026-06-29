@@ -1,4 +1,4 @@
-// KeysArk 官方品牌标识(取自 logos 资源包 keysark-icon):盾形「方舟」外壳 + 钥匙孔,
+// KeyMask 官方品牌标识(取自 logos 资源包 keymask-icon):盾形「方舟」外壳 + 钥匙孔,
 // 寓意把密钥稳妥载于方舟之内。外壳跟随主色(随主题深浅自适应),钥匙孔为品牌琥珀色。
 const BRAND_AMBER = "#F59E0B";
 

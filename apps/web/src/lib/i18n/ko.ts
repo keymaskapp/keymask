@@ -21,7 +21,7 @@ const ko: Partial<Messages> = {
   hero_title_1: "당신의 비밀,",
   hero_title_2: "오직 당신만 열 수 있습니다.",
   hero_subtitle: (store: string) =>
-    `KeysArk는 종단 간 암호화된 텍스트 보관함입니다. 하나의 복구 문구로 모든 것을 지키고, 암호문은 당신의 ${store}에 저장됩니다 — 당신 외에는 누구도 그 내용을 읽을 수 없습니다.`,
+    `KeyMask는 종단 간 암호화된 텍스트 보관함입니다. 하나의 복구 문구로 모든 것을 지키고, 암호문은 당신의 ${store}에 저장됩니다 — 당신 외에는 누구도 그 내용을 읽을 수 없습니다.`,
   cta_primary: "Baidu 연결 — 무료로 시작",
   cta_secondary: "작동 원리",
   how_title: "작동 원리",
@@ -63,7 +63,7 @@ const ko: Partial<Messages> = {
   os_badge: "오픈 소스 · 무료",
   os_title: "오픈 소스 키 보관함",
   os_body: (store: string) =>
-    `KeysArk는 완전한 오픈 소스이며 영원히 무료입니다. 암호화는 오직 브라우저에서만 이루어지고, 암호문은 당신의 ${store}에 저장되며, 모든 코드 줄이 공개되어 감사 가능합니다 — 직접 자체 호스팅하거나, ark CLI로 .env 같은 비밀을 GitHub 경로 기준으로 백업하고 다시 가져올 수 있습니다.`,
+    `KeyMask는 완전한 오픈 소스이며 영원히 무료입니다. 암호화는 오직 브라우저에서만 이루어지고, 암호문은 당신의 ${store}에 저장되며, 모든 코드 줄이 공개되어 감사 가능합니다 — 직접 자체 호스팅하거나, ark CLI로 .env 같은 비밀을 GitHub 경로 기준으로 백업하고 다시 가져올 수 있습니다.`,
   os_point_open_title: "공개 및 감사 가능",
   os_point_open_body: "전체 스택이 공개되어 있으며 종단 간 암호화를 한 줄씩 검토할 수 있습니다. 백도어는 없습니다.",
   os_point_free_title: "무료, 계정 불필요",
@@ -73,14 +73,14 @@ const ko: Partial<Messages> = {
   os_cta_repo: "GitHub에서 보기",
   os_cta_selfhost: "자체 호스팅 가이드",
 
-  meta_title: "KeysArk — 오픈 소스 종단 간 암호화 비밀번호 및 키 보관함",
+  meta_title: "KeyMask — 오픈 소스 종단 간 암호화 비밀번호 및 키 보관함",
   meta_description: (store: string) =>
-    `KeysArk는 무료 오픈 소스 종단 간 암호화 보관함입니다. 키는 BIP39 복구 문구에서 파생되며 암호화는 브라우저에서 이루어집니다. 암호문은 당신의 ${store}에 저장됩니다. 서버는 오직 암호문만 처리하며 자체 호스팅이 가능합니다.`,
+    `KeyMask는 무료 오픈 소스 종단 간 암호화 보관함입니다. 키는 BIP39 복구 문구에서 파생되며 암호화는 브라우저에서 이루어집니다. 암호문은 당신의 ${store}에 저장됩니다. 서버는 오직 암호문만 처리하며 자체 호스팅이 가능합니다.`,
   meta_keywords:
     "비밀번호 관리자, 키 관리, 오픈 소스, 종단 간 암호화, 제로 지식, BIP39, 복구 문구, Google Drive, Baidu netdisk, 자체 호스팅, 비밀 저장, .env 백업",
 
   create_title: "보관함 만들기",
-  create_desc_a: "KeysArk는 24단어 복구 문구를 마스터 키로 생성합니다. 이 문구는 ",
+  create_desc_a: "KeyMask는 24단어 복구 문구를 마스터 키로 생성합니다. 이 문구는 ",
   create_desc_strong: "한 번만 표시되며 오직 당신에게만 존재합니다",
   create_desc_b: ".",
   create_warn_a: "펜과 종이를 준비하세요. 생성한 후 적어두고 안전하게 보관하세요 — ",
@@ -123,7 +123,7 @@ const ko: Partial<Messages> = {
   backup_html_warn: "백업 비밀번호를 잃어버리면 이 백업은 쓸모가 없어집니다 — 우리를 포함한 누구도 복구할 수 없습니다.",
   btn_download_html: "암호화 후 다운로드",
   st_html_export_fail: (e: string) => `암호화 백업 실패: ${e}`,
-  bk_title: "KeysArk 암호화 백업",
+  bk_title: "KeyMask 암호화 백업",
   bk_prompt: "문구를 복호화하려면 백업 비밀번호를 입력하세요:",
   bk_btn: "복호화",
   bk_decrypting: "복호화 중… (약 1초)",
@@ -200,7 +200,7 @@ const ko: Partial<Messages> = {
   nav_privacy: "개인정보",
   nav_blog: "블로그",
   blog_title: "블로그",
-  blog_subtitle: "암호화 설계, 오픈 소스의 의의, 그리고 KeysArk 뒤의 생각들에 대하여.",
+  blog_subtitle: "암호화 설계, 오픈 소스의 의의, 그리고 KeyMask 뒤의 생각들에 대하여.",
   blog_back: "← 블로그로 돌아가기",
 
   // Home CLI section + command-line client
@@ -208,7 +208,7 @@ const ko: Partial<Messages> = {
   cli_home_tag: "명령줄",
   cli_home_title: "ark — 터미널 속 보관함",
   cli_home_body:
-    "ark는 KeysArk의 명령줄 클라이언트입니다. 로그인하고 문구를 가져오면 터미널에서 보관함을 읽고 쓸 수 있습니다 — .env 파일, API 키, 설정을 넣고 꺼내세요. 웹 앱과 마찬가지로 모든 암호화·복호화는 당신의 기기에서 이루어지며 클라우드는 오직 암호문만 봅니다. 개발자와 스크립트 / CI를 위해 만들어졌습니다.",
+    "ark는 KeyMask의 명령줄 클라이언트입니다. 로그인하고 문구를 가져오면 터미널에서 보관함을 읽고 쓸 수 있습니다 — .env 파일, API 키, 설정을 넣고 꺼내세요. 웹 앱과 마찬가지로 모든 암호화·복호화는 당신의 기기에서 이루어지며 클라우드는 오직 암호문만 봅니다. 개발자와 스크립트 / CI를 위해 만들어졌습니다.",
   cli_home_install_hint: "한 줄, 크로스 플랫폼:",
   cli_home_cta: "CLI 문서 읽기",
 
@@ -219,15 +219,15 @@ const ko: Partial<Messages> = {
     "터미널에서 종단 간 암호화된 보관함을 읽고 씁니다. 평문과 문구는 로컬에 남고 — 기기를 떠나는 것은 오직 암호문뿐입니다.",
   docs_intro_title: "이것은 무엇인가요",
   docs_intro_body:
-    "ark는 KeysArk의 공식 명령줄 클라이언트입니다. 웹 보관함을 터미널로 가져옵니다: 항목 나열, 경로별 읽기, 로컬 파일 저장, 항목 생성 및 업데이트. 모든 암호화·복호화는 복구 문구로 로컬에서 이루어지며 — 서버와 클라우드 백엔드는 오직 불투명한 암호문만 처리합니다.",
+    "ark는 KeyMask의 공식 명령줄 클라이언트입니다. 웹 보관함을 터미널로 가져옵니다: 항목 나열, 경로별 읽기, 로컬 파일 저장, 항목 생성 및 업데이트. 모든 암호화·복호화는 복구 문구로 로컬에서 이루어지며 — 서버와 클라우드 백엔드는 오직 불투명한 암호문만 처리합니다.",
   docs_install_title: "설치",
-  docs_install_note: "Node.js 18+ 가 필요합니다. ark 명령(별칭 keysark)을 설치합니다.",
+  docs_install_note: "Node.js 18+ 가 필요합니다. ark 명령(별칭 keymask)을 설치합니다.",
   docs_setup_title: "최초 설정",
   docs_setup_body: "두 단계: 이 기기를 승인한 다음 문구를 가져옵니다.",
   docs_setup_login_note:
     "ark login은 기기 코드 인증을 사용합니다: 터미널이 링크와 코드를 보여줍니다. 브라우저에서 열고 코드가 일치하는지 확인한 후 승인하세요. 이 권한은 브라우저 세션과 동등합니다 — 오직 암호문만 옮길 수 있으며 문구나 평문은 절대 접근하지 못합니다.",
   docs_setup_import_note:
-    "ark import는 복구 문구를 입력받고 로컬 잠금 해제 비밀번호를 설정합니다. 문구는 Argon2id로 파생한 키로 암호화되어 로컬(~/.keysark)에 저장되며 — 절대 업로드되지 않습니다. 잠금 해제는 5분간 비활동 시까지 캐시되므로 비밀번호를 다시 입력할 필요가 없습니다.",
+    "ark import는 복구 문구를 입력받고 로컬 잠금 해제 비밀번호를 설정합니다. 문구는 Argon2id로 파생한 키로 암호화되어 로컬(~/.keymask)에 저장되며 — 절대 업로드되지 않습니다. 잠금 해제는 5분간 비활동 시까지 캐시되므로 비밀번호를 다시 입력할 필요가 없습니다.",
   docs_commands_title: "명령 참조",
   docs_cmd_login: "기기 코드로 이 기기를 승인합니다 (확인을 위해 브라우저를 엽니다).",
   docs_cmd_import: "복구 문구를 가져오고 로컬 잠금 해제 비밀번호를 설정합니다.",
@@ -242,7 +242,7 @@ const ko: Partial<Messages> = {
   docs_cmd_logout: "로컬 로그인을 지웁니다 (문구 자격 증명은 유지).",
   docs_cmd_forget: "로컬에 저장된 문구 자격 증명과 잠금 해제 캐시를 제거합니다.",
   docs_options_title: "전역 옵션",
-  docs_opt_server: "서버 URL을 재정의합니다 (기본값 https://keysark.com).",
+  docs_opt_server: "서버 URL을 재정의합니다 (기본값 https://keymask.com).",
   docs_opt_vault: "ID 또는 레이블로 보관함을 선택합니다 (기본값은 문구와 일치하는 첫 번째 보관함).",
   docs_opt_no_browser: "로그인 시 브라우저를 자동으로 열지 않습니다.",
   docs_examples_title: "자주 쓰는 예시",
@@ -252,7 +252,7 @@ const ko: Partial<Messages> = {
   docs_env_title: "환경 변수",
   docs_env_server: "서버 URL (--server와 동일).",
   docs_env_mnemonic: "복구 문구를 직접 제공하여 로컬 자격 증명을 건너뜁니다 — CI / 스크립트용.",
-  docs_env_home: "설정 디렉터리, 기본값은 ~/.keysark.",
+  docs_env_home: "설정 디렉터리, 기본값은 ~/.keymask.",
   docs_env_no_browser: "설정하면 로그인 시 브라우저를 자동으로 열지 않습니다.",
   docs_security_title: "보안",
   docs_security_body:
@@ -318,7 +318,7 @@ const ko: Partial<Messages> = {
   content_hide: "내용 가리기",
   cli_access: "CLI로 가져오기",
   cli_dialog_title: "ark CLI로 이 항목 다운로드",
-  cli_dialog_desc: "ark는 KeysArk의 명령줄 클라이언트입니다. 로그인 + 문구 가져오기 후에는 터미널에서 보관함을 읽고 쓸 수 있으며 — 복호화는 여전히 오직 당신의 기기에서만 이루어집니다.",
+  cli_dialog_desc: "ark는 KeyMask의 명령줄 클라이언트입니다. 로그인 + 문구 가져오기 후에는 터미널에서 보관함을 읽고 쓸 수 있으며 — 복호화는 여전히 오직 당신의 기기에서만 이루어집니다.",
   cli_step_install: "설치",
   cli_step_setup: "최초 설정 (로그인 + 문구 가져오기)",
   cli_step_download: "이 항목 다운로드",

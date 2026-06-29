@@ -56,7 +56,7 @@
 - [x] 弱密码强度条提示不达标且提交禁用 —— Playwright:`abc123` 显示「太弱」+ 三条原因 + 按钮 disabled;两次不一致显示「两次输入的密码不一致」且禁用。
 - [x] F5 刷新 → 要求重输密码 —— Playwright 实测(主密钥仅内存)。
 - [x] 清空 IndexedDB / 换设备 → 强制助记词 + 重设密码 —— 无凭据分支(credExists=false)即首访路径,实测;另有「忘记密码?用助记词解锁」fallback 同路径实测。
-- [x] 无明文密码/助记词/可导出密钥落 IndexedDB —— 实测凭据 = `{v, kdf, salt(16B), params{m:65536,t:3,p:1}, iv(12B), ct}`,JSON 全文不含密码与助记词单词;`pnpm -r typecheck` 全绿;`pnpm --filter @keysark/web build` 通过(hash-wasm 内联 wasm 在浏览器正常 instantiate,设密码/解锁均实际跑通 Argon2id)。
+- [x] 无明文密码/助记词/可导出密钥落 IndexedDB —— 实测凭据 = `{v, kdf, salt(16B), params{m:65536,t:3,p:1}, iv(12B), ct}`,JSON 全文不含密码与助记词单词;`pnpm -r typecheck` 全绿;`pnpm --filter @keymask/web build` 通过(hash-wasm 内联 wasm 在浏览器正常 instantiate,设密码/解锁均实际跑通 Argon2id)。
 
 ### 偏差与遗留
 - 新增「忘记密码?用助记词解锁」fallback(plan 未列):没有它,忘记密码 + 手持助记词的用户会被永久锁在密码界面,与「助记词即主密钥」矛盾;验证助记词后走同一强制设密码步骤覆盖旧凭据。

@@ -1,5 +1,5 @@
 // 服务端字段级信封加密(AES-256-GCM)。用于把落库的 OAuth access/refresh token
-// 加密存储:DB 泄露也拿不到可用 token。主密钥来自环境变量 KEYSARK_DB_ENCRYPTION_KEY
+// 加密存储:DB 泄露也拿不到可用 token。主密钥来自环境变量 KEYMASK_DB_ENCRYPTION_KEY
 // (base64 编码的 32 字节),建议由 KMS/密钥管理注入。
 //
 // 兼容/安全策略:
@@ -10,7 +10,7 @@
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 
 const PREFIX = "enc:v1:";
-const ENV_KEY = "KEYSARK_DB_ENCRYPTION_KEY";
+const ENV_KEY = "KEYMASK_DB_ENCRYPTION_KEY";
 
 let _key: Buffer | null | undefined;
 let _warned = false;

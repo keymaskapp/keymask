@@ -5,9 +5,9 @@
 //   - unlock-cache.json:输对密码后免重输,连续 5 分钟无操作即失效(命中滑动续期)。
 //     用设备密钥 AES-256-GCM 加密 + 过期时间,每次命中滑动续期;过期即删,回到要密码的状态。
 //     设备密钥只存 OS keystore(钥匙串 / Secret Service / DPAPI,见 ./keystore),
-//     使「拷贝整个 ~/.keysark」拿不到该密钥;无可用 keystore 时直接禁用缓存(每次要密码),
+//     使「拷贝整个 ~/.keymask」拿不到该密钥;无可用 keystore 时直接禁用缓存(每次要密码),
 //     不落明文文件回退。
-// 助记词/明文绝不进网络;加解密用 @keysark/crypto(与 web 同一套实现)。
+// 助记词/明文绝不进网络;加解密用 @keymask/crypto(与 web 同一套实现)。
 import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 import { existsSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
@@ -20,8 +20,8 @@ import {
   scorePassword,
   type Argon2idParams,
   type StrengthReason,
-} from "@keysark/crypto";
-import { keysarkDir } from "./config";
+} from "@keymask/crypto";
+import { keymaskDir } from "./config";
 import { ensureSecureDir, writeSecureFile } from "./fsperm";
 import { deleteDeviceKey, loadOrCreateDeviceKey } from "./keystore";
 import { askPassword, log, spinner } from "./ui";
@@ -29,12 +29,12 @@ import { askPassword, log, spinner } from "./ui";
 /** 解锁缓存有效期:连续 5 分钟无操作即失效;每次命中滑动续期(再给 5 分钟)。 */
 const UNLOCK_TTL_MS = 5 * 60 * 1000;
 
-const credentialPath = () => join(keysarkDir(), "credential.json");
-const cachePath = () => join(keysarkDir(), "unlock-cache.json");
-const deviceKeyPath = () => join(keysarkDir(), "device.key");
+const credentialPath = () => join(keymaskDir(), "credential.json");
+const cachePath = () => join(keymaskDir(), "unlock-cache.json");
+const deviceKeyPath = () => join(keymaskDir(), "device.key");
 
 function ensureDir() {
-  ensureSecureDir(keysarkDir()); // 目录 0700(POSIX);best-effort,启动守卫复核
+  ensureSecureDir(keymaskDir()); // 目录 0700(POSIX);best-effort,启动守卫复核
 }
 
 let cachedDeviceKey: Buffer | null = null; // 进程内缓存:避免每次缓存读写都 spawn keystore CLI
@@ -46,11 +46,11 @@ function deviceKey(): Buffer | null {
   if (deviceKeyResolved) return cachedDeviceKey;
   deviceKeyResolved = true;
   ensureDir();
-  const res = loadOrCreateDeviceKey(keysarkDir());
+  const res = loadOrCreateDeviceKey(keymaskDir());
   if (!res) {
     if (!warnedNoKeystore) {
       warnedNoKeystore = true;
-      log.warn("OS keystore unavailable; unlock caching disabled — you'll be asked for the password each time. Set KEYSARK_MNEMONIC for non-interactive use.");
+      log.warn("OS keystore unavailable; unlock caching disabled — you'll be asked for the password each time. Set KEYMASK_MNEMONIC for non-interactive use.");
     }
     return null;
   }
@@ -90,7 +90,7 @@ export async function saveCredential(mnemonic: string, password: string): Promis
     iv: b64(iv),
     ct: b64(ct),
   };
-  writeSecureFile(keysarkDir(), credentialPath(), JSON.stringify(cred));
+  writeSecureFile(keymaskDir(), credentialPath(), JSON.stringify(cred));
 }
 
 /** 密码解锁:还原助记词。无凭据或密码错误(GCM 认证失败)都抛错。 */
@@ -106,7 +106,7 @@ export async function unlockCredential(password: string): Promise<string> {
 export function clearCredential(): void {
   rmSync(credentialPath(), { force: true });
   clearUnlockCache();
-  deleteDeviceKey(keysarkDir(), deviceKeyPath());
+  deleteDeviceKey(keymaskDir(), deviceKeyPath());
   cachedDeviceKey = null;
   deviceKeyResolved = false;
 }
@@ -135,7 +135,7 @@ export function writeUnlockCache(mnemonic: string): void {
     tag: cipher.getAuthTag().toString("base64"),
     expiresAt,
   };
-  writeSecureFile(keysarkDir(), cachePath(), JSON.stringify(cache));
+  writeSecureFile(keymaskDir(), cachePath(), JSON.stringify(cache));
 }
 
 /** 读解锁缓存:过期返回 null 并删除;命中则滑动续期(再给 5 分钟)。 */
@@ -196,10 +196,10 @@ export async function promptNewPassword(): Promise<string> {
  * 取助记词:env > 解锁缓存(5 分钟无操作失效,滑动续期)> 密码解锁凭据(最多 3 次)。
  * allowPrompt=false 时不交互(脚本场景)。返回 null 表示无可用助记词(应先 import)。
  * forcePassword=true:跳过解锁缓存、每次都强制输密码,且不写/续期缓存(敏感操作如 get)。
- *   注:KEYSARK_MNEMONIC 是显式的非交互脚本覆盖,forcePassword 下仍然生效。
+ *   注:KEYMASK_MNEMONIC 是显式的非交互脚本覆盖,forcePassword 下仍然生效。
  */
 export async function acquireMnemonic(allowPrompt = true, forcePassword = false): Promise<string | null> {
-  const env = process.env.KEYSARK_MNEMONIC?.trim();
+  const env = process.env.KEYMASK_MNEMONIC?.trim();
   if (env) return env.replace(/\s+/g, " ");
 
   if (!forcePassword) {

@@ -1,4 +1,4 @@
-// OS keystore 接入:把敏感/需抗篡改的小值存进操作系统安全存储,而非 ~/.keysark 明文文件。
+// OS keystore 接入:把敏感/需抗篡改的小值存进操作系统安全存储,而非 ~/.keymask 明文文件。
 //   - macOS  : 登录钥匙串(security generic-password,受登录密码保护)。
 //   - Linux  : Secret Service / libsecret(secret-tool;GNOME Keyring、KWallet 等)。
 //   - Windows: DPAPI(ProtectedData,CurrentUser 绑定;受保护 blob 仍落盘但仅本用户可解)。
@@ -9,9 +9,9 @@ import { spawnSync, type SpawnSyncOptionsWithBufferEncoding } from "node:child_p
 import { randomBytes } from "node:crypto";
 import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import type { RevAnchor } from "@keysark/vault";
+import type { RevAnchor } from "@keymask/vault";
 
-const SERVICE = "keysark";
+const SERVICE = "keymask";
 const KEY_LEN = 32;
 const DEVICE_KEY_ACCOUNT = "device-key";
 
@@ -109,7 +109,7 @@ function linuxSecretService(account: string): Backend {
     },
     set(value) {
       // secret-tool store 从 stdin 读 secret(非 TTY 时不回显提示)。
-      run("secret-tool", ["store", `--label=keysark ${account}`, "service", SERVICE, "account", account], {
+      run("secret-tool", ["store", `--label=keymask ${account}`, "service", SERVICE, "account", account], {
         input: Buffer.from(value, "utf8"),
         silent: true,
       });
@@ -126,7 +126,7 @@ function linuxSecretService(account: string): Backend {
 
 // ---------- Windows DPAPI(受保护 blob 落盘,绑定当前用户) ----------
 // 没有合适的纯 CLI 存储,故用 PowerShell ProtectedData 加密后写 <account>.dpapi。
-// blob 仍在 ~/.keysark,但只有同一 Windows 用户能 Unprotect → 拷到别处/别人解不开。
+// blob 仍在 ~/.keymask,但只有同一 Windows 用户能 Unprotect → 拷到别处/别人解不开。
 function winDpapi(blobPath: string): Backend {
   const ps = (script: string, env: NodeJS.ProcessEnv) =>
     run("powershell", ["-NoProfile", "-NonInteractive", "-Command", script], { env }).toString("utf8").trim();
@@ -177,7 +177,7 @@ function backendFor(account: string, blobDir: string): Backend | null {
 /**
  * 取(或首次创建)device key,仅经 OS keystore。命中即返回,否则新建随机 key 存入。
  * 无可用 keystore(不支持的平台 / 工具缺失)→ 返回 null,调用方据此禁用解锁缓存。
- * 不再落明文文件回退:避免 key 与它保护的缓存同处 ~/.keysark、被「拷目录」一并带走。
+ * 不再落明文文件回退:避免 key 与它保护的缓存同处 ~/.keymask、被「拷目录」一并带走。
  */
 export function loadOrCreateDeviceKey(blobDir: string): { key: Buffer; backend: KeystoreBackend } | null {
   const backend = backendFor(DEVICE_KEY_ACCOUNT, blobDir);

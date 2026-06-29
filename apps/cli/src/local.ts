@@ -1,16 +1,16 @@
 // 本地模式:把「从网盘整目录下载的备份」(.zip 或解压后的目录)当成一个只读的存储后端。
-// 复用 @keysark/vault 的 Vault + @keysark/crypto 全套解密逻辑 —— 这里只实现一个
+// 复用 @keymask/vault 的 Vault + @keymask/crypto 全套解密逻辑 —— 这里只实现一个
 // 只读 StorageTransport,字节进字节出,绝不触碰明文/助记词/主密钥。
 //
 // 备份的真实布局(沙盒根之下):
-//   keysark.json                              ← 保险库注册表(明文元数据 + 密文校验块)
+//   keymask.json                              ← 保险库注册表(明文元数据 + 密文校验块)
 //   vaults/<id>/index.json                    ← 加密 index
 //   vaults/<id>/items/<id>/<ts>.json[/.bin]   ← 条目各版本快照(密文)
-// Drive「下载整个文件夹」会多包一层目录(如 KeysArk-Dev/…),故需先探测并剥掉公共前缀。
+// Drive「下载整个文件夹」会多包一层目录(如 KeyMask-Dev/…),故需先探测并剥掉公共前缀。
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join, sep } from "node:path";
 import { inflateRawSync } from "node:zlib";
-import { REGISTRY_NAME, type StorageTransport } from "@keysark/vault";
+import { REGISTRY_NAME, type StorageTransport } from "@keymask/vault";
 
 /** 归一化后的归档:每个文件一条 posix 相对路径 + 大小 + 惰性读取。 */
 interface RawArchive {
@@ -94,14 +94,14 @@ function readDir(root: string): RawArchive {
   };
 }
 
-/** 探测公共前缀:找最浅的 keysark.json,其所在目录即沙盒根。 */
+/** 探测公共前缀:找最浅的 keymask.json,其所在目录即沙盒根。 */
 function detectPrefix(arc: RawArchive): string {
   const regs = arc.entries
     .map((e) => e.name)
     .filter((n) => n.split("/").pop() === REGISTRY_NAME)
     .sort((a, b) => a.split("/").length - b.split("/").length);
   if (regs.length === 0) {
-    throw new Error(`no ${REGISTRY_NAME} found — this does not look like a KeysArk backup`);
+    throw new Error(`no ${REGISTRY_NAME} found — this does not look like a KeyMask backup`);
   }
   const reg = regs[0]!;
   const slash = reg.lastIndexOf("/");

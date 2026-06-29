@@ -41,11 +41,11 @@
 - **整体状态**：已完成
 
 ### 做了什么
-- 新增 `apps/web/src/lib/idle-lock.ts`:`startIdleLock(timeoutMs, onTimeout) → cleanup`(监听 `pointerdown/keydown/touchstart/wheel` passive 重置,节流 ≥1s;时间戳 + 5s 周期检查,`visibilitychange` 回前台立即补查,不被后台节流的 timer 骗过;超时只触发一次并自清理);`loadIdleMinutes/saveIdleMinutes`(localStorage `keysark.idleLockMinutes`,默认 15,上限 24h)、`normalizeIdleMinutes`、档位 `IDLE_OPTIONS = [1,5,15,30,60]`。
+- 新增 `apps/web/src/lib/idle-lock.ts`:`startIdleLock(timeoutMs, onTimeout) → cleanup`(监听 `pointerdown/keydown/touchstart/wheel` passive 重置,节流 ≥1s;时间戳 + 5s 周期检查,`visibilitychange` 回前台立即补查,不被后台节流的 timer 骗过;超时只触发一次并自清理);`loadIdleMinutes/saveIdleMinutes`(localStorage `keymask.idleLockMinutes`,默认 15,上限 24h)、`normalizeIdleMinutes`、档位 `IDLE_OPTIONS = [1,5,15,30,60]`。
 - `vault-panel.tsx`:已解锁阶段挂载 idle-lock 的 effect(超时调现有 `lock()`;`idleMinutes` 变更 → effect 重跑 → 计时器即时重置);「修改密码」弹窗(AlertDialog:当前密码 + 新密码 + StrengthBar + 确认,不达标/不一致/空当前密码禁提交,`changePassword` GCM 失败显示「密码错误」不关弹窗);「自动锁定时长」弹窗(预设档位即点即生效 + 自定义分钟数)。
 - `user-menu.tsx`:新增 `onChangePassword`/`onAutoLock` 入口(KeyRound / TimerReset 图标),仅工作台传入。
 - `i18n.ts`:改密码 / 当前密码 / 自动锁定 / 档位 / 确定 等 11 个词条(中英)。
-- 验收后删除临时页 `apps/web/src/app/lock-test/`,并清理 Playwright profile 的测试凭据(IndexedDB `keysark-lock`)与 localStorage 设置。
+- 验收后删除临时页 `apps/web/src/app/lock-test/`,并清理 Playwright profile 的测试凭据(IndexedDB `keymask-lock`)与 localStorage 设置。
 
 ### 验收核对
 - [x] 改密码:当前密码错被拒(「密码错误」,弹窗不关)、成功后旧密码失效、新密码可解锁 —— Playwright 实测三段;新密码强度复用 `scorePassword.ok` 禁提交(同 002 已验证的组件与逻辑)。

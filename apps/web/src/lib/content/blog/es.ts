@@ -2,13 +2,13 @@ import type { PostLocale } from "../blog";
 
 // Spanish (es) — machine-translated blog content, pending human review.
 const es: Record<string, PostLocale> = {
-  "the-name-keysark": {
-    title: "De dónde viene el nombre KeysArk",
+  "the-name-keymask": {
+    title: "De dónde viene el nombre KeyMask",
     description: "Keys más Ark: una palabra pequeña con una idea deliberada detrás.",
     body: [
       {
         k: "p",
-        t: "KeysArk son dos palabras: Keys (llaves) y Ark (arca). El nombre es pequeño, pero la idea que hay detrás es el producto entero.",
+        t: "KeyMask son dos palabras: Keys (llaves) y Ark (arca). El nombre es pequeño, pero la idea que hay detrás es el producto entero.",
       },
       { k: "h2", t: "El arca" },
       {
@@ -18,7 +18,7 @@ const es: Record<string, PostLocale> = {
       { k: "h2", t: "Tus llaves, transportadas" },
       {
         k: "p",
-        t: "Tus llaves —la frase de recuperación que lo desbloquea todo— son exactamente esa clase de carga preciosa. KeysArk es el arca que las transporta: entre dispositivos, entre proveedores de nube, a lo largo de los años, sin exponer jamás lo que hay dentro.",
+        t: "Tus llaves —la frase de recuperación que lo desbloquea todo— son exactamente esa clase de carga preciosa. KeyMask es el arca que las transporta: entre dispositivos, entre proveedores de nube, a lo largo de los años, sin exponer jamás lo que hay dentro.",
       },
       { k: "h2", t: "Sellada desde fuera" },
       {
@@ -33,7 +33,7 @@ const es: Record<string, PostLocale> = {
     ],
   },
   "open-source-and-provenance": {
-    title: "Por qué KeysArk debe ser de código abierto, y por qué las copias de seguridad llevan un número de versión",
+    title: "Por qué KeyMask debe ser de código abierto, y por qué las copias de seguridad llevan un número de versión",
     description:
       "El cifrado de extremo a extremo no es más que una promesa hasta que puedes verificarlo. Aquí explicamos por qué el código es abierto, y por qué cada copia de seguridad exportada registra el software exacto que la creó.",
     body: [
@@ -54,7 +54,7 @@ const es: Record<string, PostLocale> = {
       { k: "h2", t: "Por eso las copias de seguridad llevan su propia procedencia" },
       {
         k: "p",
-        t: "Cada copia de seguridad del mnemónico que KeysArk exporta (PDF y HTML) incrusta un manifiesto de procedencia que describe exactamente qué la produjo:",
+        t: "Cada copia de seguridad del mnemónico que KeyMask exporta (PDF y HTML) incrusta un manifiesto de procedencia que describe exactamente qué la produjo:",
       },
       {
         k: "ul",
@@ -68,7 +68,7 @@ const es: Record<string, PostLocale> = {
       { k: "h2", t: "Por qué importa el número de versión" },
       {
         k: "p",
-        t: "Con ese manifiesto, el tú del futuro puede hacer checkout del commit exacto que creó la copia de seguridad, reproducir el entorno de compilación y descifrarla, incluso décadas después, incluso si keysark.com ya no existe. El número de versión no es papeleo; es el mapa de regreso al entorno de ejecución que aún puede abrir tu bóveda.",
+        t: "Con ese manifiesto, el tú del futuro puede hacer checkout del commit exacto que creó la copia de seguridad, reproducir el entorno de compilación y descifrarla, incluso décadas después, incluso si keymask.com ya no existe. El número de versión no es papeleo; es el mapa de regreso al entorno de ejecución que aún puede abrir tu bóveda.",
       },
       {
         k: "quote",
@@ -77,13 +77,13 @@ const es: Record<string, PostLocale> = {
     ],
   },
   "encryption-design": {
-    title: "Cómo cifra KeysArk: el diseño",
+    title: "Cómo cifra KeyMask: el diseño",
     description:
-      "Un recorrido por el cifrado de extremo a extremo de KeysArk: desde una frase BIP39 hasta texto cifrado con AES-256-GCM que solo tú puedes abrir.",
+      "Un recorrido por el cifrado de extremo a extremo de KeyMask: desde una frase BIP39 hasta texto cifrado con AES-256-GCM que solo tú puedes abrir.",
     body: [
       {
         k: "p",
-        t: "Cada decisión de diseño en KeysArk sigue una regla: la clave nunca sale de tu navegador. Esta es la cadena, desde las palabras que anotas hasta el texto cifrado en tu nube.",
+        t: "Cada decisión de diseño en KeyMask sigue una regla: la clave nunca sale de tu navegador. Esta es la cadena, desde las palabras que anotas hasta el texto cifrado en tu nube.",
       },
       { k: "h2", t: "Una frase para guardarlo todo" },
       {

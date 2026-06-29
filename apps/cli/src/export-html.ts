@@ -86,7 +86,7 @@ export function renderVaultHtml(data: ExportData): string {
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="robots" content="noindex,nofollow" />
-<title>KeysArk · ${esc(data.vaultLabel || "vault")}</title>
+<title>KeyMask · ${esc(data.vaultLabel || "vault")}</title>
 <style>
   :root {
     --bg: #0b0e14; --panel: #131722; --line: #232838; --fg: #e6e9ef;

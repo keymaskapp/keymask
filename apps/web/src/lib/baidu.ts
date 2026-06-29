@@ -8,13 +8,13 @@ import {
   exchangeCodeForToken,
   loadConfig,
   refreshAccessToken,
-} from "@keysark/baidupan";
+} from "@keymask/baidupan";
 import {
   getStorageAccount,
   newId,
   updateStorageTokens,
   upsertStorageAccount,
-} from "@keysark/db";
+} from "@keymask/db";
 
 // 登录后端只有百度;provider 列固定 baidu(沿用 storage_account 表)。
 const PROVIDER = "baidu";

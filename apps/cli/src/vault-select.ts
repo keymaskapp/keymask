@@ -1,5 +1,5 @@
-// 读注册表(keysark.json)、按 verifier 把派生密钥匹配到保险库。
-import { checkVerifier } from "@keysark/crypto";
+// 读注册表(keymask.json)、按 verifier 把派生密钥匹配到保险库。
+import { checkVerifier } from "@keymask/crypto";
 import {
   REGISTRY_NAME,
   Vault,
@@ -9,8 +9,8 @@ import {
   vaultVerifierAad,
   type StorageTransport,
   type VaultDescriptor,
-} from "@keysark/vault";
-import { keysarkDir } from "./config";
+} from "@keymask/vault";
+import { keymaskDir } from "./config";
 import { makeRevAnchor } from "./keystore";
 
 const decoder = new TextDecoder();
@@ -51,6 +51,6 @@ export function openVault(
     { dir: descriptor.dir },
     transport,
     makeCache(memoryKv(), descriptor.id),
-    makeRevAnchor(descriptor.id, keysarkDir()),
+    makeRevAnchor(descriptor.id, keymaskDir()),
   );
 }

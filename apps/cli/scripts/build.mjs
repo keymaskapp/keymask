@@ -1,5 +1,5 @@
-// CLI 打包:注入版本号。默认 server 固定为 https://keysark.com(本地开发用
-// KEYSARK_SERVER / --server 覆盖),不再按 build 环境区分。
+// CLI 打包:注入版本号。默认 server 固定为 https://keymask.com(本地开发用
+// KEYMASK_SERVER / --server 覆盖),不再按 build 环境区分。
 import { readFileSync } from "node:fs";
 import { build } from "esbuild";
 
@@ -17,7 +17,7 @@ await build({
   },
   outfile: "dist/ark.mjs",
   define: {
-    __KEYSARK_VERSION__: JSON.stringify(version),
+    __KEYMASK_VERSION__: JSON.stringify(version),
   },
 });
 console.log(`built dist/ark.mjs (v${version})`);

@@ -7,7 +7,7 @@ PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 # The package being published.
 PKG_JSON="$PROJECT_DIR/apps/cli/package.json"
-PKG_FILTER="@keysark/cli"
+PKG_FILTER="@keymask/cli"
 
 # Colors
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'
@@ -56,7 +56,7 @@ read -rp "Confirm? (Y/n) " confirm
 [[ "${confirm:-Y}" =~ ^[Yy]?$ ]] || { info "Cancelled"; exit 0; }
 
 # ─── Build ────────────────────────────────────────────────────────────────────
-# esbuild bundles @keysark/crypto + @keysark/vault into dist/keysark.mjs, so the
+# esbuild bundles @keymask/crypto + @keymask/vault into dist/keymask.mjs, so the
 # published artifact is self-contained and needs no workspace deps at runtime.
 info "Building..."
 pnpm -F "$PKG_FILTER" build || fail "Build failed, aborting publish"

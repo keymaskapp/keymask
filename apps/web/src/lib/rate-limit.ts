@@ -1,6 +1,6 @@
 // 固定窗口限流。配置 DATABASE_URL 时优先使用 Postgres 共享桶;否则回退进程内内存桶。
 // 这用于 CLI 设备码端点等防滥用入口;更高强度的边缘防护仍应叠加 WAF/平台限流。
-import { consumeRateLimit } from "@keysark/db";
+import { consumeRateLimit } from "@keymask/db";
 import { NextResponse } from "next/server";
 
 interface Window {
@@ -10,12 +10,12 @@ interface Window {
 const buckets = new Map<string, Window>();
 
 function trustProxyHeaders(): boolean {
-  return process.env.VERCEL === "1" || process.env.KEYSARK_TRUST_PROXY_HEADERS === "1";
+  return process.env.VERCEL === "1" || process.env.KEYMASK_TRUST_PROXY_HEADERS === "1";
 }
 
 /**
  * 取客户端标识。默认不信任客户端可伪造的 x-forwarded-for/x-real-ip;
- * 仅在受控代理环境(Vercel 或显式 KEYSARK_TRUST_PROXY_HEADERS=1)下使用。
+ * 仅在受控代理环境(Vercel 或显式 KEYMASK_TRUST_PROXY_HEADERS=1)下使用。
  */
 export function clientKey(request: Request): string {
   if (!trustProxyHeaders()) return "unknown";

@@ -1,5 +1,5 @@
 // Postgres token 后端(web/云端)。沿用原 Drizzle 逻辑,connection 惰性。
-// access/refresh token 字段在落库前用 KEYSARK_DB_ENCRYPTION_KEY 信封加密(见 secret-box)。
+// access/refresh token 字段在落库前用 KEYMASK_DB_ENCRYPTION_KEY 信封加密(见 secret-box)。
 import { and, eq } from "drizzle-orm";
 import { getDb } from "./db";
 import { storageAccount } from "./schema";

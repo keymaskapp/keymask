@@ -21,7 +21,7 @@ const fr: Partial<Messages> = {
   hero_title_1: "Vos secrets,",
   hero_title_2: "vous seul pouvez les ouvrir.",
   hero_subtitle: (store: string) =>
-    `KeysArk est un coffre de texte chiffré de bout en bout. Protégez tout avec une seule phrase de récupération, le texte chiffré étant stocké dans votre propre ${store} — personne d'autre que vous ne peut lire ce qu'il contient.`,
+    `KeyMask est un coffre de texte chiffré de bout en bout. Protégez tout avec une seule phrase de récupération, le texte chiffré étant stocké dans votre propre ${store} — personne d'autre que vous ne peut lire ce qu'il contient.`,
   cta_primary: "Connecter Baidu — commencer gratuitement",
   cta_secondary: "Comment ça marche",
   how_title: "Comment ça marche",
@@ -63,7 +63,7 @@ const fr: Partial<Messages> = {
   os_badge: "Open source · Gratuit",
   os_title: "Un coffre de clés open source",
   os_body: (store: string) =>
-    `KeysArk est entièrement open source et gratuit pour toujours. Le chiffrement n'a lieu que dans votre navigateur, le texte chiffré est stocké dans votre propre ${store}, et chaque ligne est publique et auditable — auto-hébergez-le, ou utilisez la CLI ark pour sauvegarder des secrets comme les fichiers .env par leur chemin GitHub et les récupérer.`,
+    `KeyMask est entièrement open source et gratuit pour toujours. Le chiffrement n'a lieu que dans votre navigateur, le texte chiffré est stocké dans votre propre ${store}, et chaque ligne est publique et auditable — auto-hébergez-le, ou utilisez la CLI ark pour sauvegarder des secrets comme les fichiers .env par leur chemin GitHub et les récupérer.`,
   os_point_open_title: "Ouvert et auditable",
   os_point_open_body: "Toute la pile est publique ; le chiffrement de bout en bout peut être examiné ligne par ligne. Aucune porte dérobée.",
   os_point_free_title: "Gratuit, sans compte",
@@ -73,14 +73,14 @@ const fr: Partial<Messages> = {
   os_cta_repo: "Voir sur GitHub",
   os_cta_selfhost: "Guide d'auto-hébergement",
 
-  meta_title: "KeysArk — Coffre de mots de passe et de clés chiffré de bout en bout et open source",
+  meta_title: "KeyMask — Coffre de mots de passe et de clés chiffré de bout en bout et open source",
   meta_description: (store: string) =>
-    `KeysArk est un coffre gratuit, open source et chiffré de bout en bout. Les clés sont dérivées d'une phrase de récupération BIP39 et le chiffrement a lieu dans votre navigateur ; le texte chiffré est stocké dans votre propre ${store}. Le serveur ne manipule jamais que du texte chiffré, et vous pouvez l'auto-héberger.`,
+    `KeyMask est un coffre gratuit, open source et chiffré de bout en bout. Les clés sont dérivées d'une phrase de récupération BIP39 et le chiffrement a lieu dans votre navigateur ; le texte chiffré est stocké dans votre propre ${store}. Le serveur ne manipule jamais que du texte chiffré, et vous pouvez l'auto-héberger.`,
   meta_keywords:
     "gestionnaire de mots de passe, gestion des clés, open source, chiffrement de bout en bout, zéro connaissance, BIP39, phrase mnémonique, Google Drive, Baidu netdisk, auto-hébergé, stockage de secrets, sauvegarde .env",
 
   create_title: "Créez votre coffre",
-  create_desc_a: "KeysArk génère une phrase de récupération de 24 mots comme clé maîtresse. Elle est ",
+  create_desc_a: "KeyMask génère une phrase de récupération de 24 mots comme clé maîtresse. Elle est ",
   create_desc_strong: "affichée une seule fois et ne vit qu'avec vous",
   create_desc_b: ".",
   create_warn_a: "Préparez papier et crayon. Après la génération, notez-la et conservez-la en lieu sûr — ",
@@ -123,7 +123,7 @@ const fr: Partial<Messages> = {
   backup_html_warn: "Perdez le mot de passe de la sauvegarde et celle-ci devient inutilisable — personne (pas même nous) ne peut la récupérer.",
   btn_download_html: "Chiffrer et télécharger",
   st_html_export_fail: (e: string) => `échec de la sauvegarde chiffrée : ${e}`,
-  bk_title: "Sauvegarde chiffrée KeysArk",
+  bk_title: "Sauvegarde chiffrée KeyMask",
   bk_prompt: "Saisissez le mot de passe de la sauvegarde pour déchiffrer votre phrase :",
   bk_btn: "Déchiffrer",
   bk_decrypting: "Déchiffrement… (~1 seconde)",
@@ -200,7 +200,7 @@ const fr: Partial<Messages> = {
   nav_privacy: "Confidentialité",
   nav_blog: "Blog",
   blog_title: "Blog",
-  blog_subtitle: "Sur la conception du chiffrement, les arguments en faveur de l'open source, et la réflexion derrière KeysArk.",
+  blog_subtitle: "Sur la conception du chiffrement, les arguments en faveur de l'open source, et la réflexion derrière KeyMask.",
   blog_back: "← Retour au blog",
 
   // Home CLI section + command-line client
@@ -208,7 +208,7 @@ const fr: Partial<Messages> = {
   cli_home_tag: "Ligne de commande",
   cli_home_title: "ark — votre coffre dans le terminal",
   cli_home_body:
-    "ark est le client en ligne de commande de KeysArk. Connectez-vous et importez votre phrase, puis lisez et écrivez dans votre coffre depuis le terminal — récupérez et déposez des fichiers .env, des clés d'API et des configurations. Comme dans l'application web, tout le chiffrement et le déchiffrement ont lieu sur votre appareil ; le cloud ne voit jamais que du texte chiffré. Conçu pour les développeurs et les scripts / CI.",
+    "ark est le client en ligne de commande de KeyMask. Connectez-vous et importez votre phrase, puis lisez et écrivez dans votre coffre depuis le terminal — récupérez et déposez des fichiers .env, des clés d'API et des configurations. Comme dans l'application web, tout le chiffrement et le déchiffrement ont lieu sur votre appareil ; le cloud ne voit jamais que du texte chiffré. Conçu pour les développeurs et les scripts / CI.",
   cli_home_install_hint: "Une ligne, multiplateforme :",
   cli_home_cta: "Lire la documentation de la CLI",
 
@@ -219,15 +219,15 @@ const fr: Partial<Messages> = {
     "Lisez et écrivez dans votre coffre chiffré de bout en bout depuis le terminal. Votre texte en clair et votre phrase restent locaux — seul le texte chiffré quitte l'appareil.",
   docs_intro_title: "Qu'est-ce que c'est",
   docs_intro_body:
-    "ark est le client en ligne de commande officiel de KeysArk. Il apporte le coffre web dans votre terminal : lister les éléments, lire par chemin, enregistrer des fichiers locaux, créer et mettre à jour des entrées. Tout le chiffrement et le déchiffrement ont lieu localement avec votre phrase de récupération — le serveur et le backend cloud ne manipulent jamais que du texte chiffré opaque.",
+    "ark est le client en ligne de commande officiel de KeyMask. Il apporte le coffre web dans votre terminal : lister les éléments, lire par chemin, enregistrer des fichiers locaux, créer et mettre à jour des entrées. Tout le chiffrement et le déchiffrement ont lieu localement avec votre phrase de récupération — le serveur et le backend cloud ne manipulent jamais que du texte chiffré opaque.",
   docs_install_title: "Installation",
-  docs_install_note: "Nécessite Node.js 18+. Installe la commande ark (avec l'alias keysark).",
+  docs_install_note: "Nécessite Node.js 18+. Installe la commande ark (avec l'alias keymask).",
   docs_setup_title: "Configuration initiale",
   docs_setup_body: "Deux étapes : autorisez cet appareil, puis importez votre phrase.",
   docs_setup_login_note:
     "ark login utilise l'autorisation par code d'appareil : le terminal affiche un lien et un code ; ouvrez-le dans votre navigateur, vérifiez que le code correspond et approuvez. L'autorisation équivaut à une session de navigateur — elle ne peut que déplacer du texte chiffré, jamais votre phrase ni votre texte en clair.",
   docs_setup_import_note:
-    "ark import demande votre phrase de récupération et définit un mot de passe de déverrouillage local. La phrase est chiffrée avec une clé dérivée avec Argon2id et stockée localement (~/.keysark) — jamais téléversée. Le déverrouillage reste en cache jusqu'à 5 minutes d'inactivité afin que vous n'ayez pas à retaper le mot de passe.",
+    "ark import demande votre phrase de récupération et définit un mot de passe de déverrouillage local. La phrase est chiffrée avec une clé dérivée avec Argon2id et stockée localement (~/.keymask) — jamais téléversée. Le déverrouillage reste en cache jusqu'à 5 minutes d'inactivité afin que vous n'ayez pas à retaper le mot de passe.",
   docs_commands_title: "Référence des commandes",
   docs_cmd_login: "Autorise cet appareil via un code d'appareil (ouvre le navigateur pour confirmer).",
   docs_cmd_import: "Importe une phrase de récupération et définit un mot de passe de déverrouillage local.",
@@ -242,7 +242,7 @@ const fr: Partial<Messages> = {
   docs_cmd_logout: "Efface la connexion locale (conserve l'identifiant de la phrase).",
   docs_cmd_forget: "Supprime l'identifiant de la phrase stocké localement et le cache de déverrouillage.",
   docs_options_title: "Options globales",
-  docs_opt_server: "Remplace l'URL du serveur (par défaut https://keysark.com).",
+  docs_opt_server: "Remplace l'URL du serveur (par défaut https://keymask.com).",
   docs_opt_vault: "Sélectionne un coffre par ID ou par étiquette (par défaut le premier correspondant à votre phrase).",
   docs_opt_no_browser: "Ne pas ouvrir automatiquement le navigateur pendant la connexion.",
   docs_examples_title: "Exemples courants",
@@ -252,7 +252,7 @@ const fr: Partial<Messages> = {
   docs_env_title: "Variables d'environnement",
   docs_env_server: "URL du serveur (équivalent à --server).",
   docs_env_mnemonic: "Fournit la phrase de récupération directement, en contournant l'identifiant local — pour CI / scripts.",
-  docs_env_home: "Répertoire de configuration, par défaut ~/.keysark.",
+  docs_env_home: "Répertoire de configuration, par défaut ~/.keymask.",
   docs_env_no_browser: "Lorsqu'elle est définie, la connexion n'ouvre pas automatiquement le navigateur.",
   docs_security_title: "Sécurité",
   docs_security_body:
@@ -318,7 +318,7 @@ const fr: Partial<Messages> = {
   content_hide: "Masquer le contenu",
   cli_access: "Obtenir via la CLI",
   cli_dialog_title: "Télécharger cet élément avec la CLI ark",
-  cli_dialog_desc: "ark est le client en ligne de commande de KeysArk. Après la connexion + l'import de la phrase mnémonique, vous pouvez lire et écrire dans votre coffre depuis le terminal — le déchiffrement a toujours lieu uniquement sur votre appareil.",
+  cli_dialog_desc: "ark est le client en ligne de commande de KeyMask. Après la connexion + l'import de la phrase mnémonique, vous pouvez lire et écrire dans votre coffre depuis le terminal — le déchiffrement a toujours lieu uniquement sur votre appareil.",
   cli_step_install: "Installer",
   cli_step_setup: "Configuration initiale (connexion + import de la phrase mnémonique)",
   cli_step_download: "Télécharger cet élément",

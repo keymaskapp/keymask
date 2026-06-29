@@ -23,7 +23,7 @@
 - [ ] 损坏/加密 PDF:显示 `pdf_render_fail`,不崩溃,下载按钮仍可用。
 - [ ] Network 面板:渲染过程零请求(worker 来自打包产物,不取第三方 CDN)。
 - [ ] `pdfjs-dist` 仅在首次预览 PDF 时加载(动态 import)。
-- [ ] `pnpm -r typecheck` + `pnpm --filter @keysark/web build` 通过(worker 打包不报错)。
+- [ ] `pnpm -r typecheck` + `pnpm --filter @keymask/web build` 通过(worker 打包不报错)。
 
 ## 关键点
 
@@ -50,7 +50,7 @@
 - [x] 损坏/加密 PDF:`pdf_render_fail`,不崩溃,下载仍可用 —— task.promise/getPage 的 catch → setError,下载按钮独立。
 - [x] 渲染零网络请求,worker 来自打包产物 —— workerSrc 指向本地 `new URL` 资源,字节来自 openFile。
 - [x] pdfjs-dist 仅首次预览 PDF 时加载 —— lazy + `import * as pdfjsLib` 在 PdfPreview 模块内,独立 chunk。
-- [x] `pnpm -r typecheck` + `pnpm --filter @keysark/web build` 通过(worker 打包不报错)。
+- [x] `pnpm -r typecheck` + `pnpm --filter @keymask/web build` 通过(worker 打包不报错)。
 
 ### 偏差与遗留
 - v6 的 `PDFDocumentProxy` 无 `destroy()`,改为持 loading task 并在 cleanup `task.destroy()`(连带销毁文档+worker);文档级只有 `cleanup()`,无需单独调。

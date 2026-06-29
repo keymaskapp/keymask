@@ -1,7 +1,7 @@
 // 每个保险库一个「解锁密码」:密码经 Argon2id 派生包裹密钥,在 IndexedDB 里
 // 加密存放该库助记词。本地只落 {salt, params, iv, ct} —— 无明文密码、无明文助记词、
 // 无可导出密钥字节;密码对不对靠 AES-GCM 认证标签,解密失败即拒绝。
-// 与旧「记住本机」时代的 DB "keysark" 明确分离,独立 DB,避免版本号撞车。
+// 与旧「记住本机」时代的 DB "keymask" 明确分离,独立 DB,避免版本号撞车。
 import {
   decrypt,
   deriveWrappingKey,
@@ -9,9 +9,9 @@ import {
   generateWrappingSalt,
   DEFAULT_ARGON2ID_PARAMS,
   type Argon2idParams,
-} from "@keysark/crypto";
+} from "@keymask/crypto";
 
-const DB_NAME = "keysark-lock";
+const DB_NAME = "keymask-lock";
 const STORE = "vault-credentials";
 const VERSION = 1;
 

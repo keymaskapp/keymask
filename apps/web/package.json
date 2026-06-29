@@ -1,5 +1,5 @@
 {
-  "name": "@keysark/web",
+  "name": "@keymask/web",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -12,12 +12,12 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@keysark/baidupan": "workspace:*",
-    "@keysark/crypto": "workspace:*",
-    "@keysark/db": "workspace:*",
-    "@keysark/googledrive": "workspace:*",
-    "@keysark/ui": "workspace:*",
-    "@keysark/vault": "workspace:*",
+    "@keymask/baidupan": "workspace:*",
+    "@keymask/crypto": "workspace:*",
+    "@keymask/db": "workspace:*",
+    "@keymask/googledrive": "workspace:*",
+    "@keymask/ui": "workspace:*",
+    "@keymask/vault": "workspace:*",
     "@vercel/analytics": "^2.0.1",
     "highlight.js": "^11.11.1",
     "jspdf": "^4.2.1",

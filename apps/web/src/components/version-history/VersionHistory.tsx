@@ -3,7 +3,7 @@
 // 历史版本面板(冷路径):仅在用户点开"历史"时才 listVersions / 拉旧版,
 // 绝不在条目打开时预取。旧版预览复用 FilePreview(文件)/纯文本(文本)。
 import { useEffect, useState } from "react";
-import { Button } from "@keysark/ui";
+import { Button } from "@keymask/ui";
 import { History, RotateCcw, X } from "lucide-react";
 import { useT } from "../providers";
 import { testId } from "@/lib/test-id";

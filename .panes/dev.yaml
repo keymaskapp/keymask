@@ -2,4 +2,4 @@
 dir: ..
 commands:
   # Next.js dev server (固定端口 6134)
-  - exec: pnpm --filter @keysark/web dev
+  - exec: pnpm --filter @keymask/web dev

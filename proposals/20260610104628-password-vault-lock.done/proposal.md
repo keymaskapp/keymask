@@ -20,11 +20,11 @@
 
 ## 约束(推导依据)
 
-- E2E 硬规矩:主密钥/助记词/明文禁止触达服务端,加解密只在浏览器 `@keysark/crypto` + client component。新增的密码派生、助记词包裹必须只在浏览器(CLAUDE.md 强制约束 #3)。
+- E2E 硬规矩:主密钥/助记词/明文禁止触达服务端,加解密只在浏览器 `@keymask/crypto` + client component。新增的密码派生、助记词包裹必须只在浏览器(CLAUDE.md 强制约束 #3)。
 - crypto 包硬规矩:只用 `crypto.subtle` + `@noble`/`@scure` 纯 JS,禁止 `node:crypto`(`packages/crypto/src/index.ts` 头注)。引 wasm 是新依赖类型,须落在 `packages/crypto` 内且浏览器可 instantiate。
 - 现有代码事实:
   - `deriveKey(mnemonic)` 返回 **non-extractable** AES-GCM `CryptoKey`;`encryptToEnvelope` / `decryptFromEnvelope` 是现成 GCM 信封(`packages/crypto/src/index.ts`)。
-  - `apps/web/src/lib/key-store.ts`:`saveKey/loadKey/deleteKey/clearKeys`,存 non-extractable `CryptoKey` 于 IndexedDB(DB `keysark` / store `vault-keys`)。
+  - `apps/web/src/lib/key-store.ts`:`saveKey/loadKey/deleteKey/clearKeys`,存 non-extractable `CryptoKey` 于 IndexedDB(DB `keymask` / store `vault-keys`)。
   - `apps/web/src/components/vault-panel.tsx` 记住本机/自动解锁:state `rememberDevice/remembered/enteredRemembered` + ref `autoSuppress/autoTried`(182-190)、自动重入 `useEffect`(282-312)、`enterVault` 内 `saveKey`(369-371 / 469-471)、`unlockRemembered`(385-)、`forgetDevice`(847-)、`lock()`(831-)、解锁界面「用本设备解锁/忘记本设备/在此设备记住」UI(1057-1085)。
   - `user-menu.tsx` `onForget`(1568 调用点 / 98 文案)。
   - `i18n.ts`:`btn_unlock_remembered` / `remember_device` / `btn_forget_device`(141-143、365-367);landing 文案 291「no passwords」与新流程矛盾,需改。

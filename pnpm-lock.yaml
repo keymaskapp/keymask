@@ -30,10 +30,10 @@ importers:
       '@inquirer/prompts':
         specifier: ^8.5.2
         version: 8.5.2(@types/node@25.9.1)
-      '@keysark/crypto':
+      '@keymask/crypto':
         specifier: workspace:*
         version: link:../../packages/crypto
-      '@keysark/vault':
+      '@keymask/vault':
         specifier: workspace:*
         version: link:../../packages/vault
       esbuild:
@@ -42,22 +42,22 @@ importers:
 
   apps/web:
     dependencies:
-      '@keysark/baidupan':
+      '@keymask/baidupan':
         specifier: workspace:*
         version: link:../../packages/baidupan
-      '@keysark/crypto':
+      '@keymask/crypto':
         specifier: workspace:*
         version: link:../../packages/crypto
-      '@keysark/db':
+      '@keymask/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@keysark/googledrive':
+      '@keymask/googledrive':
         specifier: workspace:*
         version: link:../../packages/googledrive
-      '@keysark/ui':
+      '@keymask/ui':
         specifier: workspace:*
         version: link:../../packages/ui
-      '@keysark/vault':
+      '@keymask/vault':
         specifier: workspace:*
         version: link:../../packages/vault
       '@vercel/analytics':
@@ -184,10 +184,10 @@ importers:
 
   packages/vault:
     dependencies:
-      '@keysark/crypto':
+      '@keymask/crypto':
         specifier: workspace:*
         version: link:../crypto
-      '@keysark/db':
+      '@keymask/db':
         specifier: workspace:*
         version: link:../db
 

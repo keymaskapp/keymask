@@ -3,7 +3,7 @@ import {
   approveCliAuthRequest,
   denyCliAuthRequest,
   getCliAuthRequestByUserCode,
-} from "@keysark/db";
+} from "@keymask/db";
 import { normalizeUserCode } from "@/lib/cli-auth";
 import { getConnectedStorage } from "@/lib/storage";
 import { enforceRateLimit } from "@/lib/rate-limit";

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createCliAuthRequest } from "@keysark/db";
+import { createCliAuthRequest } from "@keymask/db";
 import {
   DEVICE_EXPIRES_IN,
   DEVICE_POLL_INTERVAL,

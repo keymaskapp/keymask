@@ -3,7 +3,7 @@
 // 用 pointerdown/keydown 而非 pointermove 降噪;重置节流 ≥1s;计时基于时间戳 +
 // 周期检查,后台标签回前台(visibilitychange)立即补一次检查,不被节流的 timer 骗过。
 
-const STORAGE_KEY = "keysark.idleLockMinutes";
+const STORAGE_KEY = "keymask.idleLockMinutes";
 export const DEFAULT_IDLE_MINUTES = 15;
 /** 设置 UI 的预设档位(分钟)。 */
 export const IDLE_OPTIONS = [1, 5, 15, 30, 60];

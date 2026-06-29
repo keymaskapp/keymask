@@ -9,7 +9,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@keysark/ui";
+} from "@keymask/ui";
 import { GithubMark } from "./brand";
 import { useLocale, useTheme } from "./providers";
 import { BUILD_REPO } from "@/lib/build-info";
@@ -35,7 +35,7 @@ export function DocsButton() {
   );
 }
 
-/** 头部仓库链接(GitHub 图标);KEYSARK_REPO 未配置时不渲染。落地页与登录后页面共用。 */
+/** 头部仓库链接(GitHub 图标);KEYMASK_REPO 未配置时不渲染。落地页与登录后页面共用。 */
 export function RepoButton() {
   const { t } = useLocale();
   if (!BUILD_REPO) return null;

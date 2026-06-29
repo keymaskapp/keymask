@@ -20,7 +20,7 @@ function emptyCache(): CacheShape {
   return { index: null, entries: {}, pending: [], indexPending: false };
 }
 
-const NS_PREFIX = "keysark.vault.v1";
+const NS_PREFIX = "keymask.vault.v1";
 
 /** 为某保险库(按 id)建一份独立缓存,底层落在注入的 KvStore。 */
 export function makeCache(kv: KvStore, vaultId: string): CacheStore {

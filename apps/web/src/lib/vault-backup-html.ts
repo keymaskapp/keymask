@@ -5,13 +5,13 @@
 // + 内联 argon2 wasm(hash-wasm UMD,从 /argon2.umd.min.js 取)+ 解密 UI。
 // 恢复:离线双击用任意浏览器打开(file:// 是安全上下文,WebCrypto 可用),输备份密码即见助记词。
 // 双语:中英文案全部内嵌,右上角可切换,默认为导出时语言。品牌 logo 内联 SVG(brand.tsx 同源)。
-// 不依赖 KeysArk 在线、不发任何网络请求;加密复用 @keysark/crypto 同一套实现。
+// 不依赖 KeyMask 在线、不发任何网络请求;加密复用 @keymask/crypto 同一套实现。
 import {
   DEFAULT_ARGON2ID_PARAMS,
   deriveWrappingKey,
   encrypt,
   generateWrappingSalt,
-} from "@keysark/crypto";
+} from "@keymask/crypto";
 import {
   BUILD_COMMIT,
   BUILD_REPO,
@@ -131,7 +131,7 @@ export async function buildEncryptedBackupHtml(input: EncryptedBackupInput): Pro
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>KeysArk · ${escapeHtml(input.vaultName)}</title>
+<title>KeyMask · ${escapeHtml(input.vaultName)}</title>
 <style>
   body { font: 16px/1.6 system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
          background: #111827; color: #E5E7EB; display: flex; justify-content: center; padding: 48px 16px; }
@@ -392,7 +392,7 @@ export async function exportEncryptedBackupHtml(input: EncryptedBackupInput): Pr
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   const date = new Date().toISOString().slice(0, 10);
-  a.download = `keysark-backup-${input.vaultName || "vault"}-${date}.html`;
+  a.download = `keymask-backup-${input.vaultName || "vault"}-${date}.html`;
   document.body.appendChild(a);
   a.click();
   a.remove();

@@ -6,18 +6,18 @@ import test from "node:test";
 import { resolveConn, saveCloud } from "./config";
 
 function withHome(fn: () => void): void {
-  const prevHome = process.env.KEYSARK_HOME;
-  const prevServer = process.env.KEYSARK_SERVER;
-  const dir = mkdtempSync(join(tmpdir(), "keysark-cli-test-"));
+  const prevHome = process.env.KEYMASK_HOME;
+  const prevServer = process.env.KEYMASK_SERVER;
+  const dir = mkdtempSync(join(tmpdir(), "keymask-cli-test-"));
   try {
-    process.env.KEYSARK_HOME = dir;
-    delete process.env.KEYSARK_SERVER;
+    process.env.KEYMASK_HOME = dir;
+    delete process.env.KEYMASK_SERVER;
     fn();
   } finally {
-    if (prevHome === undefined) delete process.env.KEYSARK_HOME;
-    else process.env.KEYSARK_HOME = prevHome;
-    if (prevServer === undefined) delete process.env.KEYSARK_SERVER;
-    else process.env.KEYSARK_SERVER = prevServer;
+    if (prevHome === undefined) delete process.env.KEYMASK_HOME;
+    else process.env.KEYMASK_HOME = prevHome;
+    if (prevServer === undefined) delete process.env.KEYMASK_SERVER;
+    else process.env.KEYMASK_SERVER = prevServer;
     rmSync(dir, { recursive: true, force: true });
   }
 }
@@ -34,7 +34,7 @@ test("legacy cloud token without issuer is not usable", () => {
 
 test("cloud token is usable only for its issuer", () => {
   withHome(() => {
-    saveCloud({ token: "ksk_bound", issuer: "https://keysark.com/" });
+    saveCloud({ token: "ksk_bound", issuer: "https://keymask.com/" });
 
     assert.equal(resolveConn().tokenUsableHere, true);
     assert.equal(resolveConn("https://example.com").tokenUsableHere, false);

@@ -1,8 +1,8 @@
 // 服务来源(service provider)的 web 展示层:品牌 icon 声明 + 行内图标 / 徽标组件。
-// 基础元数据(id / 名称 / 网址 / 域名)与 CLI 共享自 @keysark/vault 的 SERVICE_PROVIDERS;
+// 基础元数据(id / 名称 / 网址 / 域名)与 CLI 共享自 @keymask/vault 的 SERVICE_PROVIDERS;
 // 条目 provider 字段存已知 id(如 "github")或原始域名(未识别的自托管服务)。
 import { Globe } from "lucide-react";
-import { providerById } from "@keysark/vault";
+import { providerById } from "@keymask/vault";
 import { testId } from "@/lib/test-id";
 
 // 品牌 icon(simple-icons 路径,viewBox 0 0 24 24,fill=currentColor)

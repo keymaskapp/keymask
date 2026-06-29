@@ -18,7 +18,7 @@
   - 大文件 `upload`/`download` 改走新二进制端点(raw bytes),小文件(index/文本条目/注册表)保持现有 JSON 端点;或统一切到二进制端点。
   - 实现 `delete(path)` 调新 DELETE。
 - **更新**(`apps/web/src/components/vault-panel.tsx`):
-  - 新建条目时增加「上传文件」入口(`<input type="file">`,经 `@keysark/ui` 封装的按钮触发);选中后读 `File` → `arrayBuffer` → `Uint8Array` → `vault.saveFile(...)`,前端校验 ≤100MB 并提示。
+  - 新建条目时增加「上传文件」入口(`<input type="file">`,经 `@keymask/ui` 封装的按钮触发);选中后读 `File` → `arrayBuffer` → `Uint8Array` → `vault.saveFile(...)`,前端校验 ≤100MB 并提示。
   - 文件条目在列表中带类型标识与大小展示(复用 `EntryMeta.fileSize`)。
   - 打开文件条目时:不渲染 textarea,改为展示文件名/大小 + 「下载」按钮 → `vault.openFile(id)` 得字节 → 触发浏览器下载(Blob + `mimeType` + 原 `filename`)。
   - 文本条目编辑路径(`<Textarea>` + `save`)保持不变。
@@ -26,7 +26,7 @@
 
 ## 验收
 
-- [ ] `pnpm -r typecheck` 通过;`pnpm --filter @keysark/web dev` 起得来。
+- [ ] `pnpm -r typecheck` 通过;`pnpm --filter @keymask/web dev` 起得来。
 - [ ] 选一个 ~50MB 文件上传 → 网盘 `items/<id>.bin` 为密文 → 刷新页面 → 下载得到逐字节相同的文件(可用 sha256 比对)。
 - [ ] 服务端请求体/日志中不出现明文或文件字节明文(只过密文 bytes);DevTools 网络面板上传请求为 octet-stream 二进制非 base64。
 - [ ] 超过 100MB 的文件在前端被拦截并给出明确提示。

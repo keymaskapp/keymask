@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 import type { NextResponse } from "next/server";
 
-export const RETURN_TO_COOKIE = "keysark_return_to";
+export const RETURN_TO_COOKIE = "keymask_return_to";
 
 /** 登录入口:暂存合法的 ?next= 到短命 cookie。 */
 export function stashReturnTo(request: Request, res: NextResponse): void {

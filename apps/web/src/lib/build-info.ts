@@ -4,14 +4,14 @@
 // 用途:写进导出的助记词备份(PDF / HTML),让用户即便多年以后,也能据此还原
 //「生成这份备份的软件运行环境」并复现解密 —— 检出对应源码、对齐依赖、核对加密算法与参数。
 // 客户端可安全引用:NEXT_PUBLIC_* 在构建时被内联为字符串字面量;运行期字段读 navigator/Intl。
-import { DEFAULT_ARGON2ID_PARAMS } from "@keysark/crypto";
+import { DEFAULT_ARGON2ID_PARAMS } from "@keymask/crypto";
 import { pickLocale, type Locale } from "@/lib/i18n";
 
-export const BUILD_VERSION = process.env.NEXT_PUBLIC_KEYSARK_VERSION ?? "0.0.0";
-/** ark CLI(@keysark/cli)版本;构建期从 apps/cli/package.json 注入,展示在文档/落地页。 */
-export const CLI_VERSION = process.env.NEXT_PUBLIC_KEYSARK_CLI_VERSION ?? "0.0.0";
-export const BUILD_COMMIT = process.env.NEXT_PUBLIC_KEYSARK_COMMIT ?? "unknown";
-export const BUILD_REPO = process.env.NEXT_PUBLIC_KEYSARK_REPO ?? "";
+export const BUILD_VERSION = process.env.NEXT_PUBLIC_KEYMASK_VERSION ?? "0.0.0";
+/** ark CLI(@keymask/cli)版本;构建期从 apps/cli/package.json 注入,展示在文档/落地页。 */
+export const CLI_VERSION = process.env.NEXT_PUBLIC_KEYMASK_CLI_VERSION ?? "0.0.0";
+export const BUILD_COMMIT = process.env.NEXT_PUBLIC_KEYMASK_COMMIT ?? "unknown";
+export const BUILD_REPO = process.env.NEXT_PUBLIC_KEYMASK_REPO ?? "";
 
 interface BuildManifest {
   buildTime: string;
@@ -21,13 +21,13 @@ interface BuildManifest {
 
 const BUILD: BuildManifest = (() => {
   try {
-    return JSON.parse(process.env.NEXT_PUBLIC_KEYSARK_BUILD ?? "") as BuildManifest;
+    return JSON.parse(process.env.NEXT_PUBLIC_KEYMASK_BUILD ?? "") as BuildManifest;
   } catch {
     return { buildTime: "", node: "", deps: {} };
   }
 })();
 
-/** 形如 "https://github.com/org/keysark @ a1b2c3d · ark v1.0.3";无仓库地址时省略前段。
+/** 形如 "https://github.com/org/keymask @ a1b2c3d · ark v1.0.3";无仓库地址时省略前段。
  *  版本统一用 ark CLI 版本(对外的产品版本号);web 自身的 package.json 版本不对外展示。 */
 export function sourceLabel(): string {
   const left = BUILD_REPO ? `${BUILD_REPO}@${BUILD_COMMIT}` : BUILD_COMMIT;
@@ -42,13 +42,13 @@ export function commitUrl(): string | null {
   return `${base}/commit/${sha}`;
 }
 
-// 加密方案规格(与 @keysark/crypto 实现一致;参数取自同一常量,避免漂移)。
+// 加密方案规格(与 @keymask/crypto 实现一致;参数取自同一常量,避免漂移)。
 // 即便源码失传,凭这几行也足以重新实现解密。
 const A = DEFAULT_ARGON2ID_PARAMS;
 const CRYPTO_SPEC = {
   mnemonic: "BIP39 · 24 words (legacy vaults 12) · English wordlist (256/128-bit entropy)",
   vaultKey:
-    "BIP39 seed (PBKDF2-HMAC-SHA512) → HKDF-SHA256 (info=keysark-aes-gcm-v1, 32B) → AES-256-GCM, 96-bit IV",
+    "BIP39 seed (PBKDF2-HMAC-SHA512) → HKDF-SHA256 (info=keymask-aes-gcm-v1, 32B) → AES-256-GCM, 96-bit IV",
   backupKdf: `Argon2id (m=${A.m} KiB, t=${A.t}, p=${A.p}, 32B, NFKC) → AES-256-GCM, 96-bit IV`,
 };
 

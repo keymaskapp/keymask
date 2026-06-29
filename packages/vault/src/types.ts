@@ -6,7 +6,7 @@
 export const INDEX_NAME = "index.json";
 export const ITEMS_DIR = "items";
 /** 保险库注册表文件名(沙盒一级目录)。 */
-export const REGISTRY_NAME = "keysark.json";
+export const REGISTRY_NAME = "keymask.json";
 
 // ---------- 数据模型 ----------
 /** 文件夹:靠 parentId 串成无限嵌套的树;只存在于 index 里(无独立文件)。 */

@@ -21,7 +21,7 @@ const es: Partial<Messages> = {
   hero_title_1: "Tus secretos,",
   hero_title_2: "solo tú puedes abrirlos.",
   hero_subtitle: (store: string) =>
-    `KeysArk es una bóveda de texto cifrada de extremo a extremo. Protege todo con una sola frase de recuperación, con el texto cifrado almacenado en tu propio ${store}: nadie más que tú puede leer lo que hay dentro.`,
+    `KeyMask es una bóveda de texto cifrada de extremo a extremo. Protege todo con una sola frase de recuperación, con el texto cifrado almacenado en tu propio ${store}: nadie más que tú puede leer lo que hay dentro.`,
   cta_primary: "Conecta Baidu — empieza gratis",
   cta_secondary: "Cómo funciona",
   how_title: "Cómo funciona",
@@ -63,7 +63,7 @@ const es: Partial<Messages> = {
   os_badge: "Código abierto · Gratis",
   os_title: "Una bóveda de claves de código abierto",
   os_body: (store: string) =>
-    `KeysArk es totalmente de código abierto y gratis para siempre. El cifrado ocurre solo en tu navegador, el texto cifrado se almacena en tu propio ${store}, y cada línea es pública y auditable — autoalójalo, o usa la CLI ark para respaldar secretos como archivos .env por su ruta de GitHub y recuperarlos.`,
+    `KeyMask es totalmente de código abierto y gratis para siempre. El cifrado ocurre solo en tu navegador, el texto cifrado se almacena en tu propio ${store}, y cada línea es pública y auditable — autoalójalo, o usa la CLI ark para respaldar secretos como archivos .env por su ruta de GitHub y recuperarlos.`,
   os_point_open_title: "Abierto y auditable",
   os_point_open_body: "Toda la pila es pública; el cifrado de extremo a extremo puede revisarse línea por línea. Sin puertas traseras.",
   os_point_free_title: "Gratis, sin cuenta",
@@ -73,14 +73,14 @@ const es: Partial<Messages> = {
   os_cta_repo: "Ver en GitHub",
   os_cta_selfhost: "Guía de autoalojamiento",
 
-  meta_title: "KeysArk — Bóveda de contraseñas y claves cifrada de extremo a extremo y de código abierto",
+  meta_title: "KeyMask — Bóveda de contraseñas y claves cifrada de extremo a extremo y de código abierto",
   meta_description: (store: string) =>
-    `KeysArk es una bóveda gratuita, de código abierto y cifrada de extremo a extremo. Las claves se derivan de una frase de recuperación BIP39 y el cifrado ocurre en tu navegador; el texto cifrado se almacena en tu propio ${store}. El servidor solo maneja texto cifrado, y puedes autoalojarlo.`,
+    `KeyMask es una bóveda gratuita, de código abierto y cifrada de extremo a extremo. Las claves se derivan de una frase de recuperación BIP39 y el cifrado ocurre en tu navegador; el texto cifrado se almacena en tu propio ${store}. El servidor solo maneja texto cifrado, y puedes autoalojarlo.`,
   meta_keywords:
     "gestor de contraseñas, gestión de claves, código abierto, cifrado de extremo a extremo, conocimiento cero, BIP39, frase mnemónica, Google Drive, Baidu netdisk, autoalojado, almacenamiento de secretos, copia de seguridad de .env",
 
   create_title: "Crea tu bóveda",
-  create_desc_a: "KeysArk genera una frase de recuperación de 24 palabras como tu clave maestra. Se ",
+  create_desc_a: "KeyMask genera una frase de recuperación de 24 palabras como tu clave maestra. Se ",
   create_desc_strong: "muestra una sola vez y vive solo contigo",
   create_desc_b: ".",
   create_warn_a: "Ten papel y lápiz a mano. Tras generarla, anótala y guárdala de forma segura — ",
@@ -123,7 +123,7 @@ const es: Partial<Messages> = {
   backup_html_warn: "Si pierdes la contraseña de la copia, esta queda inservible — nadie (ni siquiera nosotros) puede recuperarla.",
   btn_download_html: "Cifrar y descargar",
   st_html_export_fail: (e: string) => `falló la copia de seguridad cifrada: ${e}`,
-  bk_title: "Copia de seguridad cifrada de KeysArk",
+  bk_title: "Copia de seguridad cifrada de KeyMask",
   bk_prompt: "Introduce la contraseña de la copia para descifrar tu frase:",
   bk_btn: "Descifrar",
   bk_decrypting: "Descifrando… (~1 segundo)",
@@ -200,7 +200,7 @@ const es: Partial<Messages> = {
   nav_privacy: "Privacidad",
   nav_blog: "Blog",
   blog_title: "Blog",
-  blog_subtitle: "Sobre el diseño del cifrado, los argumentos a favor del código abierto y la reflexión detrás de KeysArk.",
+  blog_subtitle: "Sobre el diseño del cifrado, los argumentos a favor del código abierto y la reflexión detrás de KeyMask.",
   blog_back: "← Volver al blog",
 
   // Home CLI section + command-line client
@@ -208,7 +208,7 @@ const es: Partial<Messages> = {
   cli_home_tag: "Línea de comandos",
   cli_home_title: "ark — tu bóveda en la terminal",
   cli_home_body:
-    "ark es el cliente de línea de comandos de KeysArk. Inicia sesión e importa tu frase, luego lee y escribe en tu bóveda desde la terminal — entra y saca archivos .env, claves de API y configuraciones. Igual que en la app web, todo el cifrado y descifrado ocurre en tu dispositivo; la nube solo ve texto cifrado. Hecho para desarrolladores y scripts / CI.",
+    "ark es el cliente de línea de comandos de KeyMask. Inicia sesión e importa tu frase, luego lee y escribe en tu bóveda desde la terminal — entra y saca archivos .env, claves de API y configuraciones. Igual que en la app web, todo el cifrado y descifrado ocurre en tu dispositivo; la nube solo ve texto cifrado. Hecho para desarrolladores y scripts / CI.",
   cli_home_install_hint: "Una línea, multiplataforma:",
   cli_home_cta: "Leer la documentación de la CLI",
 
@@ -219,15 +219,15 @@ const es: Partial<Messages> = {
     "Lee y escribe en tu bóveda cifrada de extremo a extremo desde la terminal. Tu texto sin cifrar y tu frase permanecen locales — solo el texto cifrado sale del dispositivo.",
   docs_intro_title: "Qué es",
   docs_intro_body:
-    "ark es el cliente de línea de comandos oficial de KeysArk. Lleva la bóveda web a tu terminal: lista elementos, lee por ruta, guarda archivos locales, crea y actualiza entradas. Todo el cifrado y descifrado ocurre localmente con tu frase de recuperación — el servidor y el backend en la nube solo manejan texto cifrado opaco.",
+    "ark es el cliente de línea de comandos oficial de KeyMask. Lleva la bóveda web a tu terminal: lista elementos, lee por ruta, guarda archivos locales, crea y actualiza entradas. Todo el cifrado y descifrado ocurre localmente con tu frase de recuperación — el servidor y el backend en la nube solo manejan texto cifrado opaco.",
   docs_install_title: "Instalación",
-  docs_install_note: "Requiere Node.js 18+. Instala el comando ark (con alias keysark).",
+  docs_install_note: "Requiere Node.js 18+. Instala el comando ark (con alias keymask).",
   docs_setup_title: "Configuración inicial",
   docs_setup_body: "Dos pasos: autoriza este dispositivo, luego importa tu frase.",
   docs_setup_login_note:
     "ark login usa autorización por código de dispositivo: la terminal muestra un enlace y un código; ábrelo en tu navegador, confirma que el código coincide y aprueba. La concesión equivale a una sesión de navegador — solo puede mover texto cifrado, nunca tu frase ni tu texto sin cifrar.",
   docs_setup_import_note:
-    "ark import te pide tu frase de recuperación y establece una contraseña de desbloqueo local. La frase se cifra con una clave derivada con Argon2id y se almacena localmente (~/.keysark) — nunca se sube. El desbloqueo permanece en caché hasta 5 minutos de inactividad, así no tienes que volver a teclear la contraseña.",
+    "ark import te pide tu frase de recuperación y establece una contraseña de desbloqueo local. La frase se cifra con una clave derivada con Argon2id y se almacena localmente (~/.keymask) — nunca se sube. El desbloqueo permanece en caché hasta 5 minutos de inactividad, así no tienes que volver a teclear la contraseña.",
   docs_commands_title: "Referencia de comandos",
   docs_cmd_login: "Autoriza este dispositivo mediante código de dispositivo (abre el navegador para confirmar).",
   docs_cmd_import: "Importa una frase de recuperación y establece una contraseña de desbloqueo local.",
@@ -242,7 +242,7 @@ const es: Partial<Messages> = {
   docs_cmd_logout: "Borra el inicio de sesión local (conserva la credencial de la frase).",
   docs_cmd_forget: "Elimina la credencial de la frase almacenada localmente y la caché de desbloqueo.",
   docs_options_title: "Opciones globales",
-  docs_opt_server: "Sobrescribe la URL del servidor (por defecto https://keysark.com).",
+  docs_opt_server: "Sobrescribe la URL del servidor (por defecto https://keymask.com).",
   docs_opt_vault: "Selecciona una bóveda por ID o etiqueta (por defecto la primera que coincida con tu frase).",
   docs_opt_no_browser: "No abrir el navegador automáticamente durante el inicio de sesión.",
   docs_examples_title: "Ejemplos comunes",
@@ -252,7 +252,7 @@ const es: Partial<Messages> = {
   docs_env_title: "Variables de entorno",
   docs_env_server: "URL del servidor (igual que --server).",
   docs_env_mnemonic: "Proporciona la frase de recuperación directamente, omitiendo la credencial local — para CI / scripts.",
-  docs_env_home: "Directorio de configuración, por defecto ~/.keysark.",
+  docs_env_home: "Directorio de configuración, por defecto ~/.keymask.",
   docs_env_no_browser: "Cuando se establece, el inicio de sesión no abre el navegador automáticamente.",
   docs_security_title: "Seguridad",
   docs_security_body:
@@ -318,7 +318,7 @@ const es: Partial<Messages> = {
   content_hide: "Ocultar contenido",
   cli_access: "Obtener vía CLI",
   cli_dialog_title: "Descarga este elemento con la CLI ark",
-  cli_dialog_desc: "ark es el cliente de línea de comandos de KeysArk. Tras iniciar sesión + importar la frase mnemónica puedes leer y escribir en tu bóveda desde la terminal — el descifrado sigue ocurriendo solo en tu dispositivo.",
+  cli_dialog_desc: "ark es el cliente de línea de comandos de KeyMask. Tras iniciar sesión + importar la frase mnemónica puedes leer y escribir en tu bóveda desde la terminal — el descifrado sigue ocurriendo solo en tu dispositivo.",
   cli_step_install: "Instalar",
   cli_step_setup: "Configuración inicial (iniciar sesión + importar frase mnemónica)",
   cli_step_download: "Descargar este elemento",

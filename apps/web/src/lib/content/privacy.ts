@@ -4,11 +4,11 @@ export const PRIVACY: DocContent = {
   en: {
     title: "Privacy Policy",
     description:
-      "KeysArk is built so that we — and anyone else — only ever see ciphertext. This page explains what that means for your data.",
+      "KeyMask is built so that we — and anyone else — only ever see ciphertext. This page explains what that means for your data.",
     body: [
       {
         k: "p",
-        t: "KeysArk is built so that we — and anyone else — only ever see ciphertext. This page explains what that means for your data in plain terms.",
+        t: "KeyMask is built so that we — and anyone else — only ever see ciphertext. This page explains what that means for your data in plain terms.",
       },
       { k: "h2", t: "What we never see" },
       {
@@ -51,8 +51,8 @@ export const PRIVACY: DocContent = {
         k: "ul",
         items: [
           "Sign out to clear the session on this device.",
-          "Delete the KeysArk files in your own cloud drive at any time.",
-          "Revoke KeysArk's access from your Google or Baidu account settings.",
+          "Delete the KeyMask files in your own cloud drive at any time.",
+          "Revoke KeyMask's access from your Google or Baidu account settings.",
         ],
       },
       { k: "h2", t: "Changes" },
@@ -64,11 +64,11 @@ export const PRIVACY: DocContent = {
   },
   zh: {
     title: "隐私政策",
-    description: "KeysArk 的设计让我们(以及任何人)始终只能看到密文。本页用大白话说明这对你的数据意味着什么。",
+    description: "KeyMask 的设计让我们(以及任何人)始终只能看到密文。本页用大白话说明这对你的数据意味着什么。",
     body: [
       {
         k: "p",
-        t: "KeysArk 的设计让我们(以及任何人)始终只能看到密文。本页用大白话说明这对你的数据意味着什么。",
+        t: "KeyMask 的设计让我们(以及任何人)始终只能看到密文。本页用大白话说明这对你的数据意味着什么。",
       },
       { k: "h2", t: "我们永远看不到的" },
       {
@@ -104,8 +104,8 @@ export const PRIVACY: DocContent = {
         k: "ul",
         items: [
           "退出登录即可清除本设备上的会话。",
-          "随时在你自己的云盘里删除 KeysArk 的文件。",
-          "在 Google 或百度的账号设置里撤销 KeysArk 的访问授权。",
+          "随时在你自己的云盘里删除 KeyMask 的文件。",
+          "在 Google 或百度的账号设置里撤销 KeyMask 的访问授权。",
         ],
       },
       { k: "h2", t: "变更" },

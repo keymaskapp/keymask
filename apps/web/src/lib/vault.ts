@@ -1,4 +1,4 @@
-// 浏览器侧的 vault 适配层:把环境无关的 @keysark/vault 接到浏览器实现 ——
+// 浏览器侧的 vault 适配层:把环境无关的 @keymask/vault 接到浏览器实现 ——
 //   - StorageTransport → fetch('/api/files*')(服务端只搬运密文)
 //   - CacheStore       → localStorage(密文信封 base64,按保险库分命名空间)
 // E2E:主密钥只在内存;落本地/上网盘的都是不透明密文信封。
@@ -8,7 +8,7 @@ import {
   type CacheStore,
   type KvStore,
   type StorageTransport,
-} from "@keysark/vault";
+} from "@keymask/vault";
 
 // ---------- 浏览器密文中转:/api/files*(二进制端点,无 base64) ----------
 export const browserTransport: StorageTransport = {
@@ -71,11 +71,11 @@ export function openBrowserVault(key: CryptoKey, descriptor: { id: string; dir: 
   return new Vault(key, { dir: descriptor.dir }, browserTransport, browserCache(descriptor.id));
 }
 
-// 类型与路径工具直接透传 @keysark/vault,消费方仍从 "@/lib/vault" import。
+// 类型与路径工具直接透传 @keymask/vault,消费方仍从 "@/lib/vault" import。
 export {
   Vault,
   itemRelPath,
   type EntryMeta,
   type FolderMeta,
   type VersionMeta,
-} from "@keysark/vault";
+} from "@keymask/vault";

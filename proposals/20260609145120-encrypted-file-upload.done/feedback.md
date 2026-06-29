@@ -23,7 +23,7 @@
 - **类型**:UX 小瑕疵
 - **位置**:`vault-panel.tsx` 预览底部 `itemRelPath(selectedVault.dir, selected.id)`
 - **描述**:文件条目正文存 `<id>.bin`,但「在网盘打开」链接仍指向 `<id>.json`(元信息)。
-- **建议**:文件条目改用 `itemBlobRelPath`(已在 @keysark/vault 导出)生成链接。
+- **建议**:文件条目改用 `itemBlobRelPath`(已在 @keymask/vault 导出)生成链接。
 
 ## [plans/002-web-file-upload-ui] 列表行未区分文件/文本条目
 

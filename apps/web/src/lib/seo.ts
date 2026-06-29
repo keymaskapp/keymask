@@ -26,7 +26,7 @@ export function organizationLd(): Record<string, unknown> {
     "@context": "https://schema.org",
     "@type": "Organization",
     "@id": ORG_ID,
-    name: "KeysArk",
+    name: "KeyMask",
     url: SITE_URL,
     logo: absUrl("/apple-touch-icon.png"),
   };
@@ -38,7 +38,7 @@ export function websiteLd(): Record<string, unknown> {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "@id": WEBSITE_ID,
-    name: "KeysArk",
+    name: "KeyMask",
     url: SITE_URL,
     publisher: { "@id": ORG_ID },
     inLanguage: LOCALES.map((l) => htmlLang(l)),
@@ -66,7 +66,7 @@ export function articleLd(input: {
     author: { "@id": ORG_ID },
     publisher: { "@id": ORG_ID },
     mainEntityOfPage: absUrl(input.urlPath),
-    image: input.imageUrl ?? absUrl("/keysark-og-banner.png"),
+    image: input.imageUrl ?? absUrl("/keymask-og-banner.png"),
   };
 }
 

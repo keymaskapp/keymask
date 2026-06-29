@@ -4,7 +4,7 @@ import { newId } from "./id";
 
 // 存储后端授权 token,按 (provider, accountKey) 存。
 // provider: "baidu"(accountKey=百度 uk)| "google"(accountKey=Google sub)。
-// access/refresh token 字段在应用层信封加密后落库(KEYSARK_DB_ENCRYPTION_KEY,见 secret-box.ts);
+// access/refresh token 字段在应用层信封加密后落库(KEYMASK_DB_ENCRYPTION_KEY,见 secret-box.ts);
 // 未配置主密钥时回退明文(仅开发态)。
 export const storageAccount = pgTable(
   "storage_account",

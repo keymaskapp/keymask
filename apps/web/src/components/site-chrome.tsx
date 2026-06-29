@@ -11,7 +11,7 @@ export function SiteHeader({ locale }: { locale: Locale }) {
       {...testId("site-header")}
       className="relative z-10 mx-auto flex w-full max-w-3xl items-center justify-between gap-3 px-6 py-5"
     >
-      <a href={localeHref("/", locale)} aria-label="KeysArk">
+      <a href={localeHref("/", locale)} aria-label="KeyMask">
         <Wordmark className="text-lg" />
       </a>
       <div className="flex items-center gap-3">
@@ -37,7 +37,7 @@ export function SiteFooter({ locale }: { locale: Locale }) {
       className="relative z-10 mx-auto mt-16 w-full max-w-3xl border-t border-[var(--color-border)] px-6 py-8 text-xs text-[var(--color-muted-foreground)]"
     >
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-        <a href={localeHref("/", locale)} aria-label="KeysArk">
+        <a href={localeHref("/", locale)} aria-label="KeyMask">
           <Wordmark className="text-sm font-medium" />
         </a>
         <nav {...testId("site-footer-nav")} className="flex flex-wrap items-center gap-4">

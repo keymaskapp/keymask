@@ -2,13 +2,13 @@ import type { DocContent } from "./types";
 
 export const ABOUT: DocContent = {
   en: {
-    title: "About KeysArk",
+    title: "About KeyMask",
     description:
-      "KeysArk is an open-source, free, end-to-end encrypted vault for your passwords, keys, and secret text — stored in a cloud drive you already own.",
+      "KeyMask is an open-source, free, end-to-end encrypted vault for your passwords, keys, and secret text — stored in a cloud drive you already own.",
     body: [
       {
         k: "p",
-        t: "KeysArk is an open-source, free, end-to-end encrypted vault for your passwords, keys, and secret text. Instead of trusting a vendor's database with your secrets, KeysArk encrypts everything in your browser and stores the ciphertext in a cloud drive you already own.",
+        t: "KeyMask is an open-source, free, end-to-end encrypted vault for your passwords, keys, and secret text. Instead of trusting a vendor's database with your secrets, KeyMask encrypts everything in your browser and stores the ciphertext in a cloud drive you already own.",
       },
       { k: "h2", t: "The principle: you hold the only key" },
       {
@@ -38,18 +38,18 @@ export const ABOUT: DocContent = {
       { k: "h2", t: "Get involved" },
       {
         k: "p",
-        t: "KeysArk is open source. Read the code, audit the encryption, file issues, and send pull requests — links are in the header and footer.",
+        t: "KeyMask is open source. Read the code, audit the encryption, file issues, and send pull requests — links are in the header and footer.",
       },
     ],
   },
   zh: {
-    title: "关于 KeysArk",
+    title: "关于 KeyMask",
     description:
-      "KeysArk 是一个开源免费、端到端加密的保管库,用来存放你的密码、密钥与机密文本——密文存进你自己已有的云盘。",
+      "KeyMask 是一个开源免费、端到端加密的保管库,用来存放你的密码、密钥与机密文本——密文存进你自己已有的云盘。",
     body: [
       {
         k: "p",
-        t: "KeysArk 是一个开源免费、端到端加密的保管库,用来存放你的密码、密钥与机密文本。它不把你的秘密托付给厂商的数据库,而是在你的浏览器里完成加密,再把密文存进你自己已有的云盘。",
+        t: "KeyMask 是一个开源免费、端到端加密的保管库,用来存放你的密码、密钥与机密文本。它不把你的秘密托付给厂商的数据库,而是在你的浏览器里完成加密,再把密文存进你自己已有的云盘。",
       },
       { k: "h2", t: "核心原则:钥匙只在你手上" },
       {
@@ -79,7 +79,7 @@ export const ABOUT: DocContent = {
       { k: "h2", t: "参与进来" },
       {
         k: "p",
-        t: "KeysArk 是开源项目。阅读代码、审计加密、提交 issue 与 PR——入口就在页眉与页脚。",
+        t: "KeyMask 是开源项目。阅读代码、审计加密、提交 issue 与 PR——入口就在页眉与页脚。",
       },
     ],
   },

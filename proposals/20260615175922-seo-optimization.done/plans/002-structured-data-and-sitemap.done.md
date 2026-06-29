@@ -62,9 +62,9 @@
 - [x] blog 文章含 Article JSON-LD,且 `article:modified_time` 出现 —— modified_time=2026-06-02
 - [x] blog 列表与文章含 BreadcrumbList —— 两页均验证
 - [x] sitemap 每 url 含 lastmod;文章 lastmod=其 date —— 验证
-- [x] sitemap 全绝对 https 生产-域 URL(无 localhost) —— 构建时设 NEXT_PUBLIC_SITE_URL 后 `<loc>https://keysark.com/...`
+- [x] sitemap 全绝对 https 生产-域 URL(无 localhost) —— 构建时设 NEXT_PUBLIC_SITE_URL 后 `<loc>https://keymask.com/...`
 - [x] 设 GOOGLE_SITE_VERIFICATION 时首页含 `google-site-verification` meta;未设则无 —— 验证(content=test token)
-- [x] robots.txt 含 `Sitemap: https://keysark.com/sitemap.xml` —— 验证
+- [x] robots.txt 含 `Sitemap: https://keymask.com/sitemap.xml` —— 验证
 - [x] 构建未设 NEXT_PUBLIC_SITE_URL 时输出 `[seo]` warn;设了则无 —— 验证
 - [x] typecheck 与 build 通过
 

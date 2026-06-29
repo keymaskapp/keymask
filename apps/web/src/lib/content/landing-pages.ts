@@ -2,7 +2,7 @@ import type { Block } from "@/components/prose";
 import type { Locale } from "@/lib/i18n";
 
 // 长尾 SEO 着陆页内容:一词一意图,每页原创(非模板换词)。en/zh 全量,其余语言回退 en。
-// 定位诚实:KeysArk 是端到端加密的密钥/密文保管库,不是 1Password 式自动填充密码管理器。
+// 定位诚实:KeyMask 是端到端加密的密钥/密文保管库,不是 1Password 式自动填充密码管理器。
 export interface LandingFaq {
   q: string;
   a: string;
@@ -28,21 +28,21 @@ export const LANDING_PAGES: LandingPage[] = [
       en: {
         title: "Open-source password manager — free & end-to-end encrypted",
         description:
-          "KeysArk is a free, open-source, end-to-end encrypted vault for your most sensitive text — an auditable alternative to closed-source password managers. Your key never leaves your browser.",
+          "KeyMask is a free, open-source, end-to-end encrypted vault for your most sensitive text — an auditable alternative to closed-source password managers. Your key never leaves your browser.",
         h1: "A free, open-source password & secrets vault",
         lead: [
           {
             k: "p",
-            t: "KeysArk is a free and open-source vault for the secrets you cannot afford to lose: recovery phrases, API keys, passwords, private notes. Everything is encrypted in your browser with a key only you hold — the server only ever stores ciphertext.",
+            t: "KeyMask is a free and open-source vault for the secrets you cannot afford to lose: recovery phrases, API keys, passwords, private notes. Everything is encrypted in your browser with a key only you hold — the server only ever stores ciphertext.",
           },
           {
             k: "p",
-            t: "Be clear on what it is: KeysArk is an end-to-end encrypted text vault, not an autofill browser extension. If you want a self-custody place to keep secrets that no company — including us — can read, and code you can actually audit, this is built for you.",
+            t: "Be clear on what it is: KeyMask is an end-to-end encrypted text vault, not an autofill browser extension. If you want a self-custody place to keep secrets that no company — including us — can read, and code you can actually audit, this is built for you.",
           },
           { k: "h2", t: "Why open source matters for a password manager" },
           {
             k: "p",
-            t: "“We can't read your data” is only a promise until you can verify it. Because KeysArk is open source, anyone can confirm the key is derived in the browser and that plaintext never reaches the server. Security you cannot audit is faith, not proof.",
+            t: "“We can't read your data” is only a promise until you can verify it. Because KeyMask is open source, anyone can confirm the key is derived in the browser and that plaintext never reaches the server. Security you cannot audit is faith, not proof.",
           },
           {
             k: "ul",
@@ -56,15 +56,15 @@ export const LANDING_PAGES: LandingPage[] = [
         ],
         faqs: [
           {
-            q: "Is KeysArk a free password manager?",
-            a: "Yes. KeysArk is free and open source. There is no paid tier and no account fee — you store your encrypted data in your own cloud drive.",
+            q: "Is KeyMask a free password manager?",
+            a: "Yes. KeyMask is free and open source. There is no paid tier and no account fee — you store your encrypted data in your own cloud drive.",
           },
           {
             q: "Is it a replacement for 1Password or Bitwarden?",
-            a: "Not exactly. KeysArk is an end-to-end encrypted vault for sensitive text and secrets, not an autofill manager. It is for people who want auditable, self-custody encryption rather than browser autofill.",
+            a: "Not exactly. KeyMask is an end-to-end encrypted vault for sensitive text and secrets, not an autofill manager. It is for people who want auditable, self-custody encryption rather than browser autofill.",
           },
           {
-            q: "Can anyone at KeysArk read my passwords?",
+            q: "Can anyone at KeyMask read my passwords?",
             a: "No. Encryption and decryption happen only in your browser. The server and storage backends handle opaque ciphertext only — the master key and plaintext never reach them.",
           },
           {
@@ -76,21 +76,21 @@ export const LANDING_PAGES: LandingPage[] = [
       zh: {
         title: "开源密码管理器 —— 免费、端到端加密",
         description:
-          "KeysArk 是免费开源、端到端加密的保管库,存放你最敏感的文本——一个可审计的闭源密码管理器替代品。密钥永不离开浏览器。",
+          "KeyMask 是免费开源、端到端加密的保管库,存放你最敏感的文本——一个可审计的闭源密码管理器替代品。密钥永不离开浏览器。",
         h1: "免费开源的密码与密钥保管库",
         lead: [
           {
             k: "p",
-            t: "KeysArk 是一个免费开源的保管库,守护你输不起的秘密:助记词、API 密钥、密码、私密笔记。一切都在你的浏览器里用只有你掌握的密钥加密——服务端只存密文。",
+            t: "KeyMask 是一个免费开源的保管库,守护你输不起的秘密:助记词、API 密钥、密码、私密笔记。一切都在你的浏览器里用只有你掌握的密钥加密——服务端只存密文。",
           },
           {
             k: "p",
-            t: "请先看清它是什么:KeysArk 是端到端加密的文本保管库,不是自动填充的浏览器扩展。如果你想要一个连任何公司(包括我们)都读不到、且代码可审计的自我保管之地,它就是为你而造。",
+            t: "请先看清它是什么:KeyMask 是端到端加密的文本保管库,不是自动填充的浏览器扩展。如果你想要一个连任何公司(包括我们)都读不到、且代码可审计的自我保管之地,它就是为你而造。",
           },
           { k: "h2", t: "密码管理器为什么要开源" },
           {
             k: "p",
-            t: "在你能验证之前,「我们读不到你的数据」只是一句承诺。因为 KeysArk 开源,任何人都能确认密钥在浏览器里派生、明文从不到达服务端。无法审计的安全是信仰,不是证明。",
+            t: "在你能验证之前,「我们读不到你的数据」只是一句承诺。因为 KeyMask 开源,任何人都能确认密钥在浏览器里派生、明文从不到达服务端。无法审计的安全是信仰,不是证明。",
           },
           {
             k: "ul",
@@ -104,15 +104,15 @@ export const LANDING_PAGES: LandingPage[] = [
         ],
         faqs: [
           {
-            q: "KeysArk 是免费的密码管理器吗?",
-            a: "是。KeysArk 免费且开源,没有付费档位、没有账号费——你把加密数据存在自己的云盘里。",
+            q: "KeyMask 是免费的密码管理器吗?",
+            a: "是。KeyMask 免费且开源,没有付费档位、没有账号费——你把加密数据存在自己的云盘里。",
           },
           {
             q: "它能替代 1Password 或 Bitwarden 吗?",
-            a: "不完全是。KeysArk 是面向敏感文本与密钥的端到端加密保管库,而非自动填充工具。它适合想要可审计、自我保管加密的人,而非浏览器自动填充。",
+            a: "不完全是。KeyMask 是面向敏感文本与密钥的端到端加密保管库,而非自动填充工具。它适合想要可审计、自我保管加密的人,而非浏览器自动填充。",
           },
           {
-            q: "KeysArk 的人能读到我的密码吗?",
+            q: "KeyMask 的人能读到我的密码吗?",
             a: "不能。加解密只在你的浏览器里完成。服务端与存储后端只经手不透明密文——主密钥与明文永不到达它们。",
           },
           {
@@ -135,11 +135,11 @@ export const LANDING_PAGES: LandingPage[] = [
         lead: [
           {
             k: "p",
-            t: "KeysArk is a free secrets vault for the credentials that should never sit in plaintext: API keys, access tokens, database URLs, private keys. Each item is sealed with AES-256-GCM in your browser before it ever leaves your device.",
+            t: "KeyMask is a free secrets vault for the credentials that should never sit in plaintext: API keys, access tokens, database URLs, private keys. Each item is sealed with AES-256-GCM in your browser before it ever leaves your device.",
           },
           {
             k: "p",
-            t: "Unlike a hosted secrets manager, KeysArk never holds your key. It is derived from a BIP39 recovery phrase you control, so even if the storage backend were compromised, the contents stay unreadable.",
+            t: "Unlike a hosted secrets manager, KeyMask never holds your key. It is derived from a BIP39 recovery phrase you control, so even if the storage backend were compromised, the contents stay unreadable.",
           },
           { k: "h2", t: "What you can keep in it" },
           {
@@ -155,7 +155,7 @@ export const LANDING_PAGES: LandingPage[] = [
         faqs: [
           {
             q: "Is the secrets manager free?",
-            a: "Yes — KeysArk is free and open source. Your encrypted secrets are stored in your own Google Drive or Baidu netdisk.",
+            a: "Yes — KeyMask is free and open source. Your encrypted secrets are stored in your own Google Drive or Baidu netdisk.",
           },
           {
             q: "How are my secrets encrypted?",
@@ -179,11 +179,11 @@ export const LANDING_PAGES: LandingPage[] = [
         lead: [
           {
             k: "p",
-            t: "KeysArk 是一个免费的密钥保管库,专放绝不该以明文存在的凭据:API 密钥、访问令牌、数据库地址、私钥。每个条目在离开设备前,都先在你的浏览器里用 AES-256-GCM 封装。",
+            t: "KeyMask 是一个免费的密钥保管库,专放绝不该以明文存在的凭据:API 密钥、访问令牌、数据库地址、私钥。每个条目在离开设备前,都先在你的浏览器里用 AES-256-GCM 封装。",
           },
           {
             k: "p",
-            t: "与托管式密钥管理服务不同,KeysArk 永不持有你的密钥。密钥由你掌握的 BIP39 助记词派生——即便存储后端被攻破,内容依旧无法读取。",
+            t: "与托管式密钥管理服务不同,KeyMask 永不持有你的密钥。密钥由你掌握的 BIP39 助记词派生——即便存储后端被攻破,内容依旧无法读取。",
           },
           { k: "h2", t: "你可以存些什么" },
           {
@@ -199,7 +199,7 @@ export const LANDING_PAGES: LandingPage[] = [
         faqs: [
           {
             q: "这个密钥管理器免费吗?",
-            a: "免费——KeysArk 免费且开源。你的加密密钥存在自己的 Google Drive 或百度网盘里。",
+            a: "免费——KeyMask 免费且开源。你的加密密钥存在自己的 Google Drive 或百度网盘里。",
           },
           {
             q: "我的密钥怎么加密?",
@@ -229,7 +229,7 @@ export const LANDING_PAGES: LandingPage[] = [
         lead: [
           {
             k: "p",
-            t: "Your .env files hold the keys to everything — and they are the one thing you must never commit to git. KeysArk gives them a safe home: encrypted in your browser or terminal, synced to your own cloud, restorable on any machine.",
+            t: "Your .env files hold the keys to everything — and they are the one thing you must never commit to git. KeyMask gives them a safe home: encrypted in your browser or terminal, synced to your own cloud, restorable on any machine.",
           },
           {
             k: "p",
@@ -249,7 +249,7 @@ export const LANDING_PAGES: LandingPage[] = [
         faqs: [
           {
             q: "Why not just keep .env files in a private git repo?",
-            a: "Anything committed to git is plaintext to anyone with repo access and lives forever in history. KeysArk keeps them end-to-end encrypted, so even the storage backend can't read them.",
+            a: "Anything committed to git is plaintext to anyone with repo access and lives forever in history. KeyMask keeps them end-to-end encrypted, so even the storage backend can't read them.",
           },
           {
             q: "Can I restore a .env on a new machine?",
@@ -261,7 +261,7 @@ export const LANDING_PAGES: LandingPage[] = [
           },
           {
             q: "Is it free?",
-            a: "Yes — KeysArk is free and open source; your encrypted backups live in your own cloud drive.",
+            a: "Yes — KeyMask is free and open source; your encrypted backups live in your own cloud drive.",
           },
         ],
       },
@@ -273,7 +273,7 @@ export const LANDING_PAGES: LandingPage[] = [
         lead: [
           {
             k: "p",
-            t: ".env 文件握着通往一切的钥匙——也是你绝不能提交进 git 的东西。KeysArk 给它一个安全的家:在浏览器或终端里加密,同步到你自己的云盘,在任何机器上还原。",
+            t: ".env 文件握着通往一切的钥匙——也是你绝不能提交进 git 的东西。KeyMask 给它一个安全的家:在浏览器或终端里加密,同步到你自己的云盘,在任何机器上还原。",
           },
           {
             k: "p",
@@ -293,7 +293,7 @@ export const LANDING_PAGES: LandingPage[] = [
         faqs: [
           {
             q: "为什么不直接把 .env 放进私有 git 仓库?",
-            a: "提交进 git 的内容对有仓库权限的人都是明文,且永远留在历史里。KeysArk 让它们端到端加密,连存储后端也读不到。",
+            a: "提交进 git 的内容对有仓库权限的人都是明文,且永远留在历史里。KeyMask 让它们端到端加密,连存储后端也读不到。",
           },
           {
             q: "能在新机器上还原 .env 吗?",
@@ -305,7 +305,7 @@ export const LANDING_PAGES: LandingPage[] = [
           },
           {
             q: "免费吗?",
-            a: "免费——KeysArk 免费且开源;加密备份存在你自己的云盘里。",
+            a: "免费——KeyMask 免费且开源;加密备份存在你自己的云盘里。",
           },
         ],
       },
@@ -323,11 +323,11 @@ export const LANDING_PAGES: LandingPage[] = [
         lead: [
           {
             k: "p",
-            t: "Your BIP39 recovery phrase is the master key to everything it protects — and a sticky note is no way to keep it. KeysArk stores it end-to-end encrypted, derived from a phrase only you hold, synced to your own cloud.",
+            t: "Your BIP39 recovery phrase is the master key to everything it protects — and a sticky note is no way to keep it. KeyMask stores it end-to-end encrypted, derived from a phrase only you hold, synced to your own cloud.",
           },
           {
             k: "p",
-            t: "KeysArk speaks the standard: new vaults use a 24-word BIP39 phrase (256 bits of entropy) that you can import into MetaMask or any BIP39 wallet. Nothing proprietary to lock you in.",
+            t: "KeyMask speaks the standard: new vaults use a 24-word BIP39 phrase (256 bits of entropy) that you can import into MetaMask or any BIP39 wallet. Nothing proprietary to lock you in.",
           },
           { k: "h2", t: "Why a vault beats paper or a screenshot" },
           {
@@ -343,10 +343,10 @@ export const LANDING_PAGES: LandingPage[] = [
         faqs: [
           {
             q: "Is it safe to store a recovery phrase online?",
-            a: "Only if it is encrypted before it leaves your device. KeysArk encrypts in your browser with a key derived from a phrase only you hold — the server stores ciphertext it cannot read.",
+            a: "Only if it is encrypted before it leaves your device. KeyMask encrypts in your browser with a key derived from a phrase only you hold — the server stores ciphertext it cannot read.",
           },
           {
-            q: "Does KeysArk use standard BIP39?",
+            q: "Does KeyMask use standard BIP39?",
             a: "Yes. New vaults generate a standard 24-word BIP39 phrase, importable into MetaMask or any BIP39-compatible wallet.",
           },
           {
@@ -355,7 +355,7 @@ export const LANDING_PAGES: LandingPage[] = [
           },
           {
             q: "Is it free?",
-            a: "Yes — KeysArk is free and open source, with your encrypted backup stored in your own cloud drive.",
+            a: "Yes — KeyMask is free and open source, with your encrypted backup stored in your own cloud drive.",
           },
         ],
       },
@@ -367,11 +367,11 @@ export const LANDING_PAGES: LandingPage[] = [
         lead: [
           {
             k: "p",
-            t: "你的 BIP39 助记词是它所保护的一切的主钥匙——靠一张便利贴可守不住。KeysArk 把它端到端加密存储,密钥由只有你掌握的助记词派生,同步到你自己的云盘。",
+            t: "你的 BIP39 助记词是它所保护的一切的主钥匙——靠一张便利贴可守不住。KeyMask 把它端到端加密存储,密钥由只有你掌握的助记词派生,同步到你自己的云盘。",
           },
           {
             k: "p",
-            t: "KeysArk 遵循标准:新库使用 24 词 BIP39 助记词(256 位熵),可导入 MetaMask 或任何 BIP39 钱包。没有任何专有格式把你锁死。",
+            t: "KeyMask 遵循标准:新库使用 24 词 BIP39 助记词(256 位熵),可导入 MetaMask 或任何 BIP39 钱包。没有任何专有格式把你锁死。",
           },
           { k: "h2", t: "保管库为什么胜过纸或截图" },
           {
@@ -387,10 +387,10 @@ export const LANDING_PAGES: LandingPage[] = [
         faqs: [
           {
             q: "把助记词存在线上安全吗?",
-            a: "只有在它离开设备前就被加密时才安全。KeysArk 在浏览器里用只有你掌握的助记词派生的密钥加密——服务端存的是它读不懂的密文。",
+            a: "只有在它离开设备前就被加密时才安全。KeyMask 在浏览器里用只有你掌握的助记词派生的密钥加密——服务端存的是它读不懂的密文。",
           },
           {
-            q: "KeysArk 用的是标准 BIP39 吗?",
+            q: "KeyMask 用的是标准 BIP39 吗?",
             a: "是。新库生成标准 24 词 BIP39 助记词,可导入 MetaMask 或任何兼容 BIP39 的钱包。",
           },
           {
@@ -399,7 +399,7 @@ export const LANDING_PAGES: LandingPage[] = [
           },
           {
             q: "免费吗?",
-            a: "免费——KeysArk 免费且开源,加密备份存在你自己的云盘里。",
+            a: "免费——KeyMask 免费且开源,加密备份存在你自己的云盘里。",
           },
         ],
       },

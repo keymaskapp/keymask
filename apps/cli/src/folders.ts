@@ -1,5 +1,5 @@
 // 文件夹路径工具:名字路径 ("a/b/c") ↔ folderId。
-import type { Vault } from "@keysark/vault";
+import type { Vault } from "@keymask/vault";
 import { yellow } from "./colors";
 
 /** 每个文件夹 id → "a/b/c" 全路径(沿 parentId 上溯;断链层级忽略)。 */

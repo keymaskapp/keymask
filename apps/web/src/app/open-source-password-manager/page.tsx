@@ -10,7 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const locale = await getServerLocale();
   const c = pickLocale(getLandingPage(SLUG)!.locales, locale);
   return {
-    title: `${c.title} — KeysArk`,
+    title: `${c.title} — KeyMask`,
     description: c.description,
     alternates: {
       canonical: localeHref(`/${SLUG}`, locale),

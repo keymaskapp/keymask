@@ -1,12 +1,12 @@
 // 签名会话 cookie:把账号标识(Google sub / 百度 uk)用 HMAC-SHA256 签名 + 内嵌过期,
 // 防止伪造「任意账号 ID」当 bearer 用。值本身不机密(只是账号标识),签名保证完整性与不可伪造。
 //
-// 主密钥来自 KEYSARK_SESSION_SECRET(≥16 字符的高熵字符串)。
+// 主密钥来自 KEYMASK_SESSION_SECRET(≥16 字符的高熵字符串)。
 //   - 生产缺失/过短 → 启动即抛错(fail closed),不接受不可验证的会话。
 //   - 开发缺失 → 进程内随机密钥 + 告警(重启即失效、多实例互不认,逼迫生产配置)。
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
-const ENV_SECRET = "KEYSARK_SESSION_SECRET";
+const ENV_SECRET = "KEYMASK_SESSION_SECRET";
 let _secret: Buffer | undefined;
 let _warned = false;
 

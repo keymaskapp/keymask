@@ -1,4 +1,4 @@
-# KeysArk SEO 优化方案
+# KeyMask SEO 优化方案
 
 > Created: 2026-06-15
 
@@ -40,7 +40,7 @@
 - blog 正文纳入全语言:由用户指定。代价是 45 篇机翻长文质量不稳——在 plan 中标注"机翻、待人工校"并保留 en 原文为权威源。
 - OG 卡片字体:非拉丁语言(zh/ja/ko/ru)若不引对应字体,OG 标题回退 `post.en.title`;拉丁语言用本地标题。理由:CJK 全字体体积大,OG 仅品牌图,英文标题可接受——具体取舍留 plan 004。
 - GSC 提交就绪:站点验证用 Next metadata 的 `verification.google`,值取环境变量 `GOOGLE_SITE_VERIFICATION`,留空则不输出该 meta(不写死、不污染未配置环境)。不做自动 sitemap ping —— Google 已于 2023 停用 ping 端点,收录靠 GSC 提交 + `robots.txt` 声明。sitemap/canonical 的绝对 URL 依赖 `NEXT_PUBLIC_SITE_URL` 设为生产 https 域(已有构建期 warn 兜底)。
-- 选词战略:主攻长尾蓝海 + "免费/开源"修饰词(免费/开源密码管理器、免费密钥管理器、self-hosted secret vault、bip39 备份、.env 加密备份),不打裸"密码管理器"红海。依据:① keysark 真实免费开源,意图匹配;② 红海词被头部产品垄断,新站无外链难排;③ keysark 非自动填充密码管理器,硬接红海词流量会高跳出反伤排名。`meta_keywords` 标签不动也不靠它——Google 2009 起不用于排名。
+- 选词战略:主攻长尾蓝海 + "免费/开源"修饰词(免费/开源密码管理器、免费密钥管理器、self-hosted secret vault、bip39 备份、.env 加密备份),不打裸"密码管理器"红海。依据:① keymask 真实免费开源,意图匹配;② 红海词被头部产品垄断,新站无外链难排;③ keymask 非自动填充密码管理器,硬接红海词流量会高跳出反伤排名。`meta_keywords` 标签不动也不靠它——Google 2009 起不用于排名。
 - 着陆页"一词一页":每个搜索意图独立页面、独立 H1/原创正文,不靠单一落地页蹭所有词。依据:Google 按页面级语义与意图排序,一页无法同时满足"免费密码管理器"(消费向)与"开发密钥管理"(开发者向)两种意图。
 
 ## 未决 / 信息不足(非代码交付,排名真正天花板)

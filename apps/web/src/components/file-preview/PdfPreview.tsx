@@ -5,7 +5,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import type { PDFDocumentProxy, RenderTask } from "pdfjs-dist";
-import { Button } from "@keysark/ui";
+import { Button } from "@keymask/ui";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useT } from "../providers";
 import { testId } from "@/lib/test-id";

@@ -21,7 +21,7 @@ const de: Partial<Messages> = {
   hero_title_1: "Deine Geheimnisse,",
   hero_title_2: "nur von dir zu öffnen.",
   hero_subtitle: (store: string) =>
-    `KeysArk ist ein Ende-zu-Ende-verschlüsselter Texttresor. Schütze alles mit einer einzigen Wiederherstellungsphrase, während der Chiffretext in deinem eigenen ${store} gespeichert wird — niemand außer dir kann lesen, was darin liegt.`,
+    `KeyMask ist ein Ende-zu-Ende-verschlüsselter Texttresor. Schütze alles mit einer einzigen Wiederherstellungsphrase, während der Chiffretext in deinem eigenen ${store} gespeichert wird — niemand außer dir kann lesen, was darin liegt.`,
   cta_primary: "Baidu verbinden — kostenlos starten",
   cta_secondary: "So funktioniert es",
   how_title: "So funktioniert es",
@@ -63,7 +63,7 @@ const de: Partial<Messages> = {
   os_badge: "Open Source · Kostenlos",
   os_title: "Ein quelloffener Schlüsseltresor",
   os_body: (store: string) =>
-    `KeysArk ist vollständig Open Source und für immer kostenlos. Verschlüsselung passiert nur in deinem Browser, der Chiffretext wird in deinem eigenen ${store} gespeichert und jede Zeile ist öffentlich und prüfbar — hoste es selbst oder nutze das ark CLI, um Geheimnisse wie .env-Dateien anhand ihres GitHub-Pfads zu sichern und zurückzuholen.`,
+    `KeyMask ist vollständig Open Source und für immer kostenlos. Verschlüsselung passiert nur in deinem Browser, der Chiffretext wird in deinem eigenen ${store} gespeichert und jede Zeile ist öffentlich und prüfbar — hoste es selbst oder nutze das ark CLI, um Geheimnisse wie .env-Dateien anhand ihres GitHub-Pfads zu sichern und zurückzuholen.`,
   os_point_open_title: "Offen & prüfbar",
   os_point_open_body: "Der gesamte Stack ist öffentlich; die Ende-zu-Ende-Verschlüsselung kann Zeile für Zeile geprüft werden. Keine Hintertüren.",
   os_point_free_title: "Kostenlos, kein Konto",
@@ -73,14 +73,14 @@ const de: Partial<Messages> = {
   os_cta_repo: "Auf GitHub ansehen",
   os_cta_selfhost: "Anleitung zum Selbsthosten",
 
-  meta_title: "KeysArk — Quelloffener Ende-zu-Ende-verschlüsselter Passwort- & Schlüsseltresor",
+  meta_title: "KeyMask — Quelloffener Ende-zu-Ende-verschlüsselter Passwort- & Schlüsseltresor",
   meta_description: (store: string) =>
-    `KeysArk ist ein kostenloser, quelloffener, Ende-zu-Ende-verschlüsselter Tresor. Schlüssel werden aus einer BIP39-Wiederherstellungsphrase abgeleitet und die Verschlüsselung erfolgt in deinem Browser; der Chiffretext wird in deinem eigenen ${store} gespeichert. Der Server verarbeitet immer nur Chiffretext, und du kannst selbst hosten.`,
+    `KeyMask ist ein kostenloser, quelloffener, Ende-zu-Ende-verschlüsselter Tresor. Schlüssel werden aus einer BIP39-Wiederherstellungsphrase abgeleitet und die Verschlüsselung erfolgt in deinem Browser; der Chiffretext wird in deinem eigenen ${store} gespeichert. Der Server verarbeitet immer nur Chiffretext, und du kannst selbst hosten.`,
   meta_keywords:
     "Passwort-Manager, Schlüsselverwaltung, Open Source, Ende-zu-Ende-Verschlüsselung, Zero-Knowledge, BIP39, Mnemonic, Google Drive, Baidu-Netzlaufwerk, Self-Hosting, Geheimnisspeicher, .env-Backup",
 
   create_title: "Erstelle deinen Tresor",
-  create_desc_a: "KeysArk generiert eine 24-Wörter-Wiederherstellungsphrase als deinen Hauptschlüssel. Sie wird ",
+  create_desc_a: "KeyMask generiert eine 24-Wörter-Wiederherstellungsphrase als deinen Hauptschlüssel. Sie wird ",
   create_desc_strong: "einmal angezeigt und bleibt nur bei dir",
   create_desc_b: ".",
   create_warn_a: "Halte Stift und Papier bereit. Schreibe sie nach dem Generieren auf und bewahre sie sicher auf — ",
@@ -123,7 +123,7 @@ const de: Partial<Messages> = {
   backup_html_warn: "Verlierst du das Backup-Passwort, ist dieses Backup nutzlos — niemand (auch wir nicht) kann es wiederherstellen.",
   btn_download_html: "Verschlüsseln & herunterladen",
   st_html_export_fail: (e: string) => `verschlüsseltes Backup fehlgeschlagen: ${e}`,
-  bk_title: "KeysArk Verschlüsseltes Backup",
+  bk_title: "KeyMask Verschlüsseltes Backup",
   bk_prompt: "Gib das Backup-Passwort ein, um deine Phrase zu entschlüsseln:",
   bk_btn: "Entschlüsseln",
   bk_decrypting: "Wird entschlüsselt… (~1 Sekunde)",
@@ -200,7 +200,7 @@ const de: Partial<Messages> = {
   nav_privacy: "Datenschutz",
   nav_blog: "Blog",
   blog_title: "Blog",
-  blog_subtitle: "Über Verschlüsselungsdesign, das Argument für Open Source und die Gedanken hinter KeysArk.",
+  blog_subtitle: "Über Verschlüsselungsdesign, das Argument für Open Source und die Gedanken hinter KeyMask.",
   blog_back: "← Zurück zum Blog",
 
   // Home CLI section + command-line client
@@ -208,7 +208,7 @@ const de: Partial<Messages> = {
   cli_home_tag: "Befehlszeile",
   cli_home_title: "ark — dein Tresor im Terminal",
   cli_home_body:
-    "ark ist der KeysArk-Befehlszeilenclient. Melde dich an und importiere deine Phrase, dann lies und schreib deinen Tresor vom Terminal aus — hol .env-Dateien, API-Schlüssel und Konfigurationen rein und raus. Genau wie in der Web-App erfolgen alle Ver- und Entschlüsselungen auf deinem Gerät; die Cloud sieht immer nur Chiffretext. Gebaut für Entwickler und Skripte / CI.",
+    "ark ist der KeyMask-Befehlszeilenclient. Melde dich an und importiere deine Phrase, dann lies und schreib deinen Tresor vom Terminal aus — hol .env-Dateien, API-Schlüssel und Konfigurationen rein und raus. Genau wie in der Web-App erfolgen alle Ver- und Entschlüsselungen auf deinem Gerät; die Cloud sieht immer nur Chiffretext. Gebaut für Entwickler und Skripte / CI.",
   cli_home_install_hint: "Eine Zeile, plattformübergreifend:",
   cli_home_cta: "CLI-Doku lesen",
 
@@ -219,15 +219,15 @@ const de: Partial<Messages> = {
     "Lies und schreib deinen Ende-zu-Ende-verschlüsselten Tresor vom Terminal aus. Dein Klartext und deine Phrase bleiben lokal — nur Chiffretext verlässt jemals das Gerät.",
   docs_intro_title: "Was ist das",
   docs_intro_body:
-    "ark ist der offizielle KeysArk-Befehlszeilenclient. Er bringt den Web-Tresor in dein Terminal: Einträge auflisten, nach Pfad lesen, lokale Dateien speichern, Einträge erstellen und aktualisieren. Alle Ver- und Entschlüsselungen erfolgen lokal mit deiner Wiederherstellungsphrase — der Server und das Cloud-Backend verarbeiten immer nur undurchsichtigen Chiffretext.",
+    "ark ist der offizielle KeyMask-Befehlszeilenclient. Er bringt den Web-Tresor in dein Terminal: Einträge auflisten, nach Pfad lesen, lokale Dateien speichern, Einträge erstellen und aktualisieren. Alle Ver- und Entschlüsselungen erfolgen lokal mit deiner Wiederherstellungsphrase — der Server und das Cloud-Backend verarbeiten immer nur undurchsichtigen Chiffretext.",
   docs_install_title: "Installation",
-  docs_install_note: "Erfordert Node.js 18+. Installiert den Befehl ark (mit Alias keysark).",
+  docs_install_note: "Erfordert Node.js 18+. Installiert den Befehl ark (mit Alias keymask).",
   docs_setup_title: "Ersteinrichtung",
   docs_setup_body: "Zwei Schritte: dieses Gerät autorisieren, dann deine Phrase importieren.",
   docs_setup_login_note:
     "ark login verwendet Geräte-Code-Autorisierung: das Terminal zeigt einen Link und einen Code; öffne ihn in deinem Browser, bestätige, dass der Code übereinstimmt, und genehmige. Die Berechtigung entspricht einer Browser-Sitzung — sie kann nur Chiffretext bewegen, niemals deine Phrase oder deinen Klartext.",
   docs_setup_import_note:
-    "ark import fragt nach deiner Wiederherstellungsphrase und legt ein lokales Entsperr-Passwort fest. Die Phrase wird mit einem Argon2id-abgeleiteten Schlüssel verschlüsselt und lokal gespeichert (~/.keysark) — niemals hochgeladen. Die Entsperrung bleibt bis zu 5 Minuten Inaktivität zwischengespeichert, sodass du das Passwort nicht erneut eingeben musst.",
+    "ark import fragt nach deiner Wiederherstellungsphrase und legt ein lokales Entsperr-Passwort fest. Die Phrase wird mit einem Argon2id-abgeleiteten Schlüssel verschlüsselt und lokal gespeichert (~/.keymask) — niemals hochgeladen. Die Entsperrung bleibt bis zu 5 Minuten Inaktivität zwischengespeichert, sodass du das Passwort nicht erneut eingeben musst.",
   docs_commands_title: "Befehlsreferenz",
   docs_cmd_login: "Autorisiere dieses Gerät per Geräte-Code (öffnet den Browser zur Bestätigung).",
   docs_cmd_import: "Importiere eine Wiederherstellungsphrase und lege ein lokales Entsperr-Passwort fest.",
@@ -242,7 +242,7 @@ const de: Partial<Messages> = {
   docs_cmd_logout: "Lösche die lokale Anmeldung (behält die Phrasen-Anmeldedaten).",
   docs_cmd_forget: "Entferne die lokal gespeicherten Phrasen-Anmeldedaten und den Entsperr-Cache.",
   docs_options_title: "Globale Optionen",
-  docs_opt_server: "Überschreibe die Server-URL (Standard https://keysark.com).",
+  docs_opt_server: "Überschreibe die Server-URL (Standard https://keymask.com).",
   docs_opt_vault: "Wähle einen Tresor nach ID oder Bezeichnung (Standard ist der erste, der zu deiner Phrase passt).",
   docs_opt_no_browser: "Den Browser beim Anmelden nicht automatisch öffnen.",
   docs_examples_title: "Häufige Beispiele",
@@ -252,7 +252,7 @@ const de: Partial<Messages> = {
   docs_env_title: "Umgebungsvariablen",
   docs_env_server: "Server-URL (entspricht --server).",
   docs_env_mnemonic: "Gib die Wiederherstellungsphrase direkt an und umgehe die lokalen Anmeldedaten — für CI / Skripte.",
-  docs_env_home: "Konfigurationsverzeichnis, Standard ~/.keysark.",
+  docs_env_home: "Konfigurationsverzeichnis, Standard ~/.keymask.",
   docs_env_no_browser: "Wenn gesetzt, öffnet die Anmeldung den Browser nicht automatisch.",
   docs_security_title: "Sicherheit",
   docs_security_body:
@@ -318,7 +318,7 @@ const de: Partial<Messages> = {
   content_hide: "Inhalt verbergen",
   cli_access: "Per CLI abrufen",
   cli_dialog_title: "Diesen Eintrag mit dem ark CLI herunterladen",
-  cli_dialog_desc: "ark ist der KeysArk-Befehlszeilenclient. Nach Anmeldung + Mnemonic-Import kannst du deinen Tresor vom Terminal aus lesen und schreiben — die Entschlüsselung erfolgt weiterhin nur auf deinem Gerät.",
+  cli_dialog_desc: "ark ist der KeyMask-Befehlszeilenclient. Nach Anmeldung + Mnemonic-Import kannst du deinen Tresor vom Terminal aus lesen und schreiben — die Entschlüsselung erfolgt weiterhin nur auf deinem Gerät.",
   cli_step_install: "Installieren",
   cli_step_setup: "Einmalige Einrichtung (Anmeldung + Mnemonic importieren)",
   cli_step_download: "Diesen Eintrag herunterladen",

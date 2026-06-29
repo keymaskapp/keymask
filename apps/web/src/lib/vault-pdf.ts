@@ -155,8 +155,8 @@ export async function exportVaultBackupPdf(input: VaultBackupInput): Promise<voi
   // 标题
   ctx.fillStyle = COLOR.indigo;
   ctx.font = `700 50px ${SANS}`;
-  ctx.fillText("KeysArk", MARGIN, y);
-  const brandW = ctx.measureText("KeysArk").width;
+  ctx.fillText("KeyMask", MARGIN, y);
+  const brandW = ctx.measureText("KeyMask").width;
   ctx.fillStyle = COLOR.ink;
   ctx.font = `400 34px ${SANS}`;
   ctx.fillText(` · ${tr("pdf_doc_title")}`, MARGIN + brandW, y);
@@ -288,5 +288,5 @@ export async function exportVaultBackupPdf(input: VaultBackupInput): Promise<voi
           .replace(/[/\\:*?"<>|]+/g, "")
           .replace(/\s+/g, "-")
           .slice(0, 60);
-  pdf.save(safeName ? `keysark-vault-backup-${safeName}.pdf` : "keysark-vault-backup.pdf");
+  pdf.save(safeName ? `keymask-vault-backup-${safeName}.pdf` : "keymask-vault-backup.pdf");
 }

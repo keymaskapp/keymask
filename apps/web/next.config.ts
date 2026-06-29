@@ -11,7 +11,7 @@ const pkg = JSON.parse(readFileSync(join(process.cwd(), "package.json"), "utf8")
   repository?: string | { url?: string };
 };
 
-/** ark CLI(@keysark/cli)的版本号:从同仓库的 apps/cli/package.json 读取,展示在文档/落地页。 */
+/** ark CLI(@keymask/cli)的版本号:从同仓库的 apps/cli/package.json 读取,展示在文档/落地页。 */
 function cliVersion(): string {
   try {
     const j = JSON.parse(
@@ -40,7 +40,7 @@ function git(cmd: string): string {
 function gitCommit(): string {
   // 平台/CI 优先(从 tarball 或浅克隆构建时 git 命令可能不可用)。
   const fromEnv =
-    process.env.KEYSARK_COMMIT || process.env.VERCEL_GIT_COMMIT_SHA || process.env.GITHUB_SHA;
+    process.env.KEYMASK_COMMIT || process.env.VERCEL_GIT_COMMIT_SHA || process.env.GITHUB_SHA;
   if (fromEnv) return fromEnv.slice(0, 12);
   try {
     const sha = git("rev-parse --short=12 HEAD");
@@ -59,7 +59,7 @@ function gitCommit(): string {
 
 /** 仓库地址:env > Vercel owner/slug > package.json#repository > git origin > 空。 */
 function repoUrl(): string {
-  if (process.env.KEYSARK_REPO) return normalizeRepo(process.env.KEYSARK_REPO);
+  if (process.env.KEYMASK_REPO) return normalizeRepo(process.env.KEYMASK_REPO);
   const { VERCEL_GIT_REPO_OWNER: owner, VERCEL_GIT_REPO_SLUG: slug } = process.env;
   if (owner && slug) return `https://github.com/${owner}/${slug}`;
   const repo = typeof pkg.repository === "string" ? pkg.repository : pkg.repository?.url;
@@ -117,19 +117,19 @@ const buildManifest = {
 
 const config: NextConfig = {
   env: {
-    NEXT_PUBLIC_KEYSARK_VERSION: pkg.version ?? "0.0.0",
-    NEXT_PUBLIC_KEYSARK_CLI_VERSION: cliVersion(),
-    NEXT_PUBLIC_KEYSARK_COMMIT: gitCommit(),
-    NEXT_PUBLIC_KEYSARK_REPO: repoUrl(),
-    NEXT_PUBLIC_KEYSARK_BUILD: JSON.stringify(buildManifest),
+    NEXT_PUBLIC_KEYMASK_VERSION: pkg.version ?? "0.0.0",
+    NEXT_PUBLIC_KEYMASK_CLI_VERSION: cliVersion(),
+    NEXT_PUBLIC_KEYMASK_COMMIT: gitCommit(),
+    NEXT_PUBLIC_KEYMASK_REPO: repoUrl(),
+    NEXT_PUBLIC_KEYMASK_BUILD: JSON.stringify(buildManifest),
   },
   transpilePackages: [
-    "@keysark/ui",
-    "@keysark/db",
-    "@keysark/baidupan",
-    "@keysark/googledrive",
-    "@keysark/crypto",
-    "@keysark/vault",
+    "@keymask/ui",
+    "@keymask/db",
+    "@keymask/baidupan",
+    "@keymask/googledrive",
+    "@keymask/crypto",
+    "@keymask/vault",
   ],
   typedRoutes: true,
 };

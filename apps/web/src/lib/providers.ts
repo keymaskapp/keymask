@@ -1,6 +1,6 @@
 // 落地页登录入口开关(纯服务端,读 process.env)。
-//   KEYSARK_ENABLE_GOOGLE  默认开(留空=开,显式 "0"/"false" 关)
-//   KEYSARK_ENABLE_BAIDU   默认关(留空=关,显式 "1"/"true" 开)
+//   KEYMASK_ENABLE_GOOGLE  默认开(留空=开,显式 "0"/"false" 关)
+//   KEYMASK_ENABLE_BAIDU   默认关(留空=关,显式 "1"/"true" 开)
 // 两者都被关时回退仅 Google,避免落地页没有任何登录入口。默认即「仅 Google Drive」。
 
 export type ProviderFlags = { google: boolean; baidu: boolean };
@@ -9,8 +9,8 @@ const isOn = (v: string | undefined) => v === "1" || v === "true";
 const isOff = (v: string | undefined) => v === "0" || v === "false";
 
 export function providerFlags(): ProviderFlags {
-  let google = !isOff(process.env.KEYSARK_ENABLE_GOOGLE); // 默认开
-  const baidu = isOn(process.env.KEYSARK_ENABLE_BAIDU); // 默认关
+  let google = !isOff(process.env.KEYMASK_ENABLE_GOOGLE); // 默认开
+  const baidu = isOn(process.env.KEYMASK_ENABLE_BAIDU); // 默认关
   if (!google && !baidu) google = true; // 回退:至少留一个入口
   return { google, baidu };
 }

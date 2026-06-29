@@ -1,7 +1,7 @@
 // 统一存储抽象:把百度网盘与 Google Drive 收敛成同一套「路径进、密文字节出」接口。
 // 上层(page.tsx / API /api/files*)只依赖此抽象,与具体后端无关。
 // E2E 不变:服务端只搬运不透明密文,主密钥/助记词/明文绝不触达。
-import { getCliTokenByHash } from "@keysark/db";
+import { getCliTokenByHash } from "@keymask/db";
 import { sha256Hex } from "./cli-auth";
 import { getConnectedBaidu, getConnectedBaiduByUk, type ConnectedBaidu } from "./baidu";
 import { getConnectedGoogle, getConnectedGoogleBySub, type ConnectedGoogle } from "./google";
@@ -102,7 +102,7 @@ export async function getConnectedStorage(): Promise<ConnectedStorage | null> {
 }
 
 /** CLI 鉴权头。 */
-const CLI_TOKEN_HEADER = "x-keysark-token";
+const CLI_TOKEN_HEADER = "x-keymask-token";
 
 /**
  * CLI 长期令牌(ksk_ 前缀,设备码授权颁发)的无 cookie 解析:

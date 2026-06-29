@@ -1,7 +1,7 @@
 "use client";
 
 // 未登录落地页:营销 hero(原创 CSS 背景)+「连接百度网盘」CTA。多语言 + 主题切换。
-import { Button } from "@keysark/ui";
+import { Button } from "@keymask/ui";
 import {
   ArrowRight,
   Binary,
@@ -126,7 +126,7 @@ export function Landing({ error, providers }: { error?: string; providers: Provi
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    name: "KeysArk",
+    name: "KeyMask",
     applicationCategory: "SecurityApplication",
     operatingSystem: "Web, macOS, Windows, Linux",
     description: t("meta_description", store),
@@ -157,7 +157,7 @@ export function Landing({ error, providers }: { error?: string; providers: Provi
       <div className="relative z-10 flex min-h-screen flex-col">
         {/* 顶栏 */}
         <header {...testId("landing-header")} className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-5">
-          <a href={homeHref} aria-label="KeysArk">
+          <a href={homeHref} aria-label="KeyMask">
             <Wordmark className="text-lg" />
           </a>
           <div className="flex items-center gap-3">
@@ -391,7 +391,7 @@ export function Landing({ error, providers }: { error?: string; providers: Provi
                 <div className="px-4 py-4 font-mono text-xs leading-relaxed">
                   <p className="text-[var(--color-muted-foreground)]"># {t("cli_home_install_hint")}</p>
                   <p>
-                    <span className="text-[var(--color-success)]">$</span> npm install -g @keysark/cli
+                    <span className="text-[var(--color-success)]">$</span> npm install -g @keymask/cli
                   </p>
                   <p className="mt-3">
                     <span className="text-[var(--color-success)]">$</span> ark login

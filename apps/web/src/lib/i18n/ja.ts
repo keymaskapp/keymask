@@ -21,7 +21,7 @@ const ja: Partial<Messages> = {
   hero_title_1: "あなたの秘密は、",
   hero_title_2: "あなただけが開ける。",
   hero_subtitle: (store: string) =>
-    `KeysArk はエンドツーエンドで暗号化されたテキスト保管庫です。1 つのリカバリーフレーズですべてを守り、暗号文はあなた自身の ${store} に保存されます。中身を読めるのはあなただけです。`,
+    `KeyMask はエンドツーエンドで暗号化されたテキスト保管庫です。1 つのリカバリーフレーズですべてを守り、暗号文はあなた自身の ${store} に保存されます。中身を読めるのはあなただけです。`,
   cta_primary: "Baidu に接続 — 無料で始める",
   cta_secondary: "仕組み",
   how_title: "仕組み",
@@ -63,7 +63,7 @@ const ja: Partial<Messages> = {
   os_badge: "オープンソース · 無料",
   os_title: "オープンソースの鍵保管庫",
   os_body: (store: string) =>
-    `KeysArk は完全オープンソースで永久無料です。暗号化はブラウザ内でのみ行われ、暗号文はあなた自身の ${store} に保存され、すべての行が公開され監査可能です。セルフホストすることも、ark CLI を使って .env などの機密を GitHub パスでバックアップして取り戻すこともできます。`,
+    `KeyMask は完全オープンソースで永久無料です。暗号化はブラウザ内でのみ行われ、暗号文はあなた自身の ${store} に保存され、すべての行が公開され監査可能です。セルフホストすることも、ark CLI を使って .env などの機密を GitHub パスでバックアップして取り戻すこともできます。`,
   os_point_open_title: "オープンで監査可能",
   os_point_open_body: "スタック全体が公開されています。エンドツーエンド暗号化は 1 行ずつ確認できます。バックドアはありません。",
   os_point_free_title: "無料、アカウント不要",
@@ -73,14 +73,14 @@ const ja: Partial<Messages> = {
   os_cta_repo: "GitHub で見る",
   os_cta_selfhost: "セルフホストガイド",
 
-  meta_title: "KeysArk — オープンソースのエンドツーエンド暗号化パスワード・鍵保管庫",
+  meta_title: "KeyMask — オープンソースのエンドツーエンド暗号化パスワード・鍵保管庫",
   meta_description: (store: string) =>
-    `KeysArk は無料・オープンソースのエンドツーエンド暗号化保管庫です。鍵は BIP39 リカバリーフレーズから派生し、暗号化はブラウザ内で行われ、暗号文はあなた自身の ${store} に保存されます。サーバーは暗号文しか扱わず、セルフホストも可能です。`,
+    `KeyMask は無料・オープンソースのエンドツーエンド暗号化保管庫です。鍵は BIP39 リカバリーフレーズから派生し、暗号化はブラウザ内で行われ、暗号文はあなた自身の ${store} に保存されます。サーバーは暗号文しか扱わず、セルフホストも可能です。`,
   meta_keywords:
     "パスワードマネージャー, 鍵管理, オープンソース, エンドツーエンド暗号化, ゼロ知識, BIP39, ニーモニック, Google Drive, Baidu netdisk, セルフホスト, 機密保管, .env バックアップ",
 
   create_title: "保管庫を作成",
-  create_desc_a: "KeysArk は 24 語のリカバリーフレーズをマスターキーとして生成します。これは",
+  create_desc_a: "KeyMask は 24 語のリカバリーフレーズをマスターキーとして生成します。これは",
   create_desc_strong: "一度だけ表示され、あなたの手元にだけ残ります",
   create_desc_b: "。",
   create_warn_a: "紙とペンを用意してください。生成後は書き留めて安全に保管してください — ",
@@ -123,7 +123,7 @@ const ja: Partial<Messages> = {
   backup_html_warn: "バックアップパスワードを失うとこのバックアップは無効になり、誰も(私たちも含めて)復元できません。",
   btn_download_html: "暗号化してダウンロード",
   st_html_export_fail: (e: string) => `暗号化バックアップに失敗しました: ${e}`,
-  bk_title: "KeysArk 暗号化バックアップ",
+  bk_title: "KeyMask 暗号化バックアップ",
   bk_prompt: "フレーズを復号するためバックアップパスワードを入力してください:",
   bk_btn: "復号",
   bk_decrypting: "復号中…(約 1 秒)",
@@ -200,7 +200,7 @@ const ja: Partial<Messages> = {
   nav_privacy: "プライバシー",
   nav_blog: "ブログ",
   blog_title: "ブログ",
-  blog_subtitle: "暗号化の設計、オープンソースの意義、そして KeysArk の背後にある考えについて。",
+  blog_subtitle: "暗号化の設計、オープンソースの意義、そして KeyMask の背後にある考えについて。",
   blog_back: "← ブログに戻る",
 
   // Home CLI section + command-line client
@@ -208,7 +208,7 @@ const ja: Partial<Messages> = {
   cli_home_tag: "コマンドライン",
   cli_home_title: "ark — ターミナルの中の保管庫",
   cli_home_body:
-    "ark は KeysArk のコマンドラインクライアントです。サインインしてフレーズをインポートすれば、ターミナルから保管庫を読み書きできます。.env ファイル、API キー、設定を出し入れできます。ウェブアプリと同様に、暗号化と復号はすべてデバイス上で行われ、クラウドが扱うのは暗号文だけです。開発者とスクリプト / CI のために作られています。",
+    "ark は KeyMask のコマンドラインクライアントです。サインインしてフレーズをインポートすれば、ターミナルから保管庫を読み書きできます。.env ファイル、API キー、設定を出し入れできます。ウェブアプリと同様に、暗号化と復号はすべてデバイス上で行われ、クラウドが扱うのは暗号文だけです。開発者とスクリプト / CI のために作られています。",
   cli_home_install_hint: "一行、クロスプラットフォーム:",
   cli_home_cta: "CLI ドキュメントを読む",
 
@@ -219,15 +219,15 @@ const ja: Partial<Messages> = {
     "ターミナルからエンドツーエンド暗号化された保管庫を読み書きします。平文とフレーズはローカルにとどまり、デバイスから出るのは暗号文だけです。",
   docs_intro_title: "これは何か",
   docs_intro_body:
-    "ark は KeysArk 公式のコマンドラインクライアントです。ウェブ保管庫をターミナルに持ち込みます: 項目の一覧表示、パス指定での読み取り、ローカルファイルの保存、エントリの作成・更新ができます。暗号化と復号はすべてリカバリーフレーズでローカルに行われ、サーバーとクラウドバックエンドが扱うのは不透明な暗号文だけです。",
+    "ark は KeyMask 公式のコマンドラインクライアントです。ウェブ保管庫をターミナルに持ち込みます: 項目の一覧表示、パス指定での読み取り、ローカルファイルの保存、エントリの作成・更新ができます。暗号化と復号はすべてリカバリーフレーズでローカルに行われ、サーバーとクラウドバックエンドが扱うのは不透明な暗号文だけです。",
   docs_install_title: "インストール",
-  docs_install_note: "Node.js 18+ が必要です。ark コマンド(エイリアス keysark)をインストールします。",
+  docs_install_note: "Node.js 18+ が必要です。ark コマンド(エイリアス keymask)をインストールします。",
   docs_setup_title: "初回セットアップ",
   docs_setup_body: "2 ステップ: このデバイスを認可し、次にフレーズをインポートします。",
   docs_setup_login_note:
     "ark login はデバイスコード認可を使います: ターミナルにリンクとコードが表示されるので、ブラウザで開き、コードの一致を確認して承認します。この付与はブラウザセッションと同等で、暗号文を動かせるだけです。フレーズや平文は決して扱いません。",
   docs_setup_import_note:
-    "ark import はリカバリーフレーズの入力を求め、ローカルの解除パスワードを設定します。フレーズは Argon2id で派生した鍵で暗号化されローカル(~/.keysark)に保存され、アップロードされることはありません。解除は 5 分間操作がないまでキャッシュされるので、パスワードを再入力する必要はありません。",
+    "ark import はリカバリーフレーズの入力を求め、ローカルの解除パスワードを設定します。フレーズは Argon2id で派生した鍵で暗号化されローカル(~/.keymask)に保存され、アップロードされることはありません。解除は 5 分間操作がないまでキャッシュされるので、パスワードを再入力する必要はありません。",
   docs_commands_title: "コマンドリファレンス",
   docs_cmd_login: "デバイスコードでこのデバイスを認可します(確認のためブラウザを開きます)。",
   docs_cmd_import: "リカバリーフレーズをインポートし、ローカルの解除パスワードを設定します。",
@@ -242,7 +242,7 @@ const ja: Partial<Messages> = {
   docs_cmd_logout: "ローカルのログインを消去します(フレーズの資格情報は保持)。",
   docs_cmd_forget: "ローカルに保存されたフレーズの資格情報と解除キャッシュを削除します。",
   docs_options_title: "グローバルオプション",
-  docs_opt_server: "サーバー URL を上書きします(デフォルト https://keysark.com)。",
+  docs_opt_server: "サーバー URL を上書きします(デフォルト https://keymask.com)。",
   docs_opt_vault: "ID またはラベルで保管庫を選択します(デフォルトはフレーズに一致する最初のもの)。",
   docs_opt_no_browser: "ログイン時にブラウザを自動で開きません。",
   docs_examples_title: "よくある例",
@@ -252,7 +252,7 @@ const ja: Partial<Messages> = {
   docs_env_title: "環境変数",
   docs_env_server: "サーバー URL(--server と同じ)。",
   docs_env_mnemonic: "リカバリーフレーズを直接指定し、ローカルの資格情報をバイパスします — CI / スクリプト向け。",
-  docs_env_home: "設定ディレクトリ。デフォルトは ~/.keysark。",
+  docs_env_home: "設定ディレクトリ。デフォルトは ~/.keymask。",
   docs_env_no_browser: "設定すると、ログイン時にブラウザを自動で開きません。",
   docs_security_title: "セキュリティ",
   docs_security_body:
@@ -318,7 +318,7 @@ const ja: Partial<Messages> = {
   content_hide: "内容を隠す",
   cli_access: "CLI で取得",
   cli_dialog_title: "ark CLI でこの項目をダウンロード",
-  cli_dialog_desc: "ark は KeysArk のコマンドラインクライアントです。サインイン + ニーモニックのインポート後、ターミナルから保管庫を読み書きできます。復号は引き続きあなたのデバイス上でのみ行われます。",
+  cli_dialog_desc: "ark は KeyMask のコマンドラインクライアントです。サインイン + ニーモニックのインポート後、ターミナルから保管庫を読み書きできます。復号は引き続きあなたのデバイス上でのみ行われます。",
   cli_step_install: "インストール",
   cli_step_setup: "初回セットアップ(サインイン + ニーモニックのインポート)",
   cli_step_download: "この項目をダウンロード",

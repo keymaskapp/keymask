@@ -7,7 +7,7 @@ export interface GoogleConfig {
   /** OAuth 回调地址,必须与 Google Cloud 控制台登记的一致 */
   redirectUri: string;
   /**
-   * 可选:My Drive 根目录下的可见文件夹名(如 "KeysArk")。
+   * 可选:My Drive 根目录下的可见文件夹名(如 "KeyMask")。
    * 设置 → 文件写入该可见文件夹,scope 用 drive.file。
    * 留空 → 写入隐藏的 appDataFolder,scope 用 drive.appdata(默认)。
    */

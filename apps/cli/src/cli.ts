@@ -1,15 +1,15 @@
-// ark(KeysArk CLI)—— 完全独立的命令行客户端:设备码授权登录云端 web 接口,
+// ark(KeyMask CLI)—— 完全独立的命令行客户端:设备码授权登录云端 web 接口,
 // 本地派生主密钥、本地加解密,只把 envelope 密文经云端中转。
 // 明文/助记词/主密钥/解锁密码绝不出 CLI 进程。
 import { spawn } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { basename, dirname, extname, join, resolve } from "node:path";
-import { checkVerifier, deriveKey, sha256Hex, validateMnemonic } from "@keysark/crypto";
-import { b64decode, vaultVerifierAad, VaultRollbackError } from "@keysark/vault";
-import type { EntryMeta, StorageTransport, Vault, VaultDescriptor } from "@keysark/vault";
+import { checkVerifier, deriveKey, sha256Hex, validateMnemonic } from "@keymask/crypto";
+import { b64decode, vaultVerifierAad, VaultRollbackError } from "@keymask/vault";
+import type { EntryMeta, StorageTransport, Vault, VaultDescriptor } from "@keymask/vault";
 import { openLocalSource } from "./local";
 import { renderVaultHtml, type ExportData, type ExportItem } from "./export-html";
-import { cliVersion, clearCloud, defaultServer, keysarkDir, loadCloud, normalizeServer, resolveConn, saveCloud } from "./config";
+import { cliVersion, clearCloud, defaultServer, keymaskDir, loadCloud, normalizeServer, resolveConn, saveCloud } from "./config";
 import { checkSecurePerms, fixCommands } from "./fsperm";
 import { httpTransport } from "./transport";
 import {
@@ -75,7 +75,7 @@ function transportFrom(args: Args): StorageTransport {
   if (!conn.tokenUsableHere) {
     if (!conn.issuer) {
       fail(
-        `Saved login is from an older KeysArk CLI and is not bound to a server. ` +
+        `Saved login is from an older KeyMask CLI and is not bound to a server. ` +
           `Re-run \`ark login\` for ${conn.baseUrl}.`,
       );
     }
@@ -117,8 +117,8 @@ async function ready(
   if (!mnemonic) {
     fail(
       hasCredential()
-        ? "Locked (wrong password or non-interactive). Or set KEYSARK_MNEMONIC."
-        : "No mnemonic on this machine. Run `ark import` or set KEYSARK_MNEMONIC.",
+        ? "Locked (wrong password or non-interactive). Or set KEYMASK_MNEMONIC."
+        : "No mnemonic on this machine. Run `ark import` or set KEYMASK_MNEMONIC.",
     );
   }
   if (!validateMnemonic(mnemonic!)) fail("Invalid mnemonic (check the words).");
@@ -401,15 +401,15 @@ async function runLocal(srcArg: string, args: Args): Promise<void> {
   const { transport, kind } = source!;
 
   const vaults = await fetchVaults(transport).catch((err) => {
-    fail(`Not a KeysArk backup: ${err instanceof Error ? err.message : err}`);
+    fail(`Not a KeyMask backup: ${err instanceof Error ? err.message : err}`);
   });
   if (vaults!.length === 0) fail("No vaults found in this backup.");
 
   // 助记词:env(脚本)优先,否则交互输入。绝不落盘、绝不出本进程。
-  const env = process.env.KEYSARK_MNEMONIC?.trim();
+  const env = process.env.KEYMASK_MNEMONIC?.trim();
   let mnemonic = env ? env.replace(/\s+/g, " ") : "";
   if (!mnemonic) {
-    if (!process.stdin.isTTY) fail("Set KEYSARK_MNEMONIC or run in an interactive terminal.");
+    if (!process.stdin.isTTY) fail("Set KEYMASK_MNEMONIC or run in an interactive terminal.");
     note(
       `${dim("backup")}  ${src} ${dim(`(${kind})`)}\n${dim("vaults")}  ${vaults!
         .map((v) => `${v.label || "(default)"} [${v.id.slice(0, 8)}]`)
@@ -508,7 +508,7 @@ async function runLocal(srcArg: string, args: Args): Promise<void> {
   }
 }
 
-const HELP = `ark — KeysArk end-to-end encrypted vault CLI
+const HELP = `ark — KeyMask end-to-end encrypted vault CLI
 
 Account:
   ark login              Device-code login via browser
@@ -525,7 +525,7 @@ Items:
   ark ls                 List items
   ark get <path> [local]   Decrypt an item by path (a/b/title; id prefix also works).
                          Always prompts for the unlock password (ignores the 5-min
-                         cache); KEYSARK_MNEMONIC still bypasses for scripts.
+                         cache); KEYMASK_MNEMONIC still bypasses for scripts.
                          No local: prints to stdout. But when the path belongs to the
                          git repo you're in (github.com/owner/repo/<rel>), it restores
                          the file to that repo-relative path instead — so you can omit
@@ -552,7 +552,7 @@ Items:
 
 Local (offline; no login):
   ark local <zip|dir> [--out <dir>]   Decrypt a backup downloaded from your netdisk
-                         (a .zip of the KeysArk folder, or its extracted directory).
+                         (a .zip of the KeyMask folder, or its extracted directory).
                          Prompts for the vault's recovery phrase, then writes one
                          JSON per item plus a self-contained index.html. Everything
                          stays on this machine — nothing is uploaded.
@@ -562,12 +562,12 @@ Unlock (same rules as the web app):
   Argon2id). A correct password unlocks until 5 min of inactivity (sliding renewal).
 
 Global options (position-independent):
-  --server <url>       API base; default: KEYSARK_SERVER, else https://keysark.com
+  --server <url>       API base; default: KEYMASK_SERVER, else https://keymask.com
   --vault <id|label>   Select vault
 Env:
-  KEYSARK_SERVER     API base (overrides the built-in default)
-  KEYSARK_MNEMONIC   Mnemonic (skips local credential; for scripts/CI)
-  KEYSARK_NO_BROWSER Don't auto-open the browser on login`;
+  KEYMASK_SERVER     API base (overrides the built-in default)
+  KEYMASK_MNEMONIC   Mnemonic (skips local credential; for scripts/CI)
+  KEYMASK_NO_BROWSER Don't auto-open the browser on login`;
 
 /** 打印帮助:节标题加粗,命令、选项与环境变量名上色(HELP 文本本身保持纯文本)。 */
 function printHelp(): void {
@@ -580,18 +580,18 @@ function printHelp(): void {
       console.log(
         line
           .replace(/^(  ark(?: \S+)+?)(  )/, (_m, a: string, sp: string) => cyan(a) + sp)
-          .replace(/^(  (?:--\S+|KEYSARK_\S+))/, (_m, a: string) => cyan(a)),
+          .replace(/^(  (?:--\S+|KEYMASK_\S+))/, (_m, a: string) => cyan(a)),
       );
     }
   }
 }
 
-// ~/.keysark 下的敏感本地文件:启动守卫每次复核并修正权限(目录 0700 / 文件 0600)。
+// ~/.keymask 下的敏感本地文件:启动守卫每次复核并修正权限(目录 0700 / 文件 0600)。
 const SENSITIVE_FILES = ["credential.json", "unlock-cache.json", "cloud.json", "device.key"];
 
 // 每条命令执行前统一加固本地权限;改不动则给出 chmod 命令、要求用户修好后重跑。
 function guardLocalPerms(): void {
-  const dir = keysarkDir();
+  const dir = keymaskDir();
   const fails = checkSecurePerms(
     dir,
     SENSITIVE_FILES.map((f) => join(dir, f)),
@@ -669,7 +669,7 @@ async function main() {
       const conn = resolveConn(flagStr(args.flags, "server"));
       const sourceLabel = {
         "--server": "--server flag",
-        KEYSARK_SERVER: "KEYSARK_SERVER env",
+        KEYMASK_SERVER: "KEYMASK_SERVER env",
         default: "built-in default",
       }[conn.source];
       console.log(`${dim("Version:")} ${cliVersion()}`);
@@ -682,7 +682,7 @@ async function main() {
       } else {
         console.log(`Login: ${ERR} ${dim("(run `ark login`)")}`);
       }
-      console.log(`${dim("Config dir:")} ${keysarkDir()}`);
+      console.log(`${dim("Config dir:")} ${keymaskDir()}`);
       return;
     }
 
@@ -690,7 +690,7 @@ async function main() {
       // 设备码授权:生成链接让用户去网页登录确认,本地轮询感知授权完成。
       const server = (
         flagStr(args.flags, "server") ??
-        process.env.KEYSARK_SERVER ??
+        process.env.KEYMASK_SERVER ??
         defaultServer()
       ).replace(/\/+$/, "");
 
@@ -714,7 +714,7 @@ async function main() {
         console.log(`  ${cyan(d.verification_url)}\n`);
         console.log(`Code: ${bold(yellow(d.user_code))} ${dim("(must match the one shown in the browser)")}\n`);
       }
-      if (!args.flags["no-browser"] && !process.env.KEYSARK_NO_BROWSER) {
+      if (!args.flags["no-browser"] && !process.env.KEYMASK_NO_BROWSER) {
         tryOpenBrowser(d.verification_url);
       }
 
@@ -775,7 +775,7 @@ async function main() {
       try {
         const res = await fetch(`${revokeAt}/api/cli/token`, {
           method: "DELETE",
-          headers: { "x-keysark-token": cloud.token },
+          headers: { "x-keymask-token": cloud.token },
           signal: AbortSignal.timeout(5000),
         });
         console.log(
@@ -1009,7 +1009,7 @@ async function main() {
       const transport = transportFrom(args);
       const mnemonic = await acquireMnemonic(true);
       if (!mnemonic || !validateMnemonic(mnemonic)) {
-        fail("No usable mnemonic. Run `ark import` or set KEYSARK_MNEMONIC.");
+        fail("No usable mnemonic. Run `ark import` or set KEYMASK_MNEMONIC.");
       }
       const key = await deriveKey(mnemonic!);
       const vaults = await fetchVaults(transport);
@@ -1031,7 +1031,7 @@ async function main() {
           return;
         }
       }
-      deleteRevAnchor(descriptor!.id, keysarkDir());
+      deleteRevAnchor(descriptor!.id, keymaskDir());
       console.log(`${OK} Rollback anchor cleared for ${name}. Next load re-anchors to the current remote rev.`);
       return;
     }

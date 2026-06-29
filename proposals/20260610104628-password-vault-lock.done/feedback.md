@@ -31,4 +31,4 @@
 - **类型**：范围外发现(proposal 已声明默认不做)
 - **位置**：`apps/web/src/lib/idle-lock.ts`
 - **描述**：每个 tab 各自输密码、各自计时;一个 tab 闲置锁定不会同步锁其他 tab。proposal「未决」节已决定默认不做 BroadcastChannel。
-- **建议**：若日后要做,在 idle-lock 内加 BroadcastChannel("keysark-lock") 广播 lock 事件即可。
+- **建议**：若日后要做,在 idle-lock 内加 BroadcastChannel("keymask-lock") 广播 lock 事件即可。

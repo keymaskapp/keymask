@@ -21,7 +21,7 @@ const pt: Partial<Messages> = {
   hero_title_1: "Seus segredos,",
   hero_title_2: "abertos somente por você.",
   hero_subtitle: (store: string) =>
-    `O KeysArk é um cofre de texto com criptografia de ponta a ponta. Proteja tudo com uma única frase de recuperação, com o texto cifrado armazenado no seu próprio ${store} — ninguém além de você consegue ler o que está dentro.`,
+    `O KeyMask é um cofre de texto com criptografia de ponta a ponta. Proteja tudo com uma única frase de recuperação, com o texto cifrado armazenado no seu próprio ${store} — ninguém além de você consegue ler o que está dentro.`,
   cta_primary: "Conecte o Baidu — comece grátis",
   cta_secondary: "Como funciona",
   how_title: "Como funciona",
@@ -63,7 +63,7 @@ const pt: Partial<Messages> = {
   os_badge: "Código aberto · Grátis",
   os_title: "Um cofre de chaves de código aberto",
   os_body: (store: string) =>
-    `O KeysArk é totalmente de código aberto e gratuito para sempre. A criptografia acontece apenas no seu navegador, o texto cifrado é armazenado no seu próprio ${store}, e cada linha é pública e auditável — hospede você mesmo, ou use a CLI ark para fazer backup de segredos como arquivos .env pelo caminho do GitHub e recuperá-los.`,
+    `O KeyMask é totalmente de código aberto e gratuito para sempre. A criptografia acontece apenas no seu navegador, o texto cifrado é armazenado no seu próprio ${store}, e cada linha é pública e auditável — hospede você mesmo, ou use a CLI ark para fazer backup de segredos como arquivos .env pelo caminho do GitHub e recuperá-los.`,
   os_point_open_title: "Aberto e auditável",
   os_point_open_body: "Toda a stack é pública; a criptografia de ponta a ponta pode ser revisada linha por linha. Sem backdoors.",
   os_point_free_title: "Grátis, sem conta",
@@ -73,14 +73,14 @@ const pt: Partial<Messages> = {
   os_cta_repo: "Ver no GitHub",
   os_cta_selfhost: "Guia de hospedagem própria",
 
-  meta_title: "KeysArk — Cofre de senhas e chaves de código aberto com criptografia de ponta a ponta",
+  meta_title: "KeyMask — Cofre de senhas e chaves de código aberto com criptografia de ponta a ponta",
   meta_description: (store: string) =>
-    `O KeysArk é um cofre gratuito, de código aberto e com criptografia de ponta a ponta. As chaves são derivadas de uma frase de recuperação BIP39 e a criptografia acontece no seu navegador; o texto cifrado é armazenado no seu próprio ${store}. O servidor só lida com texto cifrado, e você pode hospedar você mesmo.`,
+    `O KeyMask é um cofre gratuito, de código aberto e com criptografia de ponta a ponta. As chaves são derivadas de uma frase de recuperação BIP39 e a criptografia acontece no seu navegador; o texto cifrado é armazenado no seu próprio ${store}. O servidor só lida com texto cifrado, e você pode hospedar você mesmo.`,
   meta_keywords:
     "gerenciador de senhas, gerenciamento de chaves, código aberto, criptografia de ponta a ponta, conhecimento zero, BIP39, frase mnemônica, Google Drive, Baidu netdisk, auto-hospedado, armazenamento de segredos, backup de .env",
 
   create_title: "Crie seu cofre",
-  create_desc_a: "O KeysArk gera uma frase de recuperação de 24 palavras como sua chave mestra. Ela é ",
+  create_desc_a: "O KeyMask gera uma frase de recuperação de 24 palavras como sua chave mestra. Ela é ",
   create_desc_strong: "mostrada uma vez e vive somente com você",
   create_desc_b: ".",
   create_warn_a: "Tenha papel e caneta à mão. Após gerá-la, anote-a e guarde-a com segurança — ",
@@ -123,7 +123,7 @@ const pt: Partial<Messages> = {
   backup_html_warn: "Se perder a senha do backup, ele fica inútil — ninguém (nem nós) pode recuperá-lo.",
   btn_download_html: "Criptografar e baixar",
   st_html_export_fail: (e: string) => `falha no backup criptografado: ${e}`,
-  bk_title: "Backup criptografado do KeysArk",
+  bk_title: "Backup criptografado do KeyMask",
   bk_prompt: "Digite a senha do backup para descriptografar sua frase:",
   bk_btn: "Descriptografar",
   bk_decrypting: "Descriptografando… (~1 segundo)",
@@ -200,7 +200,7 @@ const pt: Partial<Messages> = {
   nav_privacy: "Privacidade",
   nav_blog: "Blog",
   blog_title: "Blog",
-  blog_subtitle: "Sobre design de criptografia, a defesa do código aberto e o raciocínio por trás do KeysArk.",
+  blog_subtitle: "Sobre design de criptografia, a defesa do código aberto e o raciocínio por trás do KeyMask.",
   blog_back: "← Voltar ao blog",
 
   // Home CLI section + command-line client
@@ -208,7 +208,7 @@ const pt: Partial<Messages> = {
   cli_home_tag: "Linha de comando",
   cli_home_title: "ark — seu cofre no terminal",
   cli_home_body:
-    "ark é o cliente de linha de comando do KeysArk. Faça login e importe sua frase, depois leia e escreva no seu cofre pelo terminal — entre e saia com arquivos .env, chaves de API e configurações. Assim como no app web, toda a criptografia e descriptografia acontece no seu dispositivo; a nuvem só vê texto cifrado. Feito para desenvolvedores e scripts / CI.",
+    "ark é o cliente de linha de comando do KeyMask. Faça login e importe sua frase, depois leia e escreva no seu cofre pelo terminal — entre e saia com arquivos .env, chaves de API e configurações. Assim como no app web, toda a criptografia e descriptografia acontece no seu dispositivo; a nuvem só vê texto cifrado. Feito para desenvolvedores e scripts / CI.",
   cli_home_install_hint: "Uma linha, multiplataforma:",
   cli_home_cta: "Ler a documentação da CLI",
 
@@ -219,15 +219,15 @@ const pt: Partial<Messages> = {
     "Leia e escreva no seu cofre com criptografia de ponta a ponta pelo terminal. Seu texto não cifrado e sua frase permanecem locais — só o texto cifrado sai do dispositivo.",
   docs_intro_title: "O que é",
   docs_intro_body:
-    "ark é o cliente de linha de comando oficial do KeysArk. Ele traz o cofre web para o seu terminal: lista itens, lê por caminho, salva arquivos locais, cria e atualiza entradas. Toda a criptografia e descriptografia acontece localmente com sua frase de recuperação — o servidor e o backend na nuvem só lidam com texto cifrado opaco.",
+    "ark é o cliente de linha de comando oficial do KeyMask. Ele traz o cofre web para o seu terminal: lista itens, lê por caminho, salva arquivos locais, cria e atualiza entradas. Toda a criptografia e descriptografia acontece localmente com sua frase de recuperação — o servidor e o backend na nuvem só lidam com texto cifrado opaco.",
   docs_install_title: "Instalação",
-  docs_install_note: "Requer Node.js 18+. Instala o comando ark (com alias keysark).",
+  docs_install_note: "Requer Node.js 18+. Instala o comando ark (com alias keymask).",
   docs_setup_title: "Configuração inicial",
   docs_setup_body: "Dois passos: autorize este dispositivo e depois importe sua frase.",
   docs_setup_login_note:
     "ark login usa autorização por código de dispositivo: o terminal mostra um link e um código; abra-o no navegador, confirme que o código corresponde e aprove. A concessão equivale a uma sessão de navegador — só pode mover texto cifrado, nunca sua frase ou texto não cifrado.",
   docs_setup_import_note:
-    "ark import pede sua frase de recuperação e define uma senha de desbloqueio local. A frase é criptografada com uma chave derivada por Argon2id e armazenada localmente (~/.keysark) — nunca enviada. O desbloqueio fica em cache até 5 minutos de inatividade, para você não ter que redigitar a senha.",
+    "ark import pede sua frase de recuperação e define uma senha de desbloqueio local. A frase é criptografada com uma chave derivada por Argon2id e armazenada localmente (~/.keymask) — nunca enviada. O desbloqueio fica em cache até 5 minutos de inatividade, para você não ter que redigitar a senha.",
   docs_commands_title: "Referência de comandos",
   docs_cmd_login: "Autoriza este dispositivo via código de dispositivo (abre o navegador para confirmar).",
   docs_cmd_import: "Importa uma frase de recuperação e define uma senha de desbloqueio local.",
@@ -242,7 +242,7 @@ const pt: Partial<Messages> = {
   docs_cmd_logout: "Limpa o login local (mantém a credencial da frase).",
   docs_cmd_forget: "Remove a credencial da frase armazenada localmente e o cache de desbloqueio.",
   docs_options_title: "Opções globais",
-  docs_opt_server: "Sobrescreve a URL do servidor (padrão https://keysark.com).",
+  docs_opt_server: "Sobrescreve a URL do servidor (padrão https://keymask.com).",
   docs_opt_vault: "Seleciona um cofre por ID ou rótulo (padrão é o primeiro que corresponde à sua frase).",
   docs_opt_no_browser: "Não abrir o navegador automaticamente durante o login.",
   docs_examples_title: "Exemplos comuns",
@@ -252,7 +252,7 @@ const pt: Partial<Messages> = {
   docs_env_title: "Variáveis de ambiente",
   docs_env_server: "URL do servidor (igual a --server).",
   docs_env_mnemonic: "Fornece a frase de recuperação diretamente, ignorando a credencial local — para CI / scripts.",
-  docs_env_home: "Diretório de configuração, padrão ~/.keysark.",
+  docs_env_home: "Diretório de configuração, padrão ~/.keymask.",
   docs_env_no_browser: "Quando definida, o login não abre o navegador automaticamente.",
   docs_security_title: "Segurança",
   docs_security_body:
@@ -318,7 +318,7 @@ const pt: Partial<Messages> = {
   content_hide: "Ocultar conteúdo",
   cli_access: "Obter via CLI",
   cli_dialog_title: "Baixe este item com a CLI ark",
-  cli_dialog_desc: "ark é o cliente de linha de comando do KeysArk. Após o login + importar a frase mnemônica, você pode ler e escrever no seu cofre pelo terminal — a descriptografia continua acontecendo apenas no seu dispositivo.",
+  cli_dialog_desc: "ark é o cliente de linha de comando do KeyMask. Após o login + importar a frase mnemônica, você pode ler e escrever no seu cofre pelo terminal — a descriptografia continua acontecendo apenas no seu dispositivo.",
   cli_step_install: "Instalar",
   cli_step_setup: "Configuração inicial (login + importar frase mnemônica)",
   cli_step_download: "Baixar este item",

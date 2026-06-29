@@ -28,15 +28,15 @@ const BLOG_OVERRIDES: Partial<Record<Locale, Record<string, PostLocale>>> = { es
 // 新到旧。
 export const POSTS: BlogPost[] = [
   {
-    slug: "the-name-keysark",
+    slug: "the-name-keymask",
     date: "2026-06-02",
     en: {
-      title: "Where the name KeysArk comes from",
+      title: "Where the name KeyMask comes from",
       description: "Keys plus Ark — a small word with a deliberate idea behind it.",
       body: [
         {
           k: "p",
-          t: "KeysArk is two words: Keys and Ark. The name is small, but the idea behind it is the whole product.",
+          t: "KeyMask is two words: Keys and Ark. The name is small, but the idea behind it is the whole product.",
         },
         { k: "h2", t: "The ark" },
         {
@@ -46,7 +46,7 @@ export const POSTS: BlogPost[] = [
         { k: "h2", t: "Your keys, carried" },
         {
           k: "p",
-          t: "Your keys — the recovery phrase that unlocks everything — are exactly that kind of precious cargo. KeysArk is the ark that carries them: across devices, across cloud providers, across years, without ever exposing what is inside.",
+          t: "Your keys — the recovery phrase that unlocks everything — are exactly that kind of precious cargo. KeyMask is the ark that carries them: across devices, across cloud providers, across years, without ever exposing what is inside.",
         },
         { k: "h2", t: "Sealed from the outside" },
         {
@@ -61,12 +61,12 @@ export const POSTS: BlogPost[] = [
       ],
     },
     zh: {
-      title: "KeysArk 名字的由来",
+      title: "KeyMask 名字的由来",
       description: "Keys 加上 Ark——一个很短的词,背后却藏着刻意的用意。",
       body: [
         {
           k: "p",
-          t: "KeysArk 由两个词组成:Keys(钥匙)和 Ark(方舟)。名字很短,但它背后的理念,就是整个产品。",
+          t: "KeyMask 由两个词组成:Keys(钥匙)和 Ark(方舟)。名字很短,但它背后的理念,就是整个产品。",
         },
         { k: "h2", t: "方舟" },
         {
@@ -76,7 +76,7 @@ export const POSTS: BlogPost[] = [
         { k: "h2", t: "载着你的钥匙" },
         {
           k: "p",
-          t: "你的钥匙——那组能解开一切的助记词——正是这样的珍贵货物。KeysArk 就是载着它的方舟:跨设备、跨云盘、跨越数年,始终不暴露里面的内容。",
+          t: "你的钥匙——那组能解开一切的助记词——正是这样的珍贵货物。KeyMask 就是载着它的方舟:跨设备、跨云盘、跨越数年,始终不暴露里面的内容。",
         },
         { k: "h2", t: "从外面封死" },
         {
@@ -95,7 +95,7 @@ export const POSTS: BlogPost[] = [
     slug: "open-source-and-provenance",
     date: "2026-05-28",
     en: {
-      title: "Why KeysArk must be open source — and why backups carry a version number",
+      title: "Why KeyMask must be open source — and why backups carry a version number",
       description:
         "End-to-end encryption is only a promise until you can verify it. Here is why the code is open, and why every exported backup records the exact software that made it.",
       body: [
@@ -116,7 +116,7 @@ export const POSTS: BlogPost[] = [
         { k: "h2", t: "So backups carry their own provenance" },
         {
           k: "p",
-          t: "Every mnemonic backup KeysArk exports (PDF and HTML) embeds a provenance manifest describing exactly what produced it:",
+          t: "Every mnemonic backup KeyMask exports (PDF and HTML) embeds a provenance manifest describing exactly what produced it:",
         },
         {
           k: "ul",
@@ -130,7 +130,7 @@ export const POSTS: BlogPost[] = [
         { k: "h2", t: "Why the version number matters" },
         {
           k: "p",
-          t: "With that manifest, future-you can check out the exact commit that made the backup, reproduce the build environment, and decrypt — even decades later, even if keysark.com no longer exists. The version number is not bookkeeping; it is the map back to the runtime environment that can still open your vault.",
+          t: "With that manifest, future-you can check out the exact commit that made the backup, reproduce the build environment, and decrypt — even decades later, even if keymask.com no longer exists. The version number is not bookkeeping; it is the map back to the runtime environment that can still open your vault.",
         },
         {
           k: "quote",
@@ -139,7 +139,7 @@ export const POSTS: BlogPost[] = [
       ],
     },
     zh: {
-      title: "为什么 KeysArk 必须开源,以及备份为何带 CLI 版本号",
+      title: "为什么 KeyMask 必须开源,以及备份为何带 CLI 版本号",
       description:
         "端到端加密在你能验证之前都只是承诺。本文讲清楚为什么代码要开源,以及每一份导出的备份为何都记录下生成它的确切软件。",
       body: [
@@ -160,7 +160,7 @@ export const POSTS: BlogPost[] = [
         { k: "h2", t: "所以备份自带「出处」" },
         {
           k: "p",
-          t: "KeysArk 导出的每一份助记词备份(PDF 与 HTML)都内嵌一份出处清单,精确记录是什么生成了它:",
+          t: "KeyMask 导出的每一份助记词备份(PDF 与 HTML)都内嵌一份出处清单,精确记录是什么生成了它:",
         },
         {
           k: "ul",
@@ -174,7 +174,7 @@ export const POSTS: BlogPost[] = [
         { k: "h2", t: "版本号为什么重要" },
         {
           k: "p",
-          t: "有了这份清单,未来的你就能检出生成这份备份的那个确切提交、复现构建环境、完成解密——哪怕已是数十年后,哪怕 keysark.com 早已不复存在。版本号不是流水账,而是回到「仍能打开你保险库的运行环境」的那张地图。",
+          t: "有了这份清单,未来的你就能检出生成这份备份的那个确切提交、复现构建环境、完成解密——哪怕已是数十年后,哪怕 keymask.com 早已不复存在。版本号不是流水账,而是回到「仍能打开你保险库的运行环境」的那张地图。",
         },
         {
           k: "quote",
@@ -187,13 +187,13 @@ export const POSTS: BlogPost[] = [
     slug: "encryption-design",
     date: "2026-05-20",
     en: {
-      title: "How KeysArk encrypts: the design",
+      title: "How KeyMask encrypts: the design",
       description:
-        "A walk through KeysArk's end-to-end encryption — from a BIP39 phrase to AES-256-GCM ciphertext that only you can open.",
+        "A walk through KeyMask's end-to-end encryption — from a BIP39 phrase to AES-256-GCM ciphertext that only you can open.",
       body: [
         {
           k: "p",
-          t: "Every design choice in KeysArk follows one rule: the key never leaves your browser. Here is the chain, from the words you write down to the ciphertext in your cloud.",
+          t: "Every design choice in KeyMask follows one rule: the key never leaves your browser. Here is the chain, from the words you write down to the ciphertext in your cloud.",
         },
         { k: "h2", t: "One phrase to hold everything" },
         {
@@ -232,13 +232,13 @@ export const POSTS: BlogPost[] = [
       ],
     },
     zh: {
-      title: "KeysArk 的加密设计思路",
+      title: "KeyMask 的加密设计思路",
       description:
-        "一篇走查 KeysArk 端到端加密的文章——从一组 BIP39 助记词,到只有你能打开的 AES-256-GCM 密文。",
+        "一篇走查 KeyMask 端到端加密的文章——从一组 BIP39 助记词,到只有你能打开的 AES-256-GCM 密文。",
       body: [
         {
           k: "p",
-          t: "KeysArk 的每一个设计取舍都服从同一条规则:密钥永不离开你的浏览器。下面是这条链路——从你写下的那串词,到云盘里的密文。",
+          t: "KeyMask 的每一个设计取舍都服从同一条规则:密钥永不离开你的浏览器。下面是这条链路——从你写下的那串词,到云盘里的密文。",
         },
         { k: "h2", t: "一组助记词,守护一切" },
         {

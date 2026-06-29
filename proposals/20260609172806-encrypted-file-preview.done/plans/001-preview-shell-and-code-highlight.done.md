@@ -58,7 +58,7 @@
 - [x] 1–5MB 纯文本 / >5MB 仅提示 / 非 UTF-8 降级 —— CodePreview 分支逻辑覆盖,先判字节数再解码。
 - [x] 下载按钮行为不变 —— 未改 downloadFile 与卡片按钮。
 - [x] 预览零新增网络请求 —— 字节来自 `openFile` 解密(浏览器内),CodePreview 不发请求。
-- [x] `pnpm -r typecheck` 通过 + `pnpm --filter @keysark/web build` 通过。
+- [x] `pnpm -r typecheck` 通过 + `pnpm --filter @keymask/web build` 通过。
 - [x] highlight.js 仅在首次预览代码类时加载 —— core 与各语言均 `await import()`,构建产物中为独立 chunk(按构造)。
 
 ### 偏差与遗留

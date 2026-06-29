@@ -1,9 +1,9 @@
-// CLI 侧密文中转:打 localhost 的 /api/files*(带 x-keysark-token)。
+// CLI 侧密文中转:打 localhost 的 /api/files*(带 x-keymask-token)。
 // 只搬运 envelope 密文,绝不发明文/助记词/主密钥。
-import { b64decode, b64encode, type StorageTransport } from "@keysark/vault";
+import { b64decode, b64encode, type StorageTransport } from "@keymask/vault";
 
 export function httpTransport(baseUrl: string, token: string | null): StorageTransport {
-  const headers: Record<string, string> = token ? { "x-keysark-token": token } : {};
+  const headers: Record<string, string> = token ? { "x-keymask-token": token } : {};
 
   async function jsonOrThrow(res: Response, what: string): Promise<unknown> {
     if (res.status === 401) {

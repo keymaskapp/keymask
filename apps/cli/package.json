@@ -1,10 +1,10 @@
 {
-  "name": "@keysark/cli",
+  "name": "@keymask/cli",
   "version": "1.0.7",
   "type": "module",
   "bin": {
     "ark": "./dist/ark.mjs",
-    "keysark": "./dist/ark.mjs"
+    "keymask": "./dist/ark.mjs"
   },
   "files": [
     "dist"
@@ -17,8 +17,8 @@
   },
   "devDependencies": {
     "@inquirer/prompts": "^8.5.2",
-    "@keysark/crypto": "workspace:*",
-    "@keysark/vault": "workspace:*",
+    "@keymask/crypto": "workspace:*",
+    "@keymask/vault": "workspace:*",
     "esbuild": "^0.28.1"
   }
 }

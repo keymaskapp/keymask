@@ -1,6 +1,6 @@
 // CLI 使用文档页:服务端渲染(命令文档进 HTML,利于 SEO),随 locale 切换语言。
 // 唯一交互(代码块复制按钮)抽到 client 组件 ./docs-code-block;命令片段为纯文本展示,不涉及任何密钥/明文。
-import { Button } from "@keysark/ui";
+import { Button } from "@keymask/ui";
 import { ArrowLeft, Terminal, type LucideIcon } from "lucide-react";
 import { Wordmark } from "./brand";
 import { HeaderControls } from "./controls";
@@ -32,10 +32,10 @@ const OPTIONS: { flag: string; desc: MsgKey }[] = [
 ];
 
 const ENV_VARS: { name: string; desc: MsgKey }[] = [
-  { name: "KEYSARK_SERVER", desc: "docs_env_server" },
-  { name: "KEYSARK_MNEMONIC", desc: "docs_env_mnemonic" },
-  { name: "KEYSARK_HOME", desc: "docs_env_home" },
-  { name: "KEYSARK_NO_BROWSER", desc: "docs_env_no_browser" },
+  { name: "KEYMASK_SERVER", desc: "docs_env_server" },
+  { name: "KEYMASK_MNEMONIC", desc: "docs_env_mnemonic" },
+  { name: "KEYMASK_HOME", desc: "docs_env_home" },
+  { name: "KEYMASK_NO_BROWSER", desc: "docs_env_no_browser" },
 ];
 
 // 示例:每条一段说明 + 一段命令(命令字面量不翻译)
@@ -44,7 +44,7 @@ const EXAMPLES: { cap: MsgKey; code: string }[] = [
   { cap: "docs_ex_save", code: "cd ~/my-project\nark save .env" },
   {
     cap: "docs_ex_ci",
-    code: 'export KEYSARK_MNEMONIC="word1 word2 … word12"\nark get secure/api-key > key.txt',
+    code: 'export KEYMASK_MNEMONIC="word1 word2 … word12"\nark get secure/api-key > key.txt',
   },
 ];
 
@@ -133,9 +133,9 @@ export function Docs({ locale }: { locale: Locale }) {
                 className="inline-flex items-center gap-1.5 rounded-full border border-[var(--color-border)] bg-[var(--color-surface)] px-3 py-1 font-mono text-xs text-[var(--color-muted-foreground)]"
               >
                 <Terminal className="h-3.5 w-3.5" />
-                @keysark/cli@{CLI_VERSION}
+                @keymask/cli@{CLI_VERSION}
               </span>
-              <CodeBlock code="npm install -g @keysark/cli" id="install" />
+              <CodeBlock code="npm install -g @keymask/cli" id="install" />
               <p className="text-sm text-[var(--color-muted-foreground)]">{t("docs_install_note")}</p>
             </Section>
 

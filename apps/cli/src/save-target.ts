@@ -2,7 +2,7 @@
 //   - 显式 target:"a/b/标题";末尾 "/" 表示文件夹,标题用源文件名;单段 = 根目录下条目。
 //   - 省略 target:在 git 仓库内按 origin 推导(github.com/me/repo/<仓库内相对路径>),否则根目录 + 文件名。
 import { basename, dirname, relative } from "node:path";
-import { providerForHost } from "@keysark/vault";
+import { providerForHost } from "@keymask/vault";
 import { gitContext } from "./git";
 
 export interface SaveTarget {
