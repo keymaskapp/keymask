@@ -83,7 +83,7 @@ keymask get github.com/me/app/.env .env   # decrypt a secret to a local file
 keymask save .env             # encrypt & upload a file (target auto-detected from git origin)
 ```
 
-The CLI mirrors the web app's security model: your mnemonic is stored locally, wrapped with an unlock password using **Argon2id** (512 MB / t=4 / p=1). Plaintext and the master key never leave your machine, and `KEYMASK_MNEMONIC` lets scripts/CI run non-interactively. Run `keymask help` for the full command list (`login`, `logout`, `status`, `info`, `import`, `forget`, `vaults`, `ls`, `get`, `new`, `set`, `save`, `rm`, `sync`, `local`).
+The CLI mirrors the web app's security model: your mnemonic is stored locally, wrapped with an unlock password using **Argon2id** (512 MB / t=4 / p=1). Plaintext and the master key never leave your machine, and `KEYMASK_MNEMONIC` lets scripts/CI run non-interactively. Run `keymask help` for the full command list (`login`, `logout`, `status`, `info`, `import`, `forget`, `vaults`, `ls`, `get`, `save`, `sync`, `reset-anchor`, `local`).
 
 ### Folder sync
 
@@ -104,7 +104,7 @@ keymask save   # encrypt & upload every file in the folder's sync list
 keymask get    # pull them all back (e.g. on a fresh clone)
 ```
 
-Inside a git repo, the matching vault folder is selected from your git origin (`github.com/owner/repo`), so individual files are terse too — `keymask get github.com/owner/repo/.env` restores `.env` to its place, no second argument needed (pipes/redirects still stream to stdout). `keymask save` skips unchanged files; `keymask get` won't overwrite local files that differ unless you pass `--force`.
+Inside a git repo, the matching vault folder is selected from your git origin (`github.com/owner/repo`), so individual files are terse too — `keymask get github.com/owner/repo/.env` restores `.env` to its place, no second argument needed (pipes/redirects still stream to stdout). `keymask save` skips files whose content is unchanged; `keymask get` won't clobber a local file that differs — it asks before overwriting (and refuses rather than overwrite when run non-interactively).
 
 ### Offline / local decryption
 

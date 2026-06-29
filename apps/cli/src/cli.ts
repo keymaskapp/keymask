@@ -564,9 +564,11 @@ Unlock (same rules as the web app):
 Global options (position-independent):
   --server <url>       API base; default: KEYMASK_SERVER, else https://keymask.com
   --vault <id|label>   Select vault
+  --no-browser         Don't auto-open the browser on login
 Env:
   KEYMASK_SERVER     API base (overrides the built-in default)
   KEYMASK_MNEMONIC   Mnemonic (skips local credential; for scripts/CI)
+  KEYMASK_HOME       Config dir (default: ~/.keymask)
   KEYMASK_NO_BROWSER Don't auto-open the browser on login`;
 
 /** 打印帮助:节标题加粗,命令、选项与环境变量名上色(HELP 文本本身保持纯文本)。 */

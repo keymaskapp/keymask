@@ -23,6 +23,7 @@ const COMMANDS: { cmd: string; desc: MsgKey }[] = [
   { cmd: "keymask reset-anchor [vault]", desc: "docs_cmd_reset_anchor" },
   { cmd: "keymask logout", desc: "docs_cmd_logout" },
   { cmd: "keymask forget", desc: "docs_cmd_forget" },
+  { cmd: "keymask local <zip|dir> [--out <dir>]", desc: "docs_cmd_local" },
 ];
 
 const OPTIONS: { flag: string; desc: MsgKey }[] = [
