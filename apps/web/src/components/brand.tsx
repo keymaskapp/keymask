@@ -1,21 +1,19 @@
-// KeyMask 官方品牌标识(取自 logos 资源包 keymask-icon):盾形「方舟」外壳 + 钥匙孔,
-// 寓意把密钥稳妥载于方舟之内。外壳跟随主色(随主题深浅自适应),钥匙孔为品牌琥珀色。
-const BRAND_AMBER = "#F59E0B";
-
+// KeyMask 官方品牌标识(取自 logos 资源包 mark-violet):盾形外壳 + 镂空钥匙孔,
+// 单色实心(evenodd 把钥匙孔从盾形里挖空,透出背景),整体跟随主色(随主题深浅自适应)。
 export function Logo({ className }: { className?: string }) {
   return (
     <svg
-      viewBox="0 0 100 100"
+      viewBox="2 7 96 96"
       fill="none"
       aria-hidden="true"
       className={className}
     >
       <path
-        d="M14 7 H86 Q95 7 95 18 V58 Q95 77 77 89 Q62 96 50 96 Q38 96 23 89 Q5 77 5 58 V18 Q5 7 14 7 Z"
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M16 20 Q16 17 19 17 H81 Q84 17 84 20 V46 C84 67 69 83 50 92 C31 83 16 67 16 46 Z M60 43 A10 10 0 1 0 40 43 A10 10 0 1 0 60 43 Z M44 51 L56 51 L60.5 70 Q61 72 59 72 L41 72 Q39 72 39.5 70 Z"
         className="fill-[var(--color-primary)]"
       />
-      <circle cx="50" cy="44" r="11" fill={BRAND_AMBER} />
-      <path d="M45.5 50 L42 72 H58 L54.5 50 Z" fill={BRAND_AMBER} />
     </svg>
   );
 }
@@ -34,7 +32,7 @@ export function Wordmark({ className }: { className?: string }) {
     <span className={`inline-flex items-center gap-2 font-semibold tracking-tight ${className ?? ""}`}>
       <Logo className="h-6 w-6" />
       <span>
-        Keys<span className="text-[var(--color-primary)]">Ark</span>
+        Key<span className="text-[var(--color-primary)]">Mask</span>
       </span>
     </span>
   );

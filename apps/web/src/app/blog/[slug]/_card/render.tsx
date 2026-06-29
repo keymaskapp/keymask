@@ -22,7 +22,13 @@ const DOMAIN = (() => {
   }
 })();
 
-const AMBER = "#f5b53d";
+// 品牌色板(Logo Kit):Iris 主色、Orchid 强调、Grape 深色面底。
+const IRIS = "#7C3AED";
+const ORCHID = "#D946EF";
+const GRAPE = "#1B0B38";
+// mark-white 盾形(viewBox 2 7 96 96,evenodd 把钥匙孔镂空)。
+const MARK_PATH =
+  "M16 20 Q16 17 19 17 H81 Q84 17 84 20 V46 C84 67 69 83 50 92 C31 83 16 67 16 46 Z M60 43 A10 10 0 1 0 40 43 A10 10 0 1 0 60 43 Z M44 51 L56 51 L60.5 70 Q61 72 59 72 L41 72 Q39 72 39.5 70 Z";
 
 // 字体只读一次,跨请求复用。import.meta.url 让 Turbopack 把 woff 当作相邻 asset 追踪输出;
 // node runtime 下用 fs 读本地文件(file: URL 不支持 fetch),不依赖任何运行时外网请求。
@@ -62,9 +68,9 @@ export async function renderCard(slug: string): Promise<ImageResponse> {
           flexDirection: "column",
           justifyContent: "space-between",
           padding: "72px 80px",
-          backgroundColor: "#211D52",
+          backgroundColor: GRAPE,
           backgroundImage:
-            "radial-gradient(900px 600px at 12% 6%, rgba(245,181,61,0.16), transparent 60%), linear-gradient(135deg, #211D52 0%, #14112e 100%)",
+            "radial-gradient(900px 600px at 12% 6%, rgba(217,70,239,0.18), transparent 60%), linear-gradient(135deg, #1B0B38 0%, #100524 100%)",
           fontFamily: "Inter",
           color: "#ffffff",
         }}
@@ -74,12 +80,18 @@ export async function renderCard(slug: string): Promise<ImageResponse> {
           <div
             style={{
               display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
               width: 44,
               height: 44,
               borderRadius: 12,
-              backgroundColor: AMBER,
+              backgroundColor: IRIS,
             }}
-          />
+          >
+            <svg width="30" height="30" viewBox="2 7 96 96">
+              <path fill="#FFFFFF" fillRule="evenodd" clipRule="evenodd" d={MARK_PATH} />
+            </svg>
+          </div>
           <div style={{ fontSize: 32, fontWeight: 700, letterSpacing: -0.5 }}>KeyMask</div>
         </div>
 
@@ -102,7 +114,7 @@ export async function renderCard(slug: string): Promise<ImageResponse> {
           <div style={{ display: "flex", fontSize: 26, fontWeight: 400, color: "rgba(255,255,255,0.72)" }}>
             {dateLabel}
           </div>
-          <div style={{ display: "flex", fontSize: 26, fontWeight: 700, color: AMBER }}>{DOMAIN}</div>
+          <div style={{ display: "flex", fontSize: 26, fontWeight: 700, color: ORCHID }}>{DOMAIN}</div>
         </div>
       </div>
     ),

@@ -30,3 +30,4 @@ target/
 
 # panes: commit shared recipes (.panes/dev.yaml), ignore personal machine tweaks
 .panes/local.yaml
+.tmp/

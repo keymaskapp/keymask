@@ -40,8 +40,8 @@ function escapeHtml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
-// 与 brand.tsx 同源的品牌标识:盾形方舟外壳 + 琥珀钥匙孔(固定品牌色,不依赖主题变量)。
-const LOGO_SVG = `<svg viewBox="0 0 100 100" fill="none" width="28" height="28" aria-hidden="true"><path d="M14 7 H86 Q95 7 95 18 V58 Q95 77 77 89 Q62 96 50 96 Q38 96 23 89 Q5 77 5 58 V18 Q5 7 14 7 Z" fill="#4F46E5"/><circle cx="50" cy="44" r="11" fill="#F59E0B"/><path d="M45.5 50 L42 72 H58 L54.5 50 Z" fill="#F59E0B"/></svg>`;
+// 与 brand.tsx 同源的品牌标识:盾形外壳 + 镂空钥匙孔,单色 Iris 紫(固定品牌色,不依赖主题变量)。
+const LOGO_SVG = `<svg viewBox="2 7 96 96" fill="none" width="28" height="28" aria-hidden="true"><path fill="#7C3AED" fill-rule="evenodd" clip-rule="evenodd" d="M16 20 Q16 17 19 17 H81 Q84 17 84 20 V46 C84 67 69 83 50 92 C31 83 16 67 16 46 Z M60 43 A10 10 0 1 0 40 43 A10 10 0 1 0 60 43 Z M44 51 L56 51 L60.5 70 Q61 72 59 72 L41 72 Q39 72 39.5 70 Z"/></svg>`;
 
 // 文件内双语文案用到的 i18n key(两种语言各生成一份内嵌)。
 const STRING_KEYS = [
@@ -99,7 +99,7 @@ export async function buildEncryptedBackupHtml(input: EncryptedBackupInput): Pro
   const cUrl = commitUrl();
   const sourceText = repo ? `${repo}@${commit}` : commit;
   const sourceHtml = cUrl
-    ? `<a href="${escapeHtml(cUrl)}" target="_blank" rel="noreferrer noopener" style="color:#818CF8">${escapeHtml(
+    ? `<a href="${escapeHtml(cUrl)}" target="_blank" rel="noreferrer noopener" style="color:#A78BFA">${escapeHtml(
         sourceText,
       )}</a>`
     : escapeHtml(sourceText);
@@ -138,18 +138,18 @@ export async function buildEncryptedBackupHtml(input: EncryptedBackupInput): Pro
   main { width: 100%; max-width: 560px; }
   header { display: flex; align-items: center; gap: 10px; }
   header b { font-size: 20px; color: #fff; letter-spacing: -.02em; }
-  header b i { color: #818CF8; font-style: normal; }
+  header b i { color: #A78BFA; font-style: normal; }
   .lang { margin-left: auto; display: flex; gap: 4px; }
   .lang button { width: auto; margin: 0; padding: 4px 10px; font-size: 12px; border-radius: 6px;
                  background: #1F2937; color: #9CA3AF; border: 1px solid #374151; }
-  .lang button.on { background: #312E81; color: #fff; border-color: #4F46E5; }
+  .lang button.on { background: #4C1D95; color: #fff; border-color: #7C3AED; }
   h1 { font-size: 17px; color: #fff; margin: 20px 0 4px; }
   .meta { color: #9CA3AF; font-size: 13px; margin: 0 0 20px; }
   .card { background: #1F2937; border: 1px solid #374151; border-radius: 12px; padding: 20px; }
   input { width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 8px;
           border: 1px solid #4B5563; background: #111827; color: #fff; font-size: 15px; }
   button { margin-top: 12px; width: 100%; padding: 10px; border: 0; border-radius: 8px;
-           background: #4F46E5; color: #fff; font-size: 15px; cursor: pointer; }
+           background: #7C3AED; color: #fff; font-size: 15px; cursor: pointer; }
   button:disabled { opacity: .5; cursor: default; }
   @keyframes ks-spin { to { transform: rotate(360deg); } }
   button.busy::before { content: ""; display: inline-block; width: 14px; height: 14px;
@@ -184,7 +184,7 @@ export async function buildEncryptedBackupHtml(input: EncryptedBackupInput): Pro
 <main>
   <header>
     ${LOGO_SVG}
-    <b>Keys<i>Ark</i></b>
+    <b>Key<i>Mask</i></b>
     <span class="lang">
       <button id="lang-zh" type="button">中文</button>
       <button id="lang-en" type="button">EN</button>

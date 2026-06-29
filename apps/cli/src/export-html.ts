@@ -90,7 +90,7 @@ export function renderVaultHtml(data: ExportData): string {
 <style>
   :root {
     --bg: #0b0e14; --panel: #131722; --line: #232838; --fg: #e6e9ef;
-    --muted: #8b93a7; --accent: #5b9dff; --chip: #1c2235; --pre: #0e121b;
+    --muted: #8b93a7; --accent: #a78bfa; --chip: #1c2235; --pre: #0e121b;
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--fg);
@@ -136,7 +136,7 @@ export function renderVaultHtml(data: ExportData): string {
 <body>
 <div class="wrap">
   <header class="top">
-    <div class="brand"><span class="k">Keys</span>Ark <span class="ver">ark v${esc(data.version)}</span></div>
+    <div class="brand">Key<span class="k">Mask</span> <span class="ver">v${esc(data.version)}</span></div>
     <h1>${esc(data.vaultLabel || "(default)")}</h1>
     <div class="sub">
       <span>vault <code>${esc(data.vaultId.slice(0, 8))}</code></span>
@@ -150,7 +150,7 @@ export function renderVaultHtml(data: ExportData): string {
   <main id="list">
 ${itemsHtml}
   </main>
-  <footer>Decrypted locally with <span class="brand"><span class="k">Keys</span>Ark</span> ark v${esc(data.version)} · this file stays on your machine</footer>
+  <footer>Decrypted locally with <span class="brand">Key<span class="k">Mask</span></span> v${esc(data.version)} · this file stays on your machine</footer>
 </div>
 <script>
   (function () {
